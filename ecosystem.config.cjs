@@ -8,12 +8,11 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
-        JWT_SECRET: 'lastmart-super-secret-key-2024-production'
+        BACKEND_API_URL: 'http://localhost:5000'
       },
       watch: false,
       instances: 1,
-      exec_mode: 'fork',
-      max_memory_restart: '500M'
+      exec_mode: 'fork'
     }
   ]
-};
+}
