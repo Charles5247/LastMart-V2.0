@@ -49,13 +49,21 @@ const TRUST_BADGES = [
 ];
 
 export default function HomePage() {
-  const { location } = useApp();
+  const { location, user, isLoading } = useApp();
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [dealProducts, setDealProducts]         = useState<any[]>([]);
   const [featuredVendors, setFeaturedVendors]   = useState<any[]>([]);
   const [categories, setCategories]             = useState<any[]>([]);
   const [loading, setLoading]                   = useState(true);
   const [slide, setSlide]                       = useState(0);
+
+  // Redirect admin/vendor away from home — they don't shop
+  useEffect(() => {
+    if (!isLoading && user) {
+      if (user.role === 'admin') { window.location.replace('/dashboard/admin'); return; }
+      if (user.role === 'vendor') { window.location.replace('/dashboard/vendor'); return; }
+    }
+  }, [user, isLoading]);
 
   // Auto-advance hero slide
   useEffect(() => {

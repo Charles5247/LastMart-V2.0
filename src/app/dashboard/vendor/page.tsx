@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import { useApp } from '@/components/AppContext';
-import { Package, ShoppingBag, TrendingUp, Bell, Star, Plus, Settings, BarChart2, Megaphone, AlertTriangle, CheckCircle, Clock, DollarSign, ArrowRight, Users } from 'lucide-react';
+import { Package, ShoppingBag, TrendingUp, Bell, Star, Plus, Settings, BarChart2, Megaphone, AlertTriangle, CheckCircle, Clock, DollarSign, ArrowRight, Users, Shield } from 'lucide-react';
 import { formatPrice, getStatusColor, formatDate } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
@@ -73,6 +73,9 @@ export default function VendorDashboard() {
               </div>
             </div>
             <div className="flex gap-3 flex-wrap">
+              <Link href="/dashboard/vendor/ranking" className="flex items-center gap-2 bg-yellow-400/30 backdrop-blur-sm text-white border border-yellow-300/30 px-4 py-2 rounded-xl text-sm font-medium hover:bg-yellow-400/40 transition-all">
+                📈 Ranking & Ads
+              </Link>
               <Link href="/dashboard/vendor/products" className="flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white border border-white/30 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/30 transition-all">
                 <Plus className="w-4 h-4" /> Add Product
               </Link>
@@ -95,6 +98,36 @@ export default function VendorDashboard() {
             </div>
           </div>
         )}
+
+        {/* KYC Banner */}
+        {(vendor as any)?.kyc_status !== 'approved' && (
+          <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 mb-6 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5 text-purple-600 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-purple-800">Complete Business Verification (KYC)</p>
+                <p className="text-purple-700 text-sm">Submit your business documents to unlock all features and go live.</p>
+              </div>
+            </div>
+            <Link href="/verification" className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-purple-600 transition-colors flex-shrink-0">
+              Verify Now
+            </Link>
+          </div>
+        )}
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          {[
+            { href: '/verification', label: 'KYC Verification', icon: '🛡️', color: 'bg-purple-50 border-purple-200 text-purple-700' },
+            { href: '/dashboard/vendor/ranking', label: 'Ranking & Ads', icon: '📈', color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
+            { href: '/dashboard/vendor/orders', label: 'Manage Orders', icon: '📦', color: 'bg-blue-50 border-blue-200 text-blue-700' },
+            { href: '/dashboard/vendor/products', label: 'Add Products', icon: '➕', color: 'bg-green-50 border-green-200 text-green-700' },
+          ].map(l => (
+            <Link key={l.href} href={l.href} className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium hover:opacity-80 transition-all ${l.color}`}>
+              <span className="text-lg">{l.icon}</span>{l.label}
+            </Link>
+          ))}
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">

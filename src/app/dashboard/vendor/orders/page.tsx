@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import { useApp } from '@/components/AppContext';
-import { ShoppingBag, ArrowLeft, Clock, CheckCircle, Truck, XCircle, Package } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Clock, CheckCircle, Truck, XCircle, Package, Bell } from 'lucide-react';
 import { formatPrice, getStatusColor, formatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
@@ -36,6 +36,22 @@ export default function VendorOrdersPage() {
     if (data.success) { toast.success(`Order ${status}!`); fetchOrders(); }
     else toast.error(data.error || 'Failed');
     setUpdatingId(null);
+  };
+
+  const notifyReady = async (orderId: string, readyType: 'pickup' | 'delivery') => {
+    setUpdatingId(orderId + readyType);
+    try {
+      const res = await fetch('/api/ranking/notify-ready', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ order_id: orderId, ready_type: readyType })
+      });
+      const data = await res.json();
+      if (data.success) toast.success(`Customer notified: order ready for ${readyType}!`);
+      else toast.error(data.error || 'Failed');
+    } catch { toast.error('Network error'); }
+    setUpdatingId(null);
+    fetchOrders();
   };
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
@@ -117,7 +133,7 @@ export default function VendorOrdersPage() {
 
                 {/* Actions */}
                 {nextStatus[order.status] && (
-                  <div className="flex gap-3 pt-3 border-t border-gray-100">
+                  <div className="flex gap-3 pt-3 border-t border-gray-100 flex-wrap">
                     <button
                       onClick={() => updateStatus(order.id, nextStatus[order.status])}
                       disabled={updatingId === order.id}
@@ -126,6 +142,27 @@ export default function VendorOrdersPage() {
                       {updatingId === order.id ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : null}
                       Mark as {nextStatus[order.status].charAt(0).toUpperCase() + nextStatus[order.status].slice(1)}
                     </button>
+                    {/* Notify Ready buttons */}
+                    {(order.status === 'processing' || order.status === 'confirmed') && !order.vendor_ready_notified && (
+                      <>
+                        {order.delivery_mode === 'pickup' ? (
+                          <button onClick={() => notifyReady(order.id, 'pickup')} disabled={updatingId === order.id + 'pickup'}
+                            className="flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2.5 rounded-xl font-medium text-sm hover:bg-green-200 disabled:opacity-50">
+                            <Bell className="w-4 h-4" /> Notify: Ready for Pickup
+                          </button>
+                        ) : (
+                          <button onClick={() => notifyReady(order.id, 'delivery')} disabled={updatingId === order.id + 'delivery'}
+                            className="flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2.5 rounded-xl font-medium text-sm hover:bg-blue-200 disabled:opacity-50">
+                            <Bell className="w-4 h-4" /> Notify: Ready for Delivery
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {order.vendor_ready_notified ? (
+                      <span className="flex items-center gap-1 text-xs text-green-600 font-medium px-3 py-2 bg-green-50 rounded-xl">
+                        <CheckCircle className="w-4 h-4" /> Customer Notified
+                      </span>
+                    ) : null}
                     {order.status === 'pending' && (
                       <button onClick={() => updateStatus(order.id, 'cancelled')} disabled={updatingId === order.id} className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2.5 rounded-xl font-medium text-sm hover:bg-red-100">
                         <XCircle className="w-4 h-4" /> Cancel

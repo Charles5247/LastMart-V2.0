@@ -1,9 +1,15 @@
 import { Router, Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import getDB from '../lib/db';
 import { getUserFromRequest, requireAuth } from '../lib/auth';
 import { calculateDistance } from '../lib/utils';
 
 const router = Router();
+
+function createNotification(db: any, userId: string, type: string, title: string, message: string, data: object = {}) {
+  db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)`)
+    .run(uuidv4(), userId, type, title, message, JSON.stringify(data));
+}
 
 // GET /api/vendors
 router.get('/', (req: Request, res: Response) => {
@@ -55,6 +61,37 @@ router.get('/:id', (req: Request, res: Response) => {
       WHERE v.id = ?`).get(id) as any;
     if (!vendor) return res.status(404).json({ success: false, error: 'Vendor not found' });
 
+    // Track store visit
+    try {
+      const userPayload = getUserFromRequest(req);
+      const visitorId = userPayload?.userId || null;
+      const sessionId = req.headers['x-session-id'] as string || uuidv4();
+      const ip = req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || '';
+
+      // Only log once per session per store
+      const recentVisit = db.prepare(`
+        SELECT id FROM store_visits WHERE vendor_id=? AND session_id=? AND visited_at > datetime('now','-1 hour')
+      `).get(id, sessionId);
+
+      if (!recentVisit) {
+        let visitorName: string | null = null;
+        if (visitorId) {
+          const u = db.prepare('SELECT name FROM users WHERE id=?').get(visitorId) as any;
+          visitorName = u?.name || null;
+        }
+        db.prepare(`INSERT INTO store_visits (id, vendor_id, visitor_id, visitor_name, session_id, ip_address) VALUES (?,?,?,?,?,?)`)
+          .run(uuidv4(), id, visitorId, visitorName, sessionId, ip);
+
+        // Notify the vendor about the store visit
+        const displayName = visitorName || 'A customer';
+        createNotification(db, vendor.user_id, 'store_visit',
+          '👀 New Store Visit',
+          `${displayName} just visited your store "${vendor.store_name}".`,
+          { vendor_id: id, visitor_id: visitorId, visitor_name: visitorName }
+        );
+      }
+    } catch { /* Visit tracking errors should not break the main response */ }
+
     const products = db.prepare(`
       SELECT p.*, c.name as category_name 
       FROM products p LEFT JOIN categories c ON p.category_id = c.id 
@@ -70,7 +107,14 @@ router.get('/:id', (req: Request, res: Response) => {
       ...p, images: JSON.parse(p.images || '[]'), tags: JSON.parse(p.tags || '[]')
     }));
 
-    return res.json({ success: true, data: { vendor, products: parsedProducts, reviews } });
+    // Recent store visits count
+    const visitStats = db.prepare(`
+      SELECT COUNT(*) as total_visits,
+             COUNT(DISTINCT CASE WHEN visited_at > datetime('now','-7 days') THEN id END) as week_visits
+      FROM store_visits WHERE vendor_id=?
+    `).get(id) as any;
+
+    return res.json({ success: true, data: { vendor, products: parsedProducts, reviews, visit_stats: visitStats } });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
   }

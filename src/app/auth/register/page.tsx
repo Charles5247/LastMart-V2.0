@@ -3,7 +3,7 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useApp } from '@/components/AppContext';
-import { Store, Eye, EyeOff, Mail, Lock, User, MapPin, Phone, Building, ArrowRight } from 'lucide-react';
+import { Store, Eye, EyeOff, Mail, Lock, User, MapPin, Phone, Building, ArrowRight, Shield, CheckCircle, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 function RegisterContent() {
@@ -20,6 +20,8 @@ function RegisterContent() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const categories = ['Electronics', 'Fashion', 'Food & Groceries', 'Home & Living', 'Health & Beauty', 'Sports & Fitness', 'Books & Stationery', 'Toys & Games'];
 
@@ -27,6 +29,8 @@ function RegisterContent() {
     e.preventDefault();
     if (form.password !== form.confirmPassword) { toast.error('Passwords do not match'); return; }
     if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    if (!termsAccepted) { toast.error('Please accept the Terms & Conditions to continue'); return; }
+    if (!ageConfirmed) { toast.error('Please confirm you are 18 years or older'); return; }
     
     setLoading(true);
     try {
@@ -38,6 +42,17 @@ function RegisterContent() {
       const data = await res.json();
       if (data.success) {
         await login(form.email, form.password);
+
+        // Record terms acceptance
+        const token = localStorage.getItem('token');
+        if (token) {
+          fetch('/api/verification/terms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ version: '1.0' })
+          }).catch(() => {});
+        }
+
         toast.success('Account created successfully!');
         const redirect = role === 'vendor' ? '/dashboard/vendor' : role === 'admin' ? '/dashboard/admin' : '/';
         router.push(redirect);
@@ -78,6 +93,19 @@ function RegisterContent() {
               </button>
             </div>
           </div>
+
+          {/* KYC Notice for vendors */}
+          {role === 'vendor' && (
+            <div className="mb-5 bg-amber-500/20 border border-amber-400/30 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-amber-300 font-semibold text-sm">Business Verification Required</p>
+                  <p className="text-amber-200/80 text-xs mt-1">After registration, you'll need to complete KYC verification with your CAC certificate, TIN, and valid ID before your store goes live. Products also require vetting before being listed.</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -160,7 +188,42 @@ function RegisterContent() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-orange-500 to-pink-600 text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 mt-2">
+            {/* Terms & Conditions Checkboxes */}
+            <div className="pt-4 border-t border-white/10 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <div
+                  onClick={() => setTermsAccepted(!termsAccepted)}
+                  className={`w-5 h-5 rounded border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all cursor-pointer ${
+                    termsAccepted ? 'bg-orange-500 border-orange-500' : 'border-white/30 hover:border-orange-400'
+                  }`}
+                >
+                  {termsAccepted && <CheckCircle className="w-3.5 h-3.5 text-white" />}
+                </div>
+                <span className="text-xs text-gray-300 leading-relaxed">
+                  I have read and agree to LastMart's{' '}
+                  <Link href="/terms" target="_blank" className="text-orange-400 hover:text-orange-300 font-semibold inline-flex items-center gap-1">
+                    Terms & Conditions <ExternalLink className="w-3 h-3" />
+                  </Link>{' '}
+                  including the marketplace rules, prohibited items policy, and account suspension policy.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <div
+                  onClick={() => setAgeConfirmed(!ageConfirmed)}
+                  className={`w-5 h-5 rounded border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all cursor-pointer ${
+                    ageConfirmed ? 'bg-orange-500 border-orange-500' : 'border-white/30 hover:border-orange-400'
+                  }`}
+                >
+                  {ageConfirmed && <CheckCircle className="w-3.5 h-3.5 text-white" />}
+                </div>
+                <span className="text-xs text-gray-300 leading-relaxed">
+                  I confirm I am 18 years or older and the information I provide is accurate. I understand that providing false information may result in account suspension.
+                </span>
+              </label>
+            </div>
+
+            <button type="submit" disabled={loading || !termsAccepted || !ageConfirmed} className="w-full bg-gradient-to-r from-orange-500 to-pink-600 text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-40 mt-2">
               {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><span>Create Account</span><ArrowRight className="w-4 h-4" /></>}
             </button>
           </form>

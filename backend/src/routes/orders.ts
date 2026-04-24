@@ -122,13 +122,25 @@ router.post('/', async (req: Request, res: Response) => {
 
       const vendorUser = db.prepare('SELECT user_id FROM vendors WHERE id = ?').get(vendorId) as any;
       const vendor = db.prepare('SELECT * FROM vendors WHERE id = ?').get(vendorId) as any;
+      const customer = db.prepare('SELECT name FROM users WHERE id=?').get(userPayload.userId) as any;
 
       if (vendorUser) {
+        const productNames = vendorItems.map((i: any) => i.product.name).join(', ');
         db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, 'new_order', ?, ?, ?)`).run(
           uuidv4(), vendorUser.user_id, '🛒 New Order Received!',
-          `You have a new order worth ₦${totalAmount.toLocaleString()}. Please confirm immediately.`,
-          JSON.stringify({ order_id: orderId, amount: totalAmount })
+          `${customer?.name || 'A customer'} just purchased from your store! Order #${orderId.slice(0,8).toUpperCase()} — ${productNames}. Total: ₦${totalAmount.toLocaleString()}`,
+          JSON.stringify({ order_id: orderId, amount: totalAmount, customer_id: userPayload.userId, customer_name: customer?.name, product_names: productNames })
         );
+
+        // Notify admin too
+        const admins = db.prepare(`SELECT id FROM users WHERE role='admin'`).all() as any[];
+        for (const admin of admins) {
+          db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, 'admin_new_order', ?, ?, ?)`).run(
+            uuidv4(), admin.id, '🧾 New Purchase',
+            `${customer?.name || 'Customer'} bought from ${vendor?.store_name}: ₦${totalAmount.toLocaleString()}`,
+            JSON.stringify({ order_id: orderId, vendor_id: vendorId, customer_id: userPayload.userId })
+          );
+        }
       }
 
       db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, 'order_confirmed', ?, ?, ?)`).run(

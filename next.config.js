@@ -1,8 +1,7 @@
-import type { NextConfig } from 'next';
-
+/** @type {import('next').NextConfig} */
 const API_URL = process.env.BACKEND_API_URL || 'http://localhost:5000';
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'picsum.photos' },
@@ -19,7 +18,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  turbopack: {},
 };
 
-export default nextConfig;
+module.exports = nextConfig;

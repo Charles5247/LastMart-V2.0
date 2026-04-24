@@ -49,6 +49,8 @@ import deliveryRoutes     from './routes/delivery';
 import budgetRoutes       from './routes/budget';
 import lamaRoutes, { runLamaAnalysis } from './routes/lama';
 import uploadRoutes       from './routes/upload';
+import verificationRoutes from './routes/verification';
+import rankingRoutes      from './routes/ranking';
 
 const app          = express();
 const PORT         = process.env.PORT         || 5000;
@@ -90,7 +92,7 @@ app.get('/health', (_req, res) => {
     status:    'ok',
     timestamp: new Date().toISOString(),
     service:   'LastMart API',
-    version:   '2.0.0',
+    version:   '3.0.0',
   });
 });
 
@@ -113,6 +115,8 @@ app.use('/api/delivery',      deliveryRoutes);  // Addresses + delivery modes
 app.use('/api/budget',        budgetRoutes);    // Budget plans + recurring purchases
 app.use('/api/lama',          lamaRoutes);      // LAMA AI agent
 app.use('/api/upload',        uploadRoutes);    // Image uploads (50 MB limit)
+app.use('/api/verification',  verificationRoutes); // KYC, product vetting, T&C
+app.use('/api/ranking',       rankingRoutes);   // Paid ranking, ad-boost, ready-notify
 
 /* ─── 404 Handler ────────────────────────────────────────────────────────── */
 app.use((req, res) => {
@@ -141,6 +145,7 @@ app.listen(PORT, () => {
     'auth', 'products', 'vendors', 'orders', 'cart', 'categories',
     'reviews', 'notifications', 'users', 'ads', 'admin',
     'payment', 'delivery', 'budget', 'lama', 'upload',
+    'verification', 'ranking',
   ].forEach(ns => console.log(`   /api/${ns}`));
   console.log();
 

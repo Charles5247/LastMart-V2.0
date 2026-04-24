@@ -51,6 +51,7 @@ router.post('/', (req: Request, res: Response) => {
     if (product.stock < quantity) return res.status(400).json({ success: false, error: 'Insufficient stock' });
 
     const existing = db.prepare('SELECT * FROM cart_items WHERE user_id = ? AND product_id = ?').get(userPayload.userId, product_id) as any;
+    const isNewAdd = !existing;
 
     if (existing) {
       const newQty = existing.quantity + quantity;
@@ -60,6 +61,22 @@ router.post('/', (req: Request, res: Response) => {
       db.prepare('INSERT INTO cart_items (id, user_id, product_id, quantity) VALUES (?, ?, ?, ?)').run(
         uuidv4(), userPayload.userId, product_id, quantity
       );
+    }
+
+    // Notify vendor when customer adds product to cart (first time only)
+    if (isNewAdd) {
+      try {
+        const customer = db.prepare('SELECT name FROM users WHERE id=?').get(userPayload.userId) as any;
+        const vendor = db.prepare('SELECT v.user_id, v.store_name FROM vendors v WHERE v.id=?').get(product.vendor_id) as any;
+        if (vendor) {
+          db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)`)
+            .run(uuidv4(), vendor.user_id, 'cart_addition',
+              '🛒 Added to Cart!',
+              `${customer?.name || 'A customer'} added "${product.name}" to their cart.`,
+              JSON.stringify({ product_id, product_name: product.name, customer_id: userPayload.userId, customer_name: customer?.name })
+            );
+        }
+      } catch { /* Notification errors should not break cart */ }
     }
 
     return res.json({ success: true, message: 'Item added to cart' });

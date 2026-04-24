@@ -1,6 +1,6 @@
 # 🛒 LastMart – Local Setup Guide
 
-LastMart is a full-stack Nigerian marketplace app with a **separated frontend and backend**. You run them in two separate terminals.
+LastMart is a full-stack Nigerian marketplace app with a **separated frontend (Next.js) and backend (Express/TypeScript)**. Run them in two separate terminals.
 
 ---
 
@@ -8,255 +8,256 @@ LastMart is a full-stack Nigerian marketplace app with a **separated frontend an
 
 ```
 lastmart/
-├── src/                          ← Next.js frontend (pages, components)
-│   ├── app/                      ← App Router pages
-│   ├── components/               ← React components
-│   └── lib/                      ← (legacy – not used when backend is separate)
-├── backend/                      ← Express API server  ← NEW
+├── src/                          ← Next.js 16 frontend (App Router)
+│   ├── app/
+│   │   ├── page.tsx              ← Home (auto-redirects admin/vendor)
+│   │   ├── auth/                 ← Login, Register (with T&C acceptance)
+│   │   ├── marketplace/          ← Product listings, vendor browse
+│   │   ├── verification/         ← KYC submission page (customers & vendors)
+│   │   ├── terms/                ← Terms & Conditions page
+│   │   ├── dashboard/
+│   │   │   ├── admin/            ← Admin-only pages
+│   │   │   │   ├── page.tsx      ← Admin analytics overview
+│   │   │   │   ├── vendors/      ← Manage & approve/suspend vendors
+│   │   │   │   ├── customers/    ← Manage & suspend customers
+│   │   │   │   ├── products/     ← All products (activate, feature, rank)
+│   │   │   │   ├── orders/       ← Monitor all orders
+│   │   │   │   ├── kyc/          ← Review KYC submissions (approve/reject)
+│   │   │   │   ├── product-verification/ ← Review product vetting requests
+│   │   │   │   ├── rankings/     ← Manage ranking/ad applications + LAMA recs
+│   │   │   │   ├── notifications/ ← Broadcast notifications to users
+│   │   │   │   └── analytics/    ← Platform analytics charts
+│   │   │   ├── vendor/           ← Vendor-only pages
+│   │   │   │   ├── page.tsx      ← Vendor dashboard (KYC banner + quick links)
+│   │   │   │   ├── products/     ← Manage products + submit for vetting (🛡️)
+│   │   │   │   ├── orders/       ← View orders + notify ready for pickup/delivery
+│   │   │   │   ├── ranking/      ← Apply for paid ranking/ad packages
+│   │   │   │   ├── analytics/    ← Vendor performance analytics
+│   │   │   │   ├── inventory/    ← Stock management
+│   │   │   │   └── ads/          ← Advertisement management
+│   │   │   └── customer/         ← Customer dashboard
+│   │   ├── product/              ← Product detail page
+│   │   ├── vendor/               ← Public vendor store page (tracks visits)
+│   │   ├── cart/, checkout/      ← Shopping flow
+│   │   ├── payment/, delivery/   ← Payment & delivery
+│   │   ├── lama/                 ← LAMA AI assistant
+│   │   └── budget/               ← Budget planner
+│   └── components/
+│       ├── layout/Navbar.tsx     ← Responsive navbar (role-aware dashboard links)
+│       ├── AppContext.tsx         ← Global state (user, cart, notifications, location)
+│       └── ui/                   ← Shared UI components
+│
+├── backend/                      ← Express API (Port 5000)
 │   ├── src/
-│   │   ├── server.ts             ← Main Express entry point
-│   │   ├── routes/               ← All API route handlers
-│   │   │   ├── auth.ts
-│   │   │   ├── products.ts
-│   │   │   ├── vendors.ts
-│   │   │   ├── orders.ts
-│   │   │   ├── cart.ts
-│   │   │   ├── categories.ts
-│   │   │   ├── reviews.ts
-│   │   │   ├── notifications.ts
-│   │   │   ├── users.ts
-│   │   │   ├── ads.ts
-│   │   │   └── admin.ts
-│   │   └── lib/
-│   │       ├── db.ts             ← SQLite database helper
-│   │       ├── auth.ts           ← JWT helpers (no Next.js deps)
-│   │       ├── utils.ts          ← Utility functions
-│   │       └── seed.ts           ← Database seeder
-│   ├── package.json              ← Backend dependencies
+│   │   ├── server.ts             ← Main server entry point
+│   │   ├── lib/
+│   │   │   ├── db.ts             ← SQLite singleton + full schema + migrations
+│   │   │   └── auth.ts           ← JWT helpers (sign, verify, requireAuth)
+│   │   └── routes/
+│   │       ├── auth.ts           ← Login, Register (with T&C recording)
+│   │       ├── vendors.ts        ← Vendor CRUD + store visit tracking + notifications
+│   │       ├── products.ts       ← Product CRUD + featured/ranking
+│   │       ├── cart.ts           ← Cart + vendor notification on add-to-cart
+│   │       ├── orders.ts         ← Order flow + vendor/customer notifications
+│   │       ├── verification.ts   ← KYC (vendor/customer), product vetting, T&C
+│   │       ├── ranking.ts        ← Paid ranking packages + notify-ready + LAMA recs
+│   │       ├── admin.ts          ← Full admin control (analytics, suspend, broadcast)
+│   │       ├── notifications.ts  ← Read/mark notifications
+│   │       ├── lama.ts           ← LAMA AI insights
+│   │       ├── ads.ts            ← Advertisements
+│   │       ├── categories.ts     ← Product categories
+│   │       ├── reviews.ts        ← Product reviews
+│   │       ├── users.ts          ← User profile management
+│   │       ├── payment.ts        ← Payment gateway integration
+│   │       ├── delivery.ts       ← Delivery address management
+│   │       ├── budget.ts         ← Customer budgeting
+│   │       └── upload.ts         ← File upload handling
+│   ├── dist/                     ← Compiled JS (run: npm run build)
+│   ├── package.json
 │   ├── tsconfig.json
-│   └── ecosystem.config.cjs      ← PM2 config for backend
-├── lastmart.db                   ← SQLite database (shared)
-├── package.json                  ← Frontend dependencies + dev scripts
-├── next.config.ts                ← Proxies /api/* → backend :5000
-├── ecosystem.config.cjs          ← PM2 config for frontend
-└── LOCAL_SETUP.md                ← This file
+│   └── ecosystem.config.cjs      ← PM2 config (dev mode with ts-node-dev)
+│
+├── lastmart.db                   ← Shared SQLite database (DO NOT DELETE)
+├── ecosystem.config.cjs          ← PM2 config for frontend (next start)
+├── package.json                  ← Frontend deps
+└── next.config.ts                ← Next.js config (API rewrites to :5000)
 ```
 
 ---
 
-## ⚡ Quick Start (Two Terminals)
+## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js** 18+ → https://nodejs.org
-- **npm** 8+
+- Node.js 18+
+- npm 9+
 
-### Step 1 – Install dependencies
+### Terminal 1 – Backend API (Port 5000)
 
 ```bash
-# Install frontend dependencies
+cd lastmart/backend
+
+# Install deps (first time only)
 npm install
 
-# Install backend dependencies
-cd backend && npm install && cd ..
-```
-
-Or run both at once:
-```bash
-npm run install:all
-```
-
-### Step 2 – Terminal 1: Start the Backend (Express API)
-
-```bash
-cd backend
+# Development mode (auto-reload on changes)
 npm run dev
+
+# OR production mode
+npm run build
+node dist/server.js
 ```
 
-You should see:
-```
-🚀 LastMart API Server running at http://localhost:5000
-   Health: http://localhost:5000/health
-```
-
-> The first startup automatically seeds the database with demo data.
-
-### Step 3 – Terminal 2: Start the Frontend (Next.js)
+### Terminal 2 – Frontend (Port 3000)
 
 ```bash
-npm run dev:frontend
+cd lastmart
+
+# Install deps (first time only)
+npm install
+
+# Development mode
+npm run dev
+
+# OR production build
+npm run build
+npm start
 ```
 
-You should see:
-```
-▲ Next.js 16.1.6
-   - Local:        http://localhost:3000
-```
-
-### Step 4 – Open the app
-
-Visit **http://localhost:3000**
+### Access the App
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:5000
+- **API Health:** http://localhost:5000/health
 
 ---
 
-## 🔐 Demo Login Credentials
+## 🔑 Default Test Accounts
 
-| Role     | Email                   | Password      |
-|----------|-------------------------|---------------|
-| Customer | bola@example.com        | customer123   |
-| Customer | ngozi@example.com       | customer123   |
-| Vendor   | tunde@lastmart.com      | vendor123     |
-| Vendor   | amaka@lastmart.com      | vendor123     |
-| Admin    | admin@lastmart.com      | admin123      |
+After seeding (`cat lastmart_seed.sql | sqlite3 lastmart.db`):
 
----
-
-## 🎯 One-Command Dev (Both Servers)
-
-Run frontend + backend together with colored output:
-
-```bash
-npm run dev:all
-```
-
-This uses `concurrently` to start both servers simultaneously. Logs are color-coded:
-- **Cyan** = Backend (Express :5000)
-- **Magenta** = Frontend (Next.js :3000)
-
----
-
-## 🌐 How the Proxy Works
-
-Next.js proxies all `/api/*` requests to the Express backend:
-
-```
-Browser → http://localhost:3000/api/products
-           ↓ (Next.js rewrite)
-Express  → http://localhost:5000/api/products
-           ↓ (SQLite query)
-Response ← JSON data
-```
-
-This means the frontend always calls `/api/...` (same origin), and Next.js forwards them to the backend. No CORS issues in the browser.
-
----
-
-## 📡 API Endpoints (Express Backend :5000)
-
-| Method | Endpoint                    | Description              |
-|--------|-----------------------------|--------------------------|
-| GET    | /health                     | Health check             |
-| POST   | /api/auth/login             | Login                    |
-| POST   | /api/auth/register          | Register                 |
-| GET    | /api/products               | List products            |
-| GET    | /api/products/:id           | Product details          |
-| POST   | /api/products               | Create product (vendor)  |
-| GET    | /api/vendors                | List vendors             |
-| GET    | /api/vendors/:id            | Vendor details           |
-| GET    | /api/vendors/me/analytics   | Vendor analytics         |
-| GET    | /api/orders                 | List orders              |
-| POST   | /api/orders                 | Place order              |
-| PUT    | /api/orders/:id             | Update order status      |
-| GET    | /api/cart                   | Get cart                 |
-| POST   | /api/cart                   | Add to cart              |
-| PUT    | /api/cart                   | Update cart item         |
-| DELETE | /api/cart                   | Remove from cart         |
-| GET    | /api/categories             | List categories          |
-| GET    | /api/reviews                | List reviews             |
-| POST   | /api/reviews                | Post review              |
-| GET    | /api/notifications          | Get notifications        |
-| PUT    | /api/notifications          | Mark as read             |
-| GET    | /api/users/me               | Get current user         |
-| PUT    | /api/users/me               | Update profile           |
-| GET    | /api/users/saved-vendors    | Saved vendors            |
-| POST   | /api/users/saved-vendors    | Save vendor              |
-| DELETE | /api/users/saved-vendors    | Unsave vendor            |
-| GET    | /api/ads                    | List ads                 |
-| POST   | /api/ads                    | Create ad (vendor)       |
-| GET    | /api/admin/analytics        | Admin analytics          |
-| GET    | /api/admin/vendors          | Admin vendor list        |
-| PUT    | /api/admin/vendors          | Approve/suspend vendor   |
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@lastmart.ng | admin123 |
+| Vendor | vendor@test.ng | vendor123 |
+| Customer | customer@test.ng | customer123 |
 
 ---
 
 ## 🗄️ Database
 
-- **Type**: SQLite (`lastmart.db` in project root)
-- **Shared** between frontend and backend
-- **Auto-seeded** on first request to `/api/categories`
+The SQLite database (`lastmart.db`) is shared between frontend and backend. The schema is auto-created on first backend start via `initializeDB()` in `backend/src/lib/db.ts`.
 
-To reset the database:
+**Key Tables:**
+- `users` – all roles (customer, vendor, admin) with `is_suspended`, `kyc_status`, `terms_accepted`
+- `vendors` – store profiles with `status`, `kyc_status`, `ranking_level`
+- `products` – listings with `verification_status`, `is_ranked`, `is_featured`
+- `kyc_verifications` – KYC submissions (ID docs, business docs)
+- `product_verifications` – product vetting (availability + authenticity proofs)
+- `vendor_rankings` – paid ranking/ad applications
+- `ranking_packages` – available packages (Bronze/Silver/Gold/Platinum)
+- `store_visits` – tracks every store page visit
+- `notifications` – all in-app notifications
+- `terms_acceptances` – T&C acceptance records
+- `orders`, `order_items` – order management with `ready_for_pickup/delivery` flags
+- `advertisements`, `lama_insights` – ads and LAMA AI
+
+---
+
+## 📡 API Overview
+
+All API endpoints are proxied from Next.js (`/api/*` → `http://localhost:5000/api/*`).
+
+| Namespace | Purpose |
+|-----------|---------|
+| `POST /api/auth/register` | Register with T&C acceptance |
+| `POST /api/auth/login` | Login (blocks suspended accounts) |
+| `GET/POST /api/verification/kyc` | Submit & check KYC status |
+| `PUT /api/verification/kyc/:id` | Admin: approve/reject KYC |
+| `POST /api/verification/product` | Vendor: submit product for vetting |
+| `PUT /api/verification/product/:id` | Admin: approve/reject product vetting |
+| `POST/GET /api/verification/terms` | Accept & check T&C |
+| `GET /api/ranking/packages` | List paid ranking packages |
+| `POST /api/ranking/apply` | Vendor: apply for ranking |
+| `PUT /api/ranking/admin/:id` | Admin: approve/reject ranking |
+| `GET /api/ranking/lama-recommendations` | LAMA: suggest what to rank |
+| `POST /api/ranking/notify-ready` | Vendor: order ready for pickup/delivery |
+| `GET /api/vendors/:id` | Public vendor store (tracks visit, notifies vendor) |
+| `POST /api/cart` | Add to cart (notifies vendor) |
+| `POST /api/orders` | Place order (notifies vendor + customer) |
+| `GET /api/admin/analytics` | Full platform stats |
+| `PUT /api/admin/customers/:id` | Suspend/unsuspend customer |
+| `PUT /api/admin/vendors` | Approve/suspend vendor |
+| `PUT /api/admin/products/:id` | Activate/feature/rank product |
+| `POST /api/admin/notifications` | Broadcast to all/role/specific user |
+| `GET /api/admin/store-visits` | Store visit analytics |
+
+---
+
+## 🔔 Notification Triggers
+
+| Event | Who Gets Notified |
+|-------|-------------------|
+| Customer visits vendor store | Vendor |
+| Customer adds product to cart | Vendor |
+| Customer places order | Vendor + Customer |
+| Vendor ships/updates order | Customer |
+| Vendor marks order ready | Customer + Admin |
+| KYC submitted | Admin |
+| KYC approved/rejected | User |
+| Product submitted for vetting | Admin |
+| Product vetting result | Vendor |
+| Ranking application submitted | Admin |
+| Ranking approved/rejected | Vendor |
+| Admin broadcast | All / Role / Specific user |
+| Account suspended/restored | User |
+
+---
+
+## 👤 Role-Based Access
+
+| Feature | Customer | Vendor | Admin |
+|---------|----------|--------|-------|
+| Home page / shopping | ✅ | ❌ (redirected) | ❌ (redirected) |
+| Marketplace browsing | ✅ | ✅ | ✅ |
+| Place orders / cart | ✅ | ❌ | ❌ |
+| Vendor dashboard | ❌ | ✅ | ❌ |
+| Admin dashboard | ❌ | ❌ | ✅ |
+| KYC submission | ✅ | ✅ | ❌ |
+| Product vetting submit | ❌ | ✅ | ❌ |
+| Review KYC/vetting | ❌ | ❌ | ✅ |
+| Ranking packages | ❌ | ✅ (apply) | ✅ (manage) |
+| Suspend accounts | ❌ | ❌ | ✅ |
+| Broadcast notifications | ❌ | ❌ | ✅ |
+
+---
+
+## 🛠️ PM2 Usage (Production-like)
+
 ```bash
-rm lastmart.db
-# Restart the backend – it will auto-seed
+# Start backend
+cd backend && pm2 start ecosystem.config.cjs
+
+# Start frontend (requires npm run build first)
+npm run build && pm2 start ecosystem.config.cjs
+
+# Monitor
+pm2 list
+pm2 logs lastmart-api --nostream
+pm2 logs lastmart --nostream
 ```
 
 ---
 
-## 🔧 Environment Variables
+## 🗝️ Environment Variables
 
-### Frontend (`.env.local`)
-```env
-BACKEND_API_URL=http://localhost:5000
-JWT_SECRET=lastmart-super-secret-key-2024
+**Backend** (`backend/.env` or system env):
 ```
-
-### Backend (`backend/.env`)
-```env
 PORT=5000
-JWT_SECRET=lastmart-super-secret-key-2024
+JWT_SECRET=your-secret-key
 FRONTEND_URL=http://localhost:3000
+NODE_ENV=development
 ```
 
-Copy the example files:
-```bash
-cp .env.local.example .env.local
-cp backend/.env.example backend/.env
+**Frontend** (`.env.local`):
 ```
-
----
-
-## 🛠️ Troubleshooting
-
-### Port already in use
-```bash
-# Kill port 3000 (frontend)
-npx kill-port 3000
-
-# Kill port 5000 (backend)
-npx kill-port 5000
+NEXT_PUBLIC_API_URL=http://localhost:5000
 ```
-
-### Backend won't start
-```bash
-cd backend
-npm install          # Ensure deps are installed
-npm run dev          # Check for TypeScript errors
-```
-
-### Database errors
-```bash
-rm lastmart.db       # Delete and re-seed
-cd backend && npm run dev
-```
-
-### API calls returning 404
-Make sure the backend is running on port 5000 **before** the frontend starts. The Next.js dev server proxies requests in real time.
-
-### `better-sqlite3` native module error
-```bash
-cd backend
-npm rebuild better-sqlite3
-```
-
----
-
-## 📦 Tech Stack
-
-| Layer     | Technology                    |
-|-----------|-------------------------------|
-| Frontend  | Next.js 16, React 19, TypeScript |
-| Styling   | Tailwind CSS v4               |
-| Backend   | Express.js, TypeScript        |
-| Database  | SQLite (better-sqlite3)       |
-| Auth      | JWT (jsonwebtoken + bcryptjs) |
-| Dev Tools | ts-node-dev, concurrently     |
