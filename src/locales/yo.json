@@ -1,0 +1,120 @@
+{
+  "common": {
+    "loading": "Ẹ dúró...",
+    "save": "Fi pamọ́",
+    "cancel": "Fagi lé",
+    "delete": "Parẹ́",
+    "edit": "Ṣàtúnṣe",
+    "submit": "Firanṣẹ",
+    "back": "Padà",
+    "next": "Tókàn",
+    "close": "Pa",
+    "search": "Wá",
+    "filter": "Àlẹ̀mọ́",
+    "all": "Gbogbo",
+    "yes": "Bẹ́ẹ̀ni",
+    "no": "Rárá",
+    "success": "Àṣeyọrí",
+    "error": "Àṣìṣe",
+    "confirm": "Jẹ́rìí",
+    "view": "Wo",
+    "approve": "Fọwọ́ sí",
+    "reject": "Kọ",
+    "pending": "Ndúró",
+    "approved": "Ti fọwọ́ sí",
+    "rejected": "Ti kọ"
+  },
+  "nav": {
+    "home": "Ilé",
+    "marketplace": "Ọjà",
+    "cart": "Agbọ̀n",
+    "dashboard": "Pẹpẹ iṣakoso",
+    "login": "Wọlé",
+    "register": "Forúkọsílẹ̀",
+    "logout": "Jáde",
+    "profile": "Profaili",
+    "notifications": "Àwọn ìfitónilétí"
+  },
+  "home": {
+    "hero_title": "Ra ní àgbègbè rẹ, a máa ń jiṣẹ́ ní kíákíá",
+    "hero_subtitle": "Ọjà àdúgbò tó yára jù lọ ní Nàìjíríà. Ra lọ́wọ́ àwọn ọjà ní ìlú rẹ.",
+    "shop_now": "Ra Báyìí",
+    "become_vendor": "Di Olùdáwó",
+    "featured_vendors": "Àwọn Olùdáwó tó Gbajúmọ̀",
+    "no_vendors": "Kò sí olùdáwó tó wà nítòsí rẹ.",
+    "delivery_promise": "A máa ń jiṣẹ́ láàárín wákàtí 48",
+    "location_setup": "Ṣètò ibùdó rẹ láti rí àwọn olùdáwó tó wà nítòsí"
+  },
+  "auth": {
+    "login_title": "Káàbọ̀ Padà",
+    "register_title": "Ṣẹ̀dá Àkọọ́lẹ̀",
+    "email": "Àdírẹ́sì Ímeèlì",
+    "password": "Ọ̀rọ̀ Aṣínà",
+    "full_name": "Orúkọ Pípé",
+    "phone": "Nọ́mbà Foonu",
+    "city": "Ìlú",
+    "role": "Irú Àkọọ́lẹ̀",
+    "customer": "Oníbàárà",
+    "vendor": "Olùdáwó",
+    "already_have_account": "Ṣé o ti ní àkọọ́lẹ̀?",
+    "dont_have_account": "Kò tíì ní àkọọ́lẹ̀?",
+    "accept_terms": "Mo gba àwọn ìlànà àti àwọn ìpèsè",
+    "login_success": "Ìwọlé ṣàṣeyọrí!",
+    "register_success": "Àkọọ́lẹ̀ ti ṣẹ̀dá!"
+  },
+  "product": {
+    "add_to_cart": "Fi sí Agbọ̀n",
+    "out_of_stock": "Ò wà níbẹ̀ mọ́",
+    "in_stock": "Wà níbẹ̀",
+    "price": "Ìdíyelé",
+    "quantity": "Iye",
+    "description": "Àpèjúwe",
+    "reviews": "Àwọn àtúnyẹ̀wò",
+    "rating": "Ìdínwò",
+    "sold": "ti ta",
+    "units_left": "ìpele tó kù"
+  },
+  "vendor": {
+    "store": "Ìtajà",
+    "verified": "Jẹ́rìísí",
+    "products": "Àwọn Ọjà",
+    "orders": "Àwọn Àṣẹ",
+    "analytics": "Ìtúpalẹ̀",
+    "kyc_verification": "Ìfẹnumọ̀ KYC",
+    "ranking": "Ìpò àti Ìpolówó",
+    "inventory": "Àkójọpọ̀ Ọjà"
+  },
+  "cart": {
+    "title": "Agbọ̀n Ìrà",
+    "empty": "Agbọ̀n rẹ ò ní ọjà",
+    "total": "Àpapọ̀",
+    "checkout": "Sanwó",
+    "remove": "Yọ",
+    "quantity": "Iye"
+  },
+  "payment": {
+    "title": "Ìsanwó",
+    "select_method": "Yan Ọ̀nà Ìsanwó",
+    "card": "Ìsanwó Káàdì",
+    "bank_transfer": "Gbígbé Ọ̀rọ̀ Ìfowópamọ́",
+    "ussd": "USSD",
+    "mobile_money": "Owó Aládàáṣiṣẹ́",
+    "pay_now": "San Báyìí",
+    "processing": "Ń ṣe iṣẹ́...",
+    "success": "Ìsanwó Ṣàṣeyọrí!",
+    "failed": "Ìsanwó Kùnà"
+  },
+  "notifications": {
+    "title": "Àwọn Ìfitónilétí",
+    "empty": "Kò sí ìfitónilétí",
+    "mark_read": "Ṣàmì pé a ti ka",
+    "mark_all_read": "Ṣàmì gbogbo pé a ti ka"
+  },
+  "language": {
+    "select": "Yan Èdè",
+    "en": "Gẹ̀ẹ́sì",
+    "yo": "Yorùbá",
+    "ha": "Hausa",
+    "ig": "Igbo"
+  }
+}

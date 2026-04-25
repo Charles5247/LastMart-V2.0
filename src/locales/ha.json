@@ -1,0 +1,120 @@
+{
+  "common": {
+    "loading": "Ana jira...",
+    "save": "Ajiye",
+    "cancel": "Soke",
+    "delete": "Share",
+    "edit": "Gyara",
+    "submit": "Aika",
+    "back": "Koma",
+    "next": "Na gaba",
+    "close": "Rufe",
+    "search": "Nema",
+    "filter": "Tace",
+    "all": "Duka",
+    "yes": "I",
+    "no": "A'a",
+    "success": "Nasara",
+    "error": "Kuskure",
+    "confirm": "Tabbatar",
+    "view": "Duba",
+    "approve": "Amince",
+    "reject": "Ki",
+    "pending": "Ana jira",
+    "approved": "An amince",
+    "rejected": "An ki"
+  },
+  "nav": {
+    "home": "Gida",
+    "marketplace": "Kasuwa",
+    "cart": "Kwando",
+    "dashboard": "Allon kulawa",
+    "login": "Shiga",
+    "register": "Yi rajista",
+    "logout": "Fita",
+    "profile": "Bayanan kai",
+    "notifications": "Sanarwa"
+  },
+  "home": {
+    "hero_title": "Saya a gida, ana kawo maka cikin sauri",
+    "hero_subtitle": "Mafi sauri kasuwar gida a Najeriya. Saya daga masu siyarwa a birninku.",
+    "shop_now": "Saya Yanzu",
+    "become_vendor": "Zama Mai Siyarwa",
+    "featured_vendors": "Masu Siyarwa na Musamman",
+    "no_vendors": "Babu masu siyarwa kusa da ku yanzu.",
+    "delivery_promise": "Isar da kaya a cikin awanni 48",
+    "location_setup": "Saita wurin zama don ganin masu siyarwa kusa da ku"
+  },
+  "auth": {
+    "login_title": "Barka da Dawowar",
+    "register_title": "Ƙirƙiri Asusun",
+    "email": "Adreshin Imel",
+    "password": "Kalmar sirri",
+    "full_name": "Cikakken suna",
+    "phone": "Lambar waya",
+    "city": "Birni",
+    "role": "Nau'in asusun",
+    "customer": "Mai siye",
+    "vendor": "Mai siyarwa",
+    "already_have_account": "Kuna da asusun?",
+    "dont_have_account": "Ba ku da asusun?",
+    "accept_terms": "Na yarda da Sharuɗɗa da Yanayi",
+    "login_success": "An shiga cikin nasara!",
+    "register_success": "An ƙirƙiri asusun!"
+  },
+  "product": {
+    "add_to_cart": "Ƙara zuwa Kwando",
+    "out_of_stock": "Babu a hannun",
+    "in_stock": "Akwai",
+    "price": "Farashi",
+    "quantity": "Yawa",
+    "description": "Bayani",
+    "reviews": "Maganganun masu amfani",
+    "rating": "Ƙididdiga",
+    "sold": "an sayar",
+    "units_left": "na rage"
+  },
+  "vendor": {
+    "store": "Kantin siyarwa",
+    "verified": "Tabbatacce",
+    "products": "Kayayyaki",
+    "orders": "Oda",
+    "analytics": "Nazari",
+    "kyc_verification": "Tabbatar da KYC",
+    "ranking": "Matsayi & Tallace-tallace",
+    "inventory": "Ɗakin ajiya"
+  },
+  "cart": {
+    "title": "Kwandon siye",
+    "empty": "Kwandonku bai ƙunshi komai ba",
+    "total": "Jimla",
+    "checkout": "Biya",
+    "remove": "Cire",
+    "quantity": "Yawa"
+  },
+  "payment": {
+    "title": "Biyan kuɗi",
+    "select_method": "Zaɓi hanyar biyan kuɗi",
+    "card": "Biyan kuɗi da kati",
+    "bank_transfer": "Canja wurin banki",
+    "ussd": "USSD",
+    "mobile_money": "Kuɗin wayar hannu",
+    "pay_now": "Biya Yanzu",
+    "processing": "Ana sarrafa...",
+    "success": "An biya cikin nasara!",
+    "failed": "Biyan kuɗi ya kasa"
+  },
+  "notifications": {
+    "title": "Sanarwa",
+    "empty": "Babu sanarwa",
+    "mark_read": "Alama a matsayin an karanta",
+    "mark_all_read": "Alama duka an karanta"
+  },
+  "language": {
+    "select": "Zaɓi Yare",
+    "en": "Turanci",
+    "yo": "Yaruba",
+    "ha": "Hausa",
+    "ig": "Igbo"
+  }
+}

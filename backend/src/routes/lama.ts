@@ -405,6 +405,193 @@ router.put('/insights/:id/read', (req: Request, res: Response) => {
   return res.json({ success: true, message: 'Marked as read' });
 });
 
+/* ── GET /api/lama/price-suggestions ─────────────────────────────────────── */
+/**
+ * LAMA Price Intelligence: suggests optimal price for a product.
+ * Uses comparable products in same category to compute fair price range.
+ * Vendor only. Query: ?product_id=<id> or ?category_id=<id>&price=<current>
+ */
+router.get('/price-suggestions', (req: Request, res: Response) => {
+  const user = getUserFromRequest(req);
+  if (!user || user.role !== 'vendor') {
+    return res.status(403).json({ success: false, error: 'Vendor access required' });
+  }
+
+  const db          = getDB();
+  const product_id  = req.query.product_id  as string;
+  const category_id = req.query.category_id as string;
+  const current     = parseFloat(req.query.price as string) || 0;
+
+  let catId = category_id;
+  let currentPrice = current;
+  let productName = '';
+
+  if (product_id) {
+    const prod = db.prepare('SELECT * FROM products WHERE id = ?').get(product_id) as any;
+    if (!prod) return res.status(404).json({ success: false, error: 'Product not found' });
+    catId        = prod.category_id;
+    currentPrice = prod.price;
+    productName  = prod.name;
+  }
+
+  if (!catId) return res.status(400).json({ success: false, error: 'product_id or category_id required' });
+
+  /* Comparable products in same category */
+  const comparables = db.prepare(`
+    SELECT p.price, p.rating, p.total_sales, p.name
+    FROM products p WHERE p.category_id = ? AND p.is_active = 1 AND p.price > 0
+    ${product_id ? 'AND p.id != ?' : ''}
+    ORDER BY p.total_sales DESC LIMIT 20
+  `).all(...(product_id ? [catId, product_id] : [catId])) as any[];
+
+  if (!comparables.length) {
+    return res.json({ success: true, data: { message: 'Not enough data for price analysis yet', suggestions: [] } });
+  }
+
+  const prices      = comparables.map(p => p.price);
+  const avg         = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const minPrice    = Math.min(...prices);
+  const maxPrice    = Math.max(...prices);
+  const median      = prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)];
+
+  /* Top-selling products pricing */
+  const topSellers  = comparables.filter(p => p.total_sales > 0).sort((a, b) => b.total_sales - a.total_sales).slice(0, 5);
+  const topAvg      = topSellers.length ? topSellers.reduce((s, p) => s + p.price, 0) / topSellers.length : avg;
+
+  /* Determine price position */
+  let pricePosition = 'competitive';
+  let suggestion    = '';
+  let recommendedMin = Math.round(avg * 0.85);
+  let recommendedMax = Math.round(avg * 1.15);
+
+  if (currentPrice > 0) {
+    if (currentPrice > maxPrice * 0.9)      { pricePosition = 'premium'; suggestion = `Your price is in the premium range. Consider offering added value (warranty, free delivery) to justify it.`; }
+    else if (currentPrice < minPrice * 1.1) { pricePosition = 'budget';  suggestion = `Your price is very competitive. You could increase by 10-15% and still attract buyers.`; }
+    else                                     { pricePosition = 'optimal'; suggestion = `Your price is well-positioned in the market range.`; }
+  }
+
+  const analysis = {
+    product_name:    productName,
+    current_price:   currentPrice,
+    price_position:  pricePosition,
+    market_data: {
+      min_price:     minPrice,
+      max_price:     maxPrice,
+      average_price: Math.round(avg),
+      median_price:  Math.round(median),
+      top_seller_avg: Math.round(topAvg),
+      sample_size:   comparables.length,
+    },
+    recommended_range: { min: recommendedMin, max: recommendedMax },
+    suggestion,
+    lama_insight: currentPrice > 0
+      ? generateInsight('recommendation', { budget: currentPrice, product_name: productName || 'your product', price: Math.round(avg), vendor_name: 'similar vendors' })
+      : `💡 Based on ${comparables.length} comparable products, the market average is ₦${Math.round(avg).toLocaleString()}. Price between ₦${recommendedMin.toLocaleString()} and ₦${recommendedMax.toLocaleString()} for best results.`,
+    top_sellers: topSellers.slice(0, 3).map(p => ({ name: p.name, price: p.price, sales: p.total_sales })),
+  };
+
+  return res.json({ success: true, data: analysis });
+});
+
+/* ── GET /api/lama/demand-forecast ───────────────────────────────────────── */
+/**
+ * LAMA Demand Forecasting: predicts demand for a product/category.
+ * Uses historical order data and seasonal patterns.
+ */
+router.get('/demand-forecast', (req: Request, res: Response) => {
+  const user = getUserFromRequest(req);
+  if (!user || !['vendor', 'admin'].includes(user.role)) {
+    return res.status(403).json({ success: false, error: 'Vendor or admin access required' });
+  }
+
+  const db          = getDB();
+  const product_id  = req.query.product_id  as string;
+  const category_id = req.query.category_id as string;
+
+  let historical: any[] = [];
+  let targetName         = '';
+
+  if (product_id) {
+    const prod = db.prepare('SELECT * FROM products WHERE id = ?').get(product_id) as any;
+    if (!prod) return res.status(404).json({ success: false, error: 'Product not found' });
+    targetName  = prod.name;
+
+    historical = db.prepare(`
+      SELECT date(o.created_at) as day, COUNT(oi.id) as orders, SUM(oi.quantity) as units
+      FROM order_items oi JOIN orders o ON oi.order_id = o.id
+      WHERE oi.product_id = ? AND o.created_at >= datetime('now', '-90 days')
+      GROUP BY day ORDER BY day ASC
+    `).all(product_id) as any[];
+  } else if (category_id) {
+    const cat = db.prepare('SELECT * FROM categories WHERE id = ?').get(category_id) as any;
+    targetName = cat?.name || 'Category';
+
+    historical = db.prepare(`
+      SELECT date(o.created_at) as day, COUNT(oi.id) as orders, SUM(oi.quantity) as units
+      FROM order_items oi JOIN orders o ON oi.order_id = o.id
+      JOIN products p ON oi.product_id = p.id
+      WHERE p.category_id = ? AND o.created_at >= datetime('now', '-90 days')
+      GROUP BY day ORDER BY day ASC
+    `).all(category_id) as any[];
+  } else {
+    return res.status(400).json({ success: false, error: 'product_id or category_id required' });
+  }
+
+  /* Simple moving average forecast */
+  const totalDays   = historical.length;
+  const totalOrders = historical.reduce((s, d) => s + d.orders, 0);
+  const totalUnits  = historical.reduce((s, d) => s + (d.units || 0), 0);
+  const avgPerDay   = totalDays > 0 ? totalOrders / totalDays : 0;
+  const avgUnitsDay = totalDays > 0 ? totalUnits  / totalDays : 0;
+
+  /* Recent 7-day trend vs previous 7-day */
+  const recent7  = historical.slice(-7).reduce((s, d) => s + d.orders, 0);
+  const prev7    = historical.slice(-14, -7).reduce((s, d) => s + d.orders, 0);
+  const trendPct = prev7 > 0 ? Math.round(((recent7 - prev7) / prev7) * 100) : 0;
+
+  /* 7-day and 30-day forecast using trend-adjusted average */
+  const trendFactor    = 1 + (trendPct / 100) * 0.5; // dampen the trend
+  const forecast7day   = Math.round(avgPerDay * 7  * trendFactor);
+  const forecast30day  = Math.round(avgPerDay * 30 * trendFactor);
+  const unitsForecast7 = Math.round(avgUnitsDay * 7  * trendFactor);
+
+  /* Stock recommendation */
+  const currentStock   = product_id ? (db.prepare('SELECT stock FROM products WHERE id = ?').get(product_id) as any)?.stock || 0 : 0;
+  const stockSufficient = currentStock >= unitsForecast7;
+
+  const forecast = {
+    target:       targetName,
+    data_points:  totalDays,
+    historical_summary: {
+      total_orders:  totalOrders,
+      total_units:   totalUnits,
+      avg_orders_per_day: Math.round(avgPerDay * 10) / 10,
+    },
+    trend: {
+      recent_7_days:  recent7,
+      previous_7_days: prev7,
+      trend_pct:      trendPct,
+      direction:      trendPct > 5 ? 'rising' : trendPct < -5 ? 'falling' : 'stable',
+    },
+    forecast: {
+      next_7_days_orders: forecast7day,
+      next_7_days_units:  unitsForecast7,
+      next_30_days_orders: forecast30day,
+    },
+    stock_analysis: product_id ? {
+      current_stock: currentStock,
+      units_needed_7d: unitsForecast7,
+      sufficient: stockSufficient,
+      recommendation: stockSufficient
+        ? `✅ Stock is sufficient for the next 7 days.`
+        : `⚠️ Consider restocking. Forecasted demand: ${unitsForecast7} units in 7 days, current stock: ${currentStock}.`,
+    } : null,
+    lama_insight: `📈 "${targetName}": ${trendPct > 0 ? '↑ Rising' : trendPct < 0 ? '↓ Falling' : '→ Stable'} demand (${trendPct > 0 ? '+' : ''}${trendPct}% vs last week). Forecast: ~${forecast7day} orders in the next 7 days.`,
+  };
+
+  return res.json({ success: true, data: forecast });
+});
+
 /* ── Export the analysis runner so server.ts can schedule it ──────────────── */
 export { runLamaAnalysis };
 export default router;

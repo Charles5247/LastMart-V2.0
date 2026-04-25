@@ -1,0 +1,121 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "yes": "Yes",
+    "no": "No",
+    "success": "Success",
+    "error": "Error",
+    "confirm": "Confirm",
+    "view": "View",
+    "approve": "Approve",
+    "reject": "Reject",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "nav": {
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "cart": "Cart",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "profile": "Profile",
+    "notifications": "Notifications"
+  },
+  "home": {
+    "hero_title": "Shop Local, Delivered Fast",
+    "hero_subtitle": "Nigeria's fastest local marketplace. Shop from vendors in your city.",
+    "shop_now": "Shop Now",
+    "become_vendor": "Become a Vendor",
+    "featured_vendors": "Featured Vendors",
+    "no_vendors": "No vendors available in your area yet.",
+    "delivery_promise": "48-hour delivery to your doorstep",
+    "location_setup": "Set your location to see nearby vendors"
+  },
+  "auth": {
+    "login_title": "Welcome Back",
+    "register_title": "Create Account",
+    "email": "Email Address",
+    "password": "Password",
+    "full_name": "Full Name",
+    "phone": "Phone Number",
+    "city": "City",
+    "role": "Account Type",
+    "customer": "Customer",
+    "vendor": "Vendor",
+    "already_have_account": "Already have an account?",
+    "dont_have_account": "Don't have an account?",
+    "forgot_password": "Forgot password?",
+    "accept_terms": "I accept the Terms & Conditions",
+    "login_success": "Login successful!",
+    "register_success": "Account created successfully!"
+  },
+  "product": {
+    "add_to_cart": "Add to Cart",
+    "out_of_stock": "Out of Stock",
+    "in_stock": "In Stock",
+    "price": "Price",
+    "quantity": "Quantity",
+    "description": "Description",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "sold": "sold",
+    "units_left": "units left"
+  },
+  "vendor": {
+    "store": "Store",
+    "verified": "Verified",
+    "products": "Products",
+    "orders": "Orders",
+    "analytics": "Analytics",
+    "kyc_verification": "KYC Verification",
+    "ranking": "Ranking & Ads",
+    "inventory": "Inventory"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "total": "Total",
+    "checkout": "Checkout",
+    "remove": "Remove",
+    "quantity": "Qty"
+  },
+  "payment": {
+    "title": "Payment",
+    "select_method": "Select Payment Method",
+    "card": "Card Payment",
+    "bank_transfer": "Bank Transfer",
+    "ussd": "USSD",
+    "mobile_money": "Mobile Money",
+    "pay_now": "Pay Now",
+    "processing": "Processing...",
+    "success": "Payment Successful!",
+    "failed": "Payment Failed"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "mark_read": "Mark as read",
+    "mark_all_read": "Mark all as read"
+  },
+  "language": {
+    "select": "Select Language",
+    "en": "English",
+    "yo": "Yoruba",
+    "ha": "Hausa",
+    "ig": "Igbo"
+  }
+}

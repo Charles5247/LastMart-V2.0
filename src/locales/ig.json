@@ -1,0 +1,120 @@
+{
+  "common": {
+    "loading": "Ọ na-atọ ndị...",
+    "save": "Chekwaa",
+    "cancel": "Kagbuo",
+    "delete": "Hichapụ",
+    "edit": "Dezie",
+    "submit": "Zipu",
+    "back": "Laghachi",
+    "next": "Ọzọ",
+    "close": "Mechie",
+    "search": "Chọọ",
+    "filter": "Sayọ",
+    "all": "Nile",
+    "yes": "Ee",
+    "no": "Mba",
+    "success": "Ihe ọma",
+    "error": "Njehie",
+    "confirm": "Kwenye",
+    "view": "Lee",
+    "approve": "Kwado",
+    "reject": "Jụ",
+    "pending": "Na-echere",
+    "approved": "Akwadoro",
+    "rejected": "Ajụrụ"
+  },
+  "nav": {
+    "home": "Ụlọ",
+    "marketplace": "Ahịa",
+    "cart": "Baskit",
+    "dashboard": "Pulpit njikwa",
+    "login": "Banye",
+    "register": "Debanye aha",
+    "logout": "Pụọ",
+    "profile": "Profaịlụ",
+    "notifications": "Ọkwa"
+  },
+  "home": {
+    "hero_title": "Zụọ ihe n'ógbè gị, anyị ga-ebubata ya ngwa ngwa",
+    "hero_subtitle": "Ahịa mpaghara ọsọ ọsọ kachasị ná Naịjirịa. Zụọ ihe n'aka ndị na-ere ahịa n'obodo gị.",
+    "shop_now": "Zụọ Ugbu a",
+    "become_vendor": "Bụrụ Onye Na-ere Ahịa",
+    "featured_vendors": "Ndị Na-ere Ahịa a Họpụtara",
+    "no_vendors": "Ọ dịghị onye na-ere ahịa dị nso gị ugbu a.",
+    "delivery_promise": "Enyemaka n'ime awa 48",
+    "location_setup": "Hee ọnọdụ gị iji hụ ndị na-ere ahịa dị nso gị"
+  },
+  "auth": {
+    "login_title": "Nnabata Ọzọ",
+    "register_title": "Mepụta Akaụntụ",
+    "email": "Adreesị Email",
+    "password": "Okwuntughe",
+    "full_name": "Aha Zuru Oke",
+    "phone": "Nọmba Ekwuọhịa",
+    "city": "Obodo",
+    "role": "Ụdị Akaụntụ",
+    "customer": "Onye Na-azụ Ahịa",
+    "vendor": "Onye Na-ere Ahịa",
+    "already_have_account": "Ị nwere akaụntụ?",
+    "dont_have_account": "Ị nweghị akaụntụ?",
+    "accept_terms": "Anọziela m n'Usoro na Ọnọdụ",
+    "login_success": "Abanyela n'ihe ọma!",
+    "register_success": "Emepụtala akaụntụ!"
+  },
+  "product": {
+    "add_to_cart": "Tinye n'Baskit",
+    "out_of_stock": "Apyụtaala",
+    "in_stock": "Dị n'aka",
+    "price": "Ọnụ ahịa",
+    "quantity": "Ọnụọgụ",
+    "description": "Nkọwa",
+    "reviews": "Nyocha",
+    "rating": "Ọkwa",
+    "sold": "ere",
+    "units_left": "fọdụrụ"
+  },
+  "vendor": {
+    "store": "Ụlọ ahịa",
+    "verified": "Emesịala",
+    "products": "Ngwaahịa",
+    "orders": "Iwu",
+    "analytics": "Nyocha",
+    "kyc_verification": "Nkwenye KYC",
+    "ranking": "Ọkwa & Mgbasa Ozi",
+    "inventory": "Nchekwa ngwaahịa"
+  },
+  "cart": {
+    "title": "Baskit Ịzụ Ahịa",
+    "empty": "Baskitị gị dị efu",
+    "total": "Ngụkọta",
+    "checkout": "Kwụọ ụgwọ",
+    "remove": "Wepụ",
+    "quantity": "Ọnụọgụ"
+  },
+  "payment": {
+    "title": "Ịkwụ ụgwọ",
+    "select_method": "Họọ Ụzọ Ịkwụ Ụgwọ",
+    "card": "Ịkwụ ụgwọ n'ịkpụrụ",
+    "bank_transfer": "Nnyefe Bank",
+    "ussd": "USSD",
+    "mobile_money": "Ego ekwuọhịa",
+    "pay_now": "Kwụọ Ugbu a",
+    "processing": "Ọ na-arụ ọrụ...",
+    "success": "Ikwụ ụgwọ gara ọsọ!",
+    "failed": "Ikwụ ụgwọ dara ada"
+  },
+  "notifications": {
+    "title": "Ọkwa",
+    "empty": "Ọ dịghị ọkwa",
+    "mark_read": "Kọwaa dị ka e gụọla",
+    "mark_all_read": "Kọwaa nile dị ka e gụọla"
+  },
+  "language": {
+    "select": "Họọ Asụsụ",
+    "en": "Bekee",
+    "yo": "Yoruba",
+    "ha": "Hausa",
+    "ig": "Igbo"
+  }
+}
