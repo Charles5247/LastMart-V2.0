@@ -11,12 +11,14 @@ function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultRole = searchParams.get('role') || 'customer';
+  const refCode = searchParams.get('ref') || '';
   
   const [role, setRole] = useState(defaultRole);
   const [form, setForm] = useState({
     name: '', email: '', password: '', confirmPassword: '',
     phone: '', city: 'Lagos', address: '',
-    store_name: '', store_description: '', category: ''
+    store_name: '', store_description: '', category: '',
+    referral_code: refCode,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -187,6 +189,18 @@ function RegisterContent() {
                 </div>
               </div>
             )}
+
+            {/* Referral Code */}
+            <div>
+              <label className="text-xs font-medium text-gray-300 mb-1 block">Referral Code <span className="text-gray-500">(optional)</span></label>
+              <input
+                value={form.referral_code}
+                onChange={e => setForm(f => ({ ...f, referral_code: e.target.value }))}
+                placeholder="e.g. REF-ABC123"
+                className="w-full bg-white/10 border border-white/20 text-white placeholder-gray-500 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 text-sm"
+              />
+              {refCode && <p className="text-xs text-green-400 mt-1">✓ Referral code applied – you'll get 0.5% off your first order!</p>}
+            </div>
 
             {/* Terms & Conditions Checkboxes */}
             <div className="pt-4 border-t border-white/10 space-y-3">

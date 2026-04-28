@@ -73,11 +73,17 @@ export default function LamaPage() {
   const [adminDash,   setAdminDash]   = useState<{ stats: AdminStats; issues: any[]; recent_insights: LamaInsight[] } | null>(null);
   const [loading,     setLoading]     = useState(true);
   const [running,     setRunning]     = useState(false);
-  const [activeTab,   setActiveTab]   = useState<'insights' | 'trends' | 'recommend' | 'admin'>('insights');
+  const [activeTab,   setActiveTab]   = useState<'insights' | 'trends' | 'recommend' | 'budget' | 'admin'>('insights');
 
   /* Recommendation filter */
   const [budget,     setBudget]     = useState('');
   const [category,   setCategory]   = useState('');
+
+  /* Budget Planner Suggestions */
+  const [budgetAmount,    setBudgetAmount]    = useState('');
+  const [budgetCategory,  setBudgetCategory]  = useState('');
+  const [budgetResult,    setBudgetResult]    = useState<any>(null);
+  const [budgetLoading,   setBudgetLoading]   = useState(false);
 
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
@@ -114,6 +120,23 @@ export default function LamaPage() {
     const data = await res.json();
     if (data.success) setRecommend(data.data);
     else toast.error(data.error);
+  };
+
+  /* ── Fetch budget suggestions ─────────────────────────────────────────── */
+  const fetchBudgetSuggestions = async () => {
+    if (!budgetAmount || parseFloat(budgetAmount) <= 0) {
+      toast.error('Please enter a valid budget amount'); return;
+    }
+    setBudgetLoading(true);
+    try {
+      const params = new URLSearchParams({ budget: budgetAmount });
+      if (budgetCategory && budgetCategory !== 'all') params.set('category', budgetCategory);
+      const res  = await fetch(`/api/lama/budget-suggestions?${params}`, { headers });
+      const data = await res.json();
+      if (data.success) setBudgetResult(data.data);
+      else toast.error(data.error || 'No results found');
+    } catch { toast.error('Network error'); }
+    setBudgetLoading(false);
   };
 
   /* ── Mark insight read ───────────────────────────────────────────────────── */
@@ -181,6 +204,7 @@ export default function LamaPage() {
               { key: 'insights',  label: 'My Insights',      icon: <Bell     size={14} /> },
               { key: 'trends',    label: 'Market Trends',    icon: <TrendingUp size={14} /> },
               { key: 'recommend', label: 'Recommendations',  icon: <Lightbulb  size={14} /> },
+              { key: 'budget',    label: 'Budget Planner',   icon: <Wallet     size={14} /> },
               ...(user.role === 'admin' ? [{ key: 'admin', label: 'Admin Dashboard', icon: <BarChart3 size={14} /> }] : []),
             ].map(tab => (
               <button key={tab.key}
@@ -477,6 +501,149 @@ export default function LamaPage() {
                         ))}
                       </div>
                     </section>
+                  )}
+                </div>
+              )}
+
+              {/* ════════════════ BUDGET PLANNER TAB ═══════════════════════════ */}
+              {activeTab === 'budget' && (
+                <div className="space-y-6">
+                  {/* Input panel */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 className="font-bold text-gray-800 mb-1 flex items-center gap-2 text-lg">
+                      <Wallet size={20} className="text-orange-500" /> LAMA Budget Planner
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-5">
+                      Enter your total budget and LAMA will suggest a curated list of products whose combined cost fits within your budget — by category or a random mix.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="sm:col-span-1">
+                        <label className="label">Your Budget (₦) *</label>
+                        <input
+                          type="number" min="0" className="input"
+                          placeholder="e.g. 100000"
+                          value={budgetAmount}
+                          onChange={e => setBudgetAmount(e.target.value)}
+                        />
+                      </div>
+                      <div className="sm:col-span-1">
+                        <label className="label">Category</label>
+                        <select
+                          className="input"
+                          value={budgetCategory}
+                          onChange={e => setBudgetCategory(e.target.value)}
+                        >
+                          <option value="">Random (all categories)</option>
+                          <option value="Electronics">Electronics</option>
+                          <option value="Fashion">Fashion</option>
+                          <option value="Food & Groceries">Food & Groceries</option>
+                          <option value="Health & Beauty">Health & Beauty</option>
+                          <option value="Home & Living">Home & Living</option>
+                          <option value="Sports & Fitness">Sports & Fitness</option>
+                          <option value="Books & Stationery">Books & Stationery</option>
+                          <option value="Toys & Games">Toys & Games</option>
+                        </select>
+                      </div>
+                      <div className="flex items-end">
+                        <button
+                          onClick={fetchBudgetSuggestions}
+                          disabled={budgetLoading}
+                          className="btn-primary w-full flex items-center justify-center gap-2"
+                        >
+                          {budgetLoading
+                            ? <><Loader size={15} className="animate-spin" /> Finding...</>
+                            : <><Bot size={15} /> Get LAMA Suggestions</>}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Results */}
+                  {budgetResult && (
+                    <>
+                      {/* LAMA message */}
+                      <div className="bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl p-5 text-white">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Bot size={18} />
+                          <span className="font-semibold">LAMA Says</span>
+                        </div>
+                        <p className="text-sm leading-relaxed">{budgetResult.lama_message}</p>
+                        <div className="mt-3 flex flex-wrap gap-4 text-sm">
+                          <span className="bg-white/20 rounded-lg px-3 py-1">Budget: ₦{Number(budgetResult.budget).toLocaleString()}</span>
+                          <span className="bg-white/20 rounded-lg px-3 py-1">Total Cost: ₦{Number(budgetResult.total_cost).toLocaleString()}</span>
+                          <span className="bg-white/20 rounded-lg px-3 py-1">Remaining: ₦{Number(budgetResult.remaining).toLocaleString()}</span>
+                          <span className="bg-white/20 rounded-lg px-3 py-1">Coverage: {budgetResult.coverage_pct}%</span>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="mt-3 bg-white/20 rounded-full h-2">
+                          <div
+                            className="bg-yellow-300 rounded-full h-2 transition-all"
+                            style={{ width: `${Math.min(budgetResult.coverage_pct, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Product list */}
+                      {budgetResult.selected_items?.length > 0 ? (
+                        <section>
+                          <h3 className="font-semibold text-gray-800 mb-4">
+                            🛍️ Suggested Shopping List ({budgetResult.item_count} items)
+                          </h3>
+                          <div className="space-y-3">
+                            {budgetResult.selected_items.map((item: any, idx: number) => {
+                              const img = item.images?.[0];
+                              const itemTotal = item.price * item.quantity;
+                              return (
+                                <div key={item.id} className="bg-white rounded-xl shadow-sm flex items-center gap-3 p-3 hover:shadow-md transition-shadow">
+                                  <span className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                    {idx + 1}
+                                  </span>
+                                  <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                                    {img
+                                      ? <img src={img} alt={item.name} className="w-full h-full object-cover" />
+                                      : <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">📦</div>}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-gray-800 truncate text-sm">{item.name}</p>
+                                    <p className="text-xs text-gray-500 truncate">{item.store_name} · {item.vendor_city}</p>
+                                    <p className="text-xs text-gray-400">{item.category_name}</p>
+                                  </div>
+                                  <div className="text-right flex-shrink-0">
+                                    <p className="text-sm font-bold text-orange-600">₦{Number(item.price).toLocaleString()}</p>
+                                    {item.quantity > 1 && (
+                                      <p className="text-xs text-gray-500">×{item.quantity} = ₦{Number(itemTotal).toLocaleString()}</p>
+                                    )}
+                                    <div className="flex items-center gap-1 justify-end mt-0.5">
+                                      <Star size={10} fill="currentColor" className="text-yellow-400" />
+                                      <span className="text-xs text-gray-400">{Number(item.rating || 0).toFixed(1)}</span>
+                                    </div>
+                                  </div>
+                                  <Link href={`/product/${item.id}`} className="flex-shrink-0 bg-orange-500 text-white text-xs px-3 py-2 rounded-lg hover:bg-orange-600 transition-colors ml-2">
+                                    View
+                                  </Link>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Add all to cart */}
+                          <div className="mt-4 flex flex-wrap gap-3 items-center">
+                            <div className="flex-1 bg-orange-50 rounded-xl p-3 text-sm text-orange-800">
+                              💡 <strong>Tip:</strong> Open each product page to add items to your cart, or visit the vendor stores directly.
+                            </div>
+                            <Link href="/marketplace" className="btn-secondary text-sm px-4 py-2.5 flex items-center gap-2">
+                              <Package size={15} /> Browse Marketplace
+                            </Link>
+                          </div>
+                        </section>
+                      ) : (
+                        <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+                          <Bot size={40} className="text-gray-300 mx-auto mb-3" />
+                          <p className="text-gray-500 text-sm">No products found for this budget and category.</p>
+                          <p className="text-gray-400 text-xs mt-1">Try increasing your budget or selecting a different category.</p>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}

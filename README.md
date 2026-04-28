@@ -2,29 +2,35 @@
 
 > A full-stack local marketplace platform. Customers shop from vendors in their city and receive delivery within 48 hours.
 
-**Live Stack**: Next.js 14 · Express.js · SQLite/PostgreSQL · Tailwind CSS v4 · TypeScript
+**Live Stack**: Next.js 14 · Express.js · SQLite/PostgreSQL · Tailwind CSS v4 · TypeScript · React Native (Expo)
+
+**GitHub**: https://github.com/Charles5247/LastMart-V2.0
 
 ---
 
-## ✅ Features
+## ✅ Completed Features (v5.0)
 
 | Module | Features |
 |--------|---------|
-| **Authentication** | JWT login/register, role-based access (admin, vendor, customer), Terms & Conditions acceptance |
-| **Marketplace** | Product browsing, search, category filters, location-based vendor discovery |
-| **Cart & Checkout** | Add to cart, quantity management, checkout flow |
+| **Authentication** | JWT login/register, role-based access (admin, vendor, customer), Terms & Conditions acceptance, referral code on signup |
+| **Marketplace** | Product browsing, search, category filters, location-based vendor discovery, store visit tracking |
+| **Cart & Checkout** | Add to cart, quantity management, checkout flow, coupon/discount code at checkout |
 | **Payment** | Paystack (card, bank transfer, USSD, mobile money), Flutterwave (card, M-Pesa, bank), demo mode |
 | **KYC Verification** | Customer (NIN, BVN, ID, selfie) + Vendor (CAC, TIN, director ID, utility bill) |
 | **Product Vetting** | Stock proof, brand authenticity, lab certs, NAFDAC, ISO, CE certification upload |
 | **File Uploads** | Product images, KYC docs, vetting documents (local disk + Cloudinary ready) |
 | **Real-time Notifications** | Server-Sent Events (SSE) — no WebSocket server needed |
 | **Email Notifications** | SendGrid / SMTP / Nodemailer — order confirmation, KYC status, welcome email |
-| **LAMA AI** | Price suggestions, demand forecasting, platform insights, trend analysis |
+| **LAMA AI** | Price suggestions, demand forecasting, platform insights, trend analysis, **budget-based product recommendations** |
 | **Ranking & Ads** | Bronze/Silver/Gold/Platinum vendor & product ranking, Ad Boost packages |
 | **Analytics** | Revenue charts, store visit heatmap, conversion funnel, LAMA forecast |
 | **Multi-language** | English, Yoruba (Yorùbá), Hausa, Igbo |
-| **Admin Panel** | Manage vendors, customers, KYC, products, orders, notifications, analytics |
+| **Admin Panel** | Manage vendors, customers, KYC, products, orders, notifications, analytics, **coupon code management** |
+| **Vendor QR Codes** | Generate shareable QR + store URL; customers who visit via link get 0.5% coupon |
+| **Referral System** | Auto-generated referral links, 0.5% discount for referred users, referral stats dashboard |
+| **Coupon System** | Admin-created coupon codes (fixed/percent), usage tracking, auto-referral coupons |
 | **Mobile App** | React Native (Expo) scaffold for iOS + Android |
+| **Mobile Responsive** | All pages optimised for mobile, tablet, and desktop |
 
 ---
 
@@ -36,67 +42,137 @@ lastmart/
 │   ├── app/                 # App Router pages
 │   │   ├── page.tsx         # Homepage
 │   │   ├── marketplace/     # Marketplace browsing
-│   │   ├── auth/            # Login & Register
+│   │   ├── auth/            # Login & Register (with referral code support)
+│   │   ├── lama/            # LAMA AI dashboard (budget recommendations)
+│   │   ├── budget/          # Budget planner
 │   │   ├── dashboard/
-│   │   │   ├── admin/       # Admin dashboard
-│   │   │   ├── vendor/      # Vendor dashboard
-│   │   │   └── customer/    # Customer dashboard
+│   │   │   ├── admin/
+│   │   │   │   ├── page.tsx              # Admin overview
+│   │   │   │   ├── coupons/page.tsx      # ✨ Coupon management (NEW)
+│   │   │   │   ├── vendors/              # Manage & approve/suspend vendors
+│   │   │   │   ├── customers/            # Manage & suspend customers
+│   │   │   │   ├── products/             # All products
+│   │   │   │   ├── orders/               # Monitor all orders
+│   │   │   │   ├── kyc/                  # Review KYC submissions
+│   │   │   │   ├── product-verification/ # Product vetting
+│   │   │   │   ├── rankings/             # Ranking/ad applications
+│   │   │   │   ├── notifications/        # Broadcast notifications
+│   │   │   │   └── analytics/            # Platform analytics
+│   │   │   ├── vendor/
+│   │   │   │   ├── page.tsx              # Vendor dashboard
+│   │   │   │   ├── qr/page.tsx           # ✨ QR code & share link (NEW)
+│   │   │   │   ├── products/             # Manage products
+│   │   │   │   ├── orders/               # View orders
+│   │   │   │   ├── ranking/              # Apply for ranking packages
+│   │   │   │   ├── analytics/            # Vendor performance
+│   │   │   │   ├── inventory/            # Stock management
+│   │   │   │   └── ads/                  # Advertisement management
+│   │   │   └── customer/
+│   │   │       ├── page.tsx              # Customer dashboard
+│   │   │       ├── referrals/page.tsx    # ✨ Referral & coupon wallet (NEW)
+│   │   │       ├── orders/               # Order history
+│   │   │       ├── saved/                # Saved vendors
+│   │   │       └── settings/             # Profile settings
+│   │   ├── product/         # Product detail page
+│   │   ├── vendor/          # Public vendor store page
 │   │   ├── payment/         # Payment pages
-│   │   ├── verification/    # KYC submission
+│   │   ├── verification/    # KYC submission page
 │   │   └── terms/           # Terms & Conditions
-│   ├── components/          # Shared UI components
-│   │   ├── layout/Navbar.tsx
-│   │   ├── AppContext.tsx   # Global state
+│   ├── components/
+│   │   ├── layout/Navbar.tsx     # Responsive navbar
+│   │   ├── AppContext.tsx         # Global state
+│   │   ├── ui/ProductCard.tsx     # Product card component
 │   │   └── LanguageSwitcher.tsx
 │   ├── hooks/
-│   │   └── useSSE.ts        # Real-time SSE hook
+│   │   └── useSSE.ts             # Real-time SSE hook
 │   ├── lib/
-│   │   ├── i18n.ts          # Internationalization
+│   │   ├── i18n.ts               # Internationalization
 │   │   └── utils.ts
-│   └── locales/             # Translation files (en, yo, ha, ig)
+│   └── locales/                  # Translation files (en, yo, ha, ig)
 │
-├── backend/                 # Express.js API server
+├── backend/                 # Express.js API server (Port 5000)
 │   └── src/
-│       ├── server.ts        # Entry point (port 5000)
+│       ├── server.ts        # Entry point
 │       ├── lib/
-│       │   ├── db.ts        # SQLite database + schema
+│       │   ├── db.ts        # SQLite database + full schema
 │       │   ├── auth.ts      # JWT helpers
 │       │   ├── email.ts     # Email service (SendGrid/SMTP)
 │       │   └── sse.ts       # SSE manager
-│       └── routes/          # API route handlers
-│           ├── auth.ts, users.ts, vendors.ts, products.ts
-│           ├── orders.ts, cart.ts, categories.ts, reviews.ts
+│       └── routes/
+│           ├── auth.ts      # Login, register (with referral on signup)
+│           ├── products.ts, vendors.ts, orders.ts, cart.ts
+│           ├── categories.ts, reviews.ts, users.ts, admin.ts
 │           ├── payment.ts   # Paystack + Flutterwave
-│           ├── upload.ts    # File uploads (images, KYC docs)
+│           ├── upload.ts    # File uploads
 │           ├── verification.ts # KYC + product vetting
 │           ├── ranking.ts   # Ranking packages
-│           ├── lama.ts      # AI: insights, price suggestions, forecasting
-│           ├── notifications.ts
-│           ├── admin.ts
-│           ├── sse.ts       # Real-time SSE endpoint
-│           └── budget.ts, delivery.ts, ads.ts
+│           ├── lama.ts      # AI insights, price suggestions, budget recs
+│           ├── notifications.ts, sse.ts
+│           ├── budget.ts, delivery.ts, ads.ts
+│           ├── coupons.ts   # ✨ Coupons + referral system (NEW)
+│           └── qr.ts        # ✨ Vendor QR codes + share links (NEW)
 │
 ├── mobile/                  # React Native (Expo) app
-│   ├── app/                 # Expo Router screens
-│   ├── src/                 # Shared utilities
-│   └── README.md            # Mobile setup guide
 │
-├── public/
-│   └── uploads/             # Local file storage (dev)
-│
-├── DATABASE_SCHEMA.sql      # Full DB schema
-├── package.json             # Frontend dependencies
+├── vercel.json              # ✨ Vercel deployment config (NEW)
+├── .vercelignore            # ✨ Excludes backend from Vercel build (NEW)
+├── package.json             # Frontend dependencies (engines: node>=20)
 ├── next.config.js           # Next.js config + API proxy
-└── ecosystem.config.cjs     # PM2 config
+├── DATABASE_SCHEMA.sql      # Full DB schema reference
+└── ecosystem.config.cjs     # PM2 config for local/VPS dev
 ```
+
+---
+
+## 📅 Development Timeline
+
+### Phase 1 — Foundation (March 2026)
+- **March 14**: Project scaffolded with Next.js 14, Tailwind v4, TypeScript
+- **March 14**: Express.js backend, SQLite schema, JWT authentication
+- **March 16**: Homepage, marketplace browsing, product listings
+- **March 18**: Cart, checkout, order management
+- Commit: `Initial commit`
+
+### Phase 2 — Core Features (Late March – Early April 2026)
+- **March 18 – April 22**: KYC verification system (customer + vendor documents)
+- Product vetting with certification uploads
+- Multi-language support: English, Yorùbá, Hausa, Igbo
+- Vendor analytics, store visit tracking
+- Admin panel (manage vendors, KYC, orders, notifications)
+- Ranking & advertising packages (Bronze → Platinum)
+- React Native (Expo) mobile app scaffold
+- Commit: `v2.0`
+
+### Phase 3 — Advanced Features (April 22–24, 2026)
+- **April 22–23**: Real payment gateways — Paystack + Flutterwave integration
+- KYC file upload (NIN, BVN, CAC, TIN, photos, utility bills)
+- Server-Sent Events (SSE) for real-time push notifications
+- Email system: SendGrid + Nodemailer (order, KYC, welcome emails)
+- LAMA AI: price suggestions, demand forecasting, platform insights
+- Vendor analytics dashboard with charts
+- Deployment documentation (Vercel + Railway, Netlify + Render, Docker, VPS)
+- Commits: `v3.0` (dcc062c), `v4.0` (d1552f4)
+
+### Phase 4 — UX & Engagement (April 25, 2026)
+- **April 25**: Mobile responsiveness audit & fixes across all screen sizes
+- LAMA AI: budget-based product recommendation tab
+- Vendor QR code generator + shareable store URL (`/dashboard/vendor/qr`)
+- Referral coupon system — 0.5% auto-discount for referred users
+- Admin coupon management (`/dashboard/admin/coupons`)
+- Customer referral dashboard (`/dashboard/customer/referrals`)
+- Navigation links added to all dashboards
+- `vercel.json` created; `.vercelignore` excludes backend from Vercel build
+- `engines` field added to `package.json` (node >=20, npm >=10)
+- README updated with full development timeline
+- Commit: `v5.0`
 
 ---
 
 ## 🚀 Quick Start (Development)
 
 ### Prerequisites
-- Node.js 18+
-- npm 9+
+- Node.js ≥ 20
+- npm ≥ 10
 
 ### 1. Clone & Install
 
@@ -110,7 +186,7 @@ npm run install:all
 
 ### 2. Environment Variables
 
-**Frontend** — create `.env.local`:
+**Frontend** — create `.env.local` in project root:
 ```env
 BACKEND_API_URL=http://localhost:5000
 NEXT_PUBLIC_API_URL=http://localhost:5000
@@ -126,9 +202,6 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 
 # Database (SQLite - default, no config needed)
 DATABASE_PATH=../lastmart.db
-
-# Database (PostgreSQL - for production)
-# DATABASE_URL=postgresql://user:password@host:5432/lastmart
 
 # Payment Gateways
 PAYSTACK_SECRET_KEY=sk_test_your_paystack_secret_key
@@ -149,12 +222,6 @@ EMAIL_FROM_ADDRESS=noreply@lastmart.com
 
 # File Storage (optional - local disk is default)
 CLOUDINARY_URL=cloudinary://api_key:api_secret@cloud_name
-
-# AWS S3 (optional)
-AWS_S3_BUCKET=your-bucket
-AWS_REGION=eu-west-1
-AWS_ACCESS_KEY_ID=your_key
-AWS_SECRET_ACCESS_KEY=your_secret
 ```
 
 ### 3. Run Development Servers
@@ -184,49 +251,16 @@ npm run start          # Next.js on port 3000
 
 ---
 
-## 🗄️ Database Strategy
+## 🗄️ Database
 
-### Development: SQLite (default)
-No setup needed — the database (`lastmart.db`) is auto-created on first run.
+**Development**: SQLite (auto-created as `lastmart.db` on first run — no setup needed)
 
 ```bash
 # Seed test data
 cd backend && npm run seed
 ```
 
-### Production Option 1: PostgreSQL (Supabase / Neon / Railway)
-
-1. Create a database at [supabase.com](https://supabase.com) or [neon.tech](https://neon.tech)
-2. Set the connection URL:
-   ```env
-   DATABASE_URL=postgresql://user:password@host:5432/lastmart
-   ```
-3. Run the schema:
-   ```bash
-   # Copy DATABASE_SCHEMA.sql contents to your Supabase/Neon SQL editor
-   # OR use psql:
-   psql $DATABASE_URL < DATABASE_SCHEMA.sql
-   ```
-4. Update `backend/src/lib/db.ts` — switch from `better-sqlite3` to `pg`:
-   ```bash
-   cd backend && npm install pg @types/pg
-   ```
-
-### Production Option 2: MongoDB Atlas
-
-1. Create a cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas)
-2. Install Mongoose:
-   ```bash
-   cd backend && npm install mongoose @types/mongoose
-   ```
-3. Set `MONGODB_URL=mongodb+srv://user:pass@cluster.mongodb.net/lastmart` in backend `.env`
-
-### Production Option 3: PlanetScale (MySQL compatible)
-
-```bash
-cd backend && npm install mysql2
-# Set DATABASE_URL=mysql://user:pass@host/lastmart
-```
+**Production**: PostgreSQL (Supabase / Neon / Railway) — set `DATABASE_URL` in backend `.env` and run `DATABASE_SCHEMA.sql`.
 
 ---
 
@@ -236,44 +270,23 @@ cd backend && npm install mysql2
 
 #### Frontend → Vercel
 
-```bash
-# Install Vercel CLI
-npm install -g vercel
+1. Connect your GitHub repo at [vercel.com](https://vercel.com) → Import → `LastMart-V2.0`
+2. Set environment variables in Vercel dashboard:
+   ```
+   BACKEND_API_URL=https://your-backend.railway.app
+   NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_...
+   ```
+3. Vercel will use the included `vercel.json` automatically.
+4. The `.vercelignore` file prevents the `backend/` folder from being included in the Vercel build.
 
-# Deploy from project root
-vercel
-
-# Set environment variables in Vercel dashboard:
-# BACKEND_API_URL=https://your-backend.railway.app
-# NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_...
-```
-
-Or connect GitHub repo at [vercel.com](https://vercel.com) → Import Project → Set env vars.
-
-**Vercel `vercel.json`** (create in root if needed):
-```json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "https://your-backend.railway.app/api/:path*" }
-  ]
-}
-```
+> **Note**: The `better-sqlite3` package (used in the backend) requires native compilation and **cannot** run on Vercel. The backend must be deployed separately (Railway, Render, VPS, etc.).
 
 #### Backend → Railway
 
 ```bash
-# Install Railway CLI
-npm install -g @railway/cli
-railway login
-
 # From the backend/ directory
 cd backend
-railway init
-railway up
-
+railway init && railway up
 # Set all environment variables in Railway dashboard
 ```
 
@@ -288,23 +301,11 @@ web: node dist/server.js
 
 ### Option B: Netlify (Frontend) + Render (Backend)
 
-#### Frontend → Netlify
-
-```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-netlify login
-
-# Build and deploy
-npm run build
-netlify deploy --prod --dir .next
-```
-
-Create `netlify.toml` in root:
+**Frontend `netlify.toml`**:
 ```toml
 [build]
-  command   = "npm run build"
-  publish   = ".next"
+  command = "npm run build"
+  publish = ".next"
 
 [[redirects]]
   from   = "/api/*"
@@ -315,265 +316,29 @@ Create `netlify.toml` in root:
   package = "@netlify/plugin-nextjs"
 ```
 
-Install plugin:
-```bash
-npm install -D @netlify/plugin-nextjs
-```
-
-#### Backend → Render
-
-1. Go to [render.com](https://render.com) → New Web Service
-2. Connect GitHub repo
-3. Set:
-   - **Root Directory**: `backend`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-4. Add all environment variables
+**Backend → Render**: New Web Service → root dir `backend` → build `npm install && npm run build` → start `npm start`.
 
 ---
 
-### Option C: DigitalOcean App Platform
-
-```yaml
-# .do/app.yaml
-name: lastmart
-services:
-  - name: frontend
-    github:
-      repo: Charles5247/LastMart-V2.0
-      branch: main
-    build_command: npm run build
-    run_command: npm start
-    envs:
-      - key: BACKEND_API_URL
-        value: ${backend.PRIVATE_URL}
-    http_port: 3000
-
-  - name: backend
-    github:
-      repo: Charles5247/LastMart-V2.0
-      branch: main
-    source_dir: backend
-    build_command: npm install && npm run build
-    run_command: npm start
-    http_port: 5000
-```
-
----
-
-### Option D: Self-Hosted (VPS - Ubuntu)
+### Option C: VPS (Ubuntu + PM2)
 
 ```bash
-# Install Node.js 18
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# Install PM2
-npm install -g pm2
-
-# Clone and setup
 git clone https://github.com/Charles5247/LastMart-V2.0.git /var/www/lastmart
 cd /var/www/lastmart
-
-# Install dependencies
 npm run install:all
-
-# Build both
-npm run build
-npm run build:backend
-
-# Start with PM2
-pm2 start ecosystem.config.cjs        # Frontend
-pm2 start backend/ecosystem.config.cjs # Backend
+npm run build && npm run build:backend
+pm2 start ecosystem.config.cjs
 pm2 save && pm2 startup
-
-# Setup Nginx reverse proxy
-sudo apt install nginx
-# /etc/nginx/sites-available/lastmart:
-# server {
-#   listen 80;
-#   server_name yourdomain.com;
-#   location / { proxy_pass http://localhost:3000; }
-#   location /api { proxy_pass http://localhost:5000; }
-# }
 ```
 
 ---
 
-### Option E: Docker Compose
+## 💳 Payment Setup
 
-Create `docker-compose.yml` in root:
-```yaml
-version: '3.8'
-services:
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    ports: ["3000:3000"]
-    environment:
-      - BACKEND_API_URL=http://backend:5000
-    depends_on: [backend]
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports: ["5000:5000"]
-    volumes:
-      - ./lastmart.db:/app/lastmart.db
-    environment:
-      - PORT=5000
-      - FRONTEND_URL=http://frontend:3000
-      - JWT_SECRET=change_me_in_production
-```
-
-**`Dockerfile.frontend`**:
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
-
-**`backend/Dockerfile`**:
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-EXPOSE 5000
-CMD ["node", "dist/server.js"]
-```
-
-```bash
-docker-compose up -d
-```
-
----
-
-## 💳 Payment Gateway Setup
-
-### Paystack
-1. Sign up at [paystack.com](https://paystack.com)
-2. Get API keys from Dashboard → Settings → API Keys
-3. Set in backend `.env`:
-   ```env
-   PAYSTACK_SECRET_KEY=sk_test_xxxxx   # Use sk_live_ for production
-   PAYSTACK_PUBLIC_KEY=pk_test_xxxxx   # Use pk_live_ for production
-   ```
-4. Add webhook URL in Paystack dashboard:
-   `https://your-backend.com/api/payment/webhook/paystack`
-
-### Flutterwave
-1. Sign up at [flutterwave.com](https://flutterwave.com)
-2. Get API keys from Dashboard → Settings → API
-3. Set in backend `.env`:
-   ```env
-   FLUTTERWAVE_SECRET_KEY=FLWSECK_TEST_xxxxx
-   FLUTTERWAVE_PUBLIC_KEY=FLWPUBK_TEST_xxxxx
-   FLW_WEBHOOK_HASH=your_webhook_hash
-   ```
-4. Add webhook URL: `https://your-backend.com/api/payment/webhook/flutterwave`
-
----
-
-## 📧 Email Setup
-
-### SendGrid (Recommended)
-1. Sign up at [sendgrid.com](https://sendgrid.com)
-2. Create API key with "Mail Send" permission
-3. Set: `SENDGRID_API_KEY=SG.xxxxx`
-4. Verify sender email in SendGrid
-
-### Gmail SMTP (Quick start)
-1. Enable 2FA on your Google account
-2. Generate App Password: Google Account → Security → App Passwords
-3. Set in `.env`:
-   ```env
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_USER=your@gmail.com
-   SMTP_PASS=your_16_char_app_password
-   ```
-
----
-
-## ☁️ File Storage Setup
-
-### Cloudinary (Recommended for production)
-1. Sign up at [cloudinary.com](https://cloudinary.com)
-2. Get credentials from Dashboard
-3. Set: `CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME`
-4. Install: `cd backend && npm install cloudinary`
-
-### AWS S3
-```env
-AWS_S3_BUCKET=lastmart-uploads
-AWS_REGION=eu-west-1
-AWS_ACCESS_KEY_ID=AKIAXXXXXXXX
-AWS_SECRET_ACCESS_KEY=your_secret
-```
-
----
-
-## 🔔 Real-time Notifications (SSE)
-
-The app uses **Server-Sent Events** — works on all hosting platforms (no WebSocket server needed).
-
-Frontend integration:
-```typescript
-import { useSSE } from '@/hooks/useSSE';
-import toast from 'react-hot-toast';
-
-const { connected } = useSSE(token, {
-  onEvent: (event) => {
-    if (event.type === 'new_order')    toast.success('New order!');
-    if (event.type === 'kyc_approved') toast.success('KYC Approved!');
-  },
-});
-```
-
----
-
-## 🌍 Multi-language Support
-
-```typescript
-import { useTranslation } from 'react-i18next';
-import '@/lib/i18n'; // Initialize i18n
-
-export default function MyComponent() {
-  const { t, i18n } = useTranslation();
-  return (
-    <>
-      <h1>{t('home.hero_title')}</h1>
-      <button onClick={() => i18n.changeLanguage('yo')}>Yorùbá</button>
-      <button onClick={() => i18n.changeLanguage('ha')}>Hausa</button>
-      <button onClick={() => i18n.changeLanguage('ig')}>Igbo</button>
-    </>
-  );
-}
-```
-
-Supported: **English** · **Yorùbá** · **Hausa** · **Igbo**
-
----
-
-## 📱 Mobile App
-
-See [`mobile/README.md`](./mobile/README.md) for full React Native (Expo) setup.
-
-```bash
-cd mobile
-npm install
-npx expo start
-```
+| Gateway | Webhook URL |
+|---------|------------|
+| Paystack | `https://your-backend.com/api/payment/webhook/paystack` |
+| Flutterwave | `https://your-backend.com/api/payment/webhook/flutterwave` |
 
 ---
 
@@ -581,7 +346,7 @@ npx expo start
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Register user |
+| POST | `/api/auth/register` | Register (optional `ref` query for referral) |
 | POST | `/api/auth/login` | Login |
 | GET | `/api/products` | List products |
 | GET | `/api/vendors` | List vendors |
@@ -592,10 +357,14 @@ npx expo start
 | POST | `/api/upload/kyc-document` | Upload KYC doc |
 | GET | `/api/lama/price-suggestions` | AI price advice |
 | GET | `/api/lama/demand-forecast` | Demand forecast |
-| GET | `/api/sse` | SSE real-time stream |
+| GET | `/api/lama/recommend?budget=5000` | Budget-based product recs |
+| GET | `/api/coupons/validate/:code` | Validate coupon |
+| POST | `/api/coupons/referral/generate` | Generate referral link |
+| GET | `/api/qr/vendor/:id` | Get vendor QR + share link |
+| GET | `/api/sse` | Real-time SSE stream |
 | GET | `/api/admin/analytics` | Platform analytics |
 
-Full API docs: See each route file in `backend/src/routes/`.
+Full route docs: see each file in `backend/src/routes/`.
 
 ---
 
@@ -608,8 +377,18 @@ Full API docs: See each route file in `backend/src/routes/`.
 **Email**: SendGrid / SMTP / Nodemailer  
 **Real-time**: Server-Sent Events (SSE)  
 **Mobile**: React Native (Expo), Expo Router, SecureStore  
-**AI**: LAMA (rule-based + OpenAI-compatible)  
+**AI**: LAMA (rule-based analytics engine)  
 **Deployment**: Vercel + Railway / Netlify + Render / Docker / VPS  
+
+---
+
+## 👤 Role Capabilities
+
+| Role | Capabilities |
+|------|-------------|
+| **Admin** | Full platform control — manage vendors, KYC, orders, analytics, notifications, **coupon management** |
+| **Vendor** | Manage store, products, orders, KYC, ranking, analytics, **QR code + share link** |
+| **Customer** | Browse, cart, checkout, order tracking, KYC, budget planner, **referral links + coupon wallet** |
 
 ---
 
@@ -618,31 +397,23 @@ Full API docs: See each route file in `backend/src/routes/`.
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `JWT_SECRET` | ✅ | Secret for JWT signing |
-| `PAYSTACK_SECRET_KEY` | For payments | Paystack API key |
-| `FLUTTERWAVE_SECRET_KEY` | For payments | Flutterwave API key |
-| `SENDGRID_API_KEY` | For emails | SendGrid key |
-| `SMTP_HOST/USER/PASS` | For emails | SMTP config |
-| `CLOUDINARY_URL` | For cloud uploads | Cloudinary URL |
-| `DATABASE_URL` | For PostgreSQL | DB connection string |
+| `PAYSTACK_SECRET_KEY` | Payments | Paystack API key |
+| `FLUTTERWAVE_SECRET_KEY` | Payments | Flutterwave API key |
+| `SENDGRID_API_KEY` | Emails | SendGrid key |
+| `SMTP_HOST/USER/PASS` | Emails | SMTP config |
+| `CLOUDINARY_URL` | Cloud uploads | Cloudinary URL |
+| `DATABASE_URL` | PostgreSQL | DB connection string |
 | `FRONTEND_URL` | ✅ Backend | Frontend origin for CORS |
-
----
-
-## 👤 Roles
-
-| Role | Capabilities |
-|------|-------------|
-| **Admin** | Full platform control — manage vendors, KYC, orders, analytics, notifications |
-| **Vendor** | Manage store, products, orders, KYC, ranking, analytics |
-| **Customer** | Browse, cart, checkout, order tracking, KYC, budget planner |
+| `BACKEND_API_URL` | ✅ Frontend | Backend URL for API proxy |
 
 ---
 
 ## 📅 Status
 
-- **Version**: 4.0.0
-- **Platform**: Vercel + Railway (primary)
-- **Last Updated**: April 2026
+- **Version**: 5.0.0
+- **Last Updated**: April 28, 2026
+- **GitHub**: https://github.com/Charles5247/LastMart-V2.0
+- **Recommended Deployment**: Vercel (frontend) + Railway (backend)
 
 ---
 

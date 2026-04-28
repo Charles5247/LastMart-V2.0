@@ -52,7 +52,7 @@ router.post('/register', async (req: Request, res: Response) => {
   try {
     await seedDatabase();
     const db = getDB();
-    const { name, email, password, role, city, phone, address, latitude, longitude, store_name, store_description, category } = req.body;
+    const { name, email, password, role, city, phone, address, latitude, longitude, store_name, store_description, category, referral_code } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, error: 'Name, email and password are required' });
@@ -75,6 +75,36 @@ router.post('/register', async (req: Request, res: Response) => {
       db.prepare(`INSERT INTO vendors (id, user_id, store_name, description, category, city, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
         vendorId, userId, store_name, store_description || null, category || null, city || '', latitude || null, longitude || null
       );
+    }
+
+    // ── Handle referral code if provided ──────────────────────────────────
+    if (referral_code) {
+      try {
+        const referrer = db.prepare(`SELECT id FROM users WHERE referral_code = ?`).get(referral_code) as any;
+        if (referrer && referrer.id !== userId) {
+          // Generate 0.5% coupon for new user
+          const couponCode = `REF-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+          const couponId   = uuidv4();
+          const refId      = uuidv4();
+          db.prepare(`INSERT INTO coupons (id, code, type, value, description, max_uses, created_by) VALUES (?, ?, 'referral', 0.5, ?, 1, ?)`
+            ).run(couponId, couponCode, `Referral welcome discount`, referrer.id);
+          db.prepare(`UPDATE users SET referred_by = ? WHERE id = ?`).run(referrer.id, userId);
+          db.prepare(`INSERT INTO referrals (id, referrer_id, referred_id, coupon_id, status) VALUES (?, ?, ?, ?, 'pending')`
+            ).run(refId, referrer.id, userId, couponId);
+          // Notify new user
+          db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)`
+            ).run(uuidv4(), userId, 'coupon', '🎉 Welcome Referral Discount!',
+              `Use code "${couponCode}" for 0.5% off your next order!`,
+              JSON.stringify({ coupon_code: couponCode, coupon_id: couponId }));
+          // Notify referrer
+          db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)`
+            ).run(uuidv4(), referrer.id, 'referral', '👥 New Referral!',
+              `Someone joined LastMart using your referral link!`,
+              JSON.stringify({ referred_user_id: userId }));
+        }
+      } catch (refErr: any) {
+        console.warn('Referral processing error (non-fatal):', refErr.message);
+      }
     }
 
     const user = db.prepare('SELECT id, name, email, role, city, created_at FROM users WHERE id = ?').get(userId) as any;

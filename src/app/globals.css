@@ -236,3 +236,142 @@ body {
   background: #f3f4f6;
   color: #374151;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE / MOBILE-FIRST IMPROVEMENTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Safe area insets for notched phones */
+.safe-top    { padding-top:    env(safe-area-inset-top,    0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* Touch-friendly tap targets (mobile) */
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"] { min-height: 44px; }
+}
+
+/* ─── Responsive product / vendor grids ─────────────────── */
+.grid-products {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 640px)  { .grid-products { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 768px)  { .grid-products { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+@media (min-width: 1024px) { .grid-products { grid-template-columns: repeat(5, 1fr); } }
+
+.grid-vendors {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(1, 1fr);
+}
+@media (min-width: 480px)  { .grid-vendors { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 768px)  { .grid-vendors { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+@media (min-width: 1024px) { .grid-vendors { grid-template-columns: repeat(4, 1fr); } }
+
+/* ─── Horizontal scroll row (categories, quick links) ───── */
+.scroll-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.scroll-row::-webkit-scrollbar { display: none; }
+.scroll-row > * { scroll-snap-align: start; flex-shrink: 0; }
+
+/* ─── Responsive section padding ─────────────────────────── */
+.section-pad {
+  padding-left:  16px;
+  padding-right: 16px;
+}
+@media (min-width: 640px)  { .section-pad { padding-left: 24px; padding-right: 24px; } }
+@media (min-width: 1024px) { .section-pad { padding-left: 32px; padding-right: 32px; } }
+
+/* ─── Hero banner responsive ─────────────────────────────── */
+@media (max-width: 640px) {
+  .hero-title  { font-size: clamp(20px, 6vw, 32px) !important; }
+  .hero-sub    { font-size: clamp(13px, 3.5vw, 16px) !important; }
+}
+
+/* ─── Mobile table → stacked cards ──────────────────────── */
+@media (max-width: 640px) {
+  table.mobile-stack thead { display: none; }
+  table.mobile-stack tr {
+    display: block;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  table.mobile-stack td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  table.mobile-stack td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-right: 8px;
+  }
+}
+
+/* ─── Fluid containers ───────────────────────────────────── */
+.page-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+@media (min-width: 640px)  { .page-container { padding: 0 24px; } }
+@media (min-width: 1024px) { .page-container { padding: 0 32px; } }
+
+/* ─── Sticky mobile bottom action bar ───────────────────── */
+.mobile-cta {
+  display: none;
+}
+@media (max-width: 640px) {
+  .mobile-cta {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    left: 0; right: 0;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    gap: 8px;
+    z-index: 20;
+  }
+  .mobile-cta .btn-primary,
+  .mobile-cta .btn-secondary { flex: 1; }
+
+  /* Full-width buttons on xs screens */
+  .xs-full { width: 100%; }
+}
+
+/* ─── Aspect ratio helpers ───────────────────────────────── */
+.ratio-square   { aspect-ratio: 1/1;   }
+.ratio-product  { aspect-ratio: 4/3;   }
+.ratio-banner   { aspect-ratio: 16/7;  }
+.ratio-thumb    { aspect-ratio: 16/9;  }
+
+/* ─── Accessibility: focus ring ──────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Print ──────────────────────────────────────────────── */
+@media print {
+  nav, .no-print, .mobile-cta { display: none !important; }
+  body { background: #fff; color: #000; }
+  .card { box-shadow: none; border: 1px solid #ccc; }
+}

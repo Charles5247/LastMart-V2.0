@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import { useApp } from '@/components/AppContext';
-import { Package, ShoppingBag, TrendingUp, Bell, Star, Plus, Settings, BarChart2, Megaphone, AlertTriangle, CheckCircle, Clock, DollarSign, ArrowRight, Users, Shield } from 'lucide-react';
+import { Package, ShoppingBag, TrendingUp, Bell, Star, Plus, Settings, BarChart2, Megaphone, AlertTriangle, CheckCircle, Clock, DollarSign, ArrowRight, Users, Shield, QrCode, Gift } from 'lucide-react';
 import { formatPrice, getStatusColor, formatDate } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
@@ -122,6 +122,7 @@ export default function VendorDashboard() {
             { href: '/dashboard/vendor/ranking', label: 'Ranking & Ads', icon: '📈', color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
             { href: '/dashboard/vendor/orders', label: 'Manage Orders', icon: '📦', color: 'bg-blue-50 border-blue-200 text-blue-700' },
             { href: '/dashboard/vendor/products', label: 'Add Products', icon: '➕', color: 'bg-green-50 border-green-200 text-green-700' },
+            { href: '/dashboard/vendor/qr', label: 'QR & Share Link', icon: '📲', color: 'bg-teal-50 border-teal-200 text-teal-700' },
           ].map(l => (
             <Link key={l.href} href={l.href} className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium hover:opacity-80 transition-all ${l.color}`}>
               <span className="text-lg">{l.icon}</span>{l.label}
@@ -264,6 +265,7 @@ export default function VendorDashboard() {
             { href: '/dashboard/vendor/orders', icon: ShoppingBag, label: 'Orders', color: 'text-blue-600 bg-blue-50' },
             { href: '/dashboard/vendor/analytics', icon: TrendingUp, label: 'Analytics', color: 'text-green-600 bg-green-50' },
             { href: '/dashboard/vendor/ads', icon: Megaphone, label: 'Advertise', color: 'text-orange-600 bg-orange-50' },
+            { href: '/dashboard/vendor/qr', icon: QrCode, label: 'QR & Share', color: 'text-teal-600 bg-teal-50' },
           ].map(link => (
             <Link key={link.href} href={link.href} className="bg-white rounded-2xl shadow-sm p-5 flex flex-col items-center gap-3 hover:shadow-md transition-shadow border border-gray-100">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${link.color}`}>

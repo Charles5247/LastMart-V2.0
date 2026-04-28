@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import { useApp } from '@/components/AppContext';
-import { Users, Store, Package, ShoppingBag, DollarSign, TrendingUp, BarChart2, ArrowRight, AlertTriangle, CheckCircle, Clock, Shield, Crown, Ban, Eye, Star, Bell } from 'lucide-react';
+import { Users, Store, Package, ShoppingBag, DollarSign, TrendingUp, BarChart2, ArrowRight, AlertTriangle, CheckCircle, Clock, Shield, Crown, Ban, Eye, Star, Bell, Tag } from 'lucide-react';
 import { formatPrice, getStatusColor, formatDate } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import toast from 'react-hot-toast';
@@ -311,6 +311,7 @@ export default function AdminDashboard() {
             { href: '/dashboard/admin/orders', icon: ShoppingBag, label: 'All Orders', badge: 0, color: 'from-orange-400 to-orange-600' },
             { href: '/dashboard/admin/notifications', icon: Bell, label: 'Send Notifications', badge: 0, color: 'from-pink-400 to-pink-600' },
             { href: '/dashboard/admin/analytics', icon: TrendingUp, label: 'Analytics', badge: 0, color: 'from-green-400 to-green-600' },
+            { href: '/dashboard/admin/coupons', icon: Tag, label: 'Coupons & Referrals', badge: 0, color: 'from-rose-400 to-rose-600' },
           ].map(link => (
             <Link key={link.href + link.label} href={link.href} className="bg-white rounded-2xl shadow-sm p-5 flex flex-col items-center gap-3 hover:shadow-md transition-shadow border border-gray-100 relative">
               <div className={`w-12 h-12 bg-gradient-to-br ${link.color} rounded-2xl flex items-center justify-center shadow`}>

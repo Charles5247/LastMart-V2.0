@@ -592,6 +592,122 @@ router.get('/demand-forecast', (req: Request, res: Response) => {
   return res.json({ success: true, data: forecast });
 });
 
+/* ── GET /api/lama/budget-suggestions ────────────────────────────────────── */
+/**
+ * LAMA Budget Planner Suggestions:
+ * Given a budget amount (₦) and optional category, returns a curated list
+ * of products whose COMBINED total equals (or best approximates) that budget.
+ *
+ * Strategy: greedy fill — sort by value-score desc, then pick items until
+ *           the budget is (nearly) exhausted or we run out of products.
+ *
+ * Query params:
+ *   budget   – total budget in NGN (required)
+ *   category – category name filter (optional, 'random' or empty = all)
+ *   city     – city filter (optional)
+ *   max_items – max number of items to suggest (default 10)
+ */
+router.get('/budget-suggestions', (req: Request, res: Response) => {
+  const user = getUserFromRequest(req);
+  if (!user) return res.status(401).json({ success: false, error: 'Unauthorized' });
+
+  const budget    = parseFloat(req.query.budget   as string || '0');
+  const category  = req.query.category as string | undefined;
+  const city      = req.query.city     as string | undefined;
+  const maxItems  = Math.min(parseInt(req.query.max_items as string || '10'), 20);
+
+  if (!budget || budget <= 0) {
+    return res.status(400).json({ success: false, error: 'A positive budget amount is required' });
+  }
+
+  const db = getDB();
+
+  /* Build query – filter by category (unless 'random'/absent) and city */
+  const isRandom = !category || category.toLowerCase() === 'random';
+  const params: any[] = [];
+
+  let pQuery = `
+    SELECT p.id, p.name, p.price, p.stock, p.rating, p.total_sales, p.images,
+           v.store_name, v.city AS vendor_city, c.name AS category_name
+    FROM products p
+    JOIN vendors v ON p.vendor_id = v.id
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.is_active = 1 AND v.status = 'approved'
+      AND p.price > 0 AND p.price <= ? AND p.stock > 0
+  `;
+  params.push(budget);
+
+  if (!isRandom && category) {
+    pQuery += ` AND LOWER(c.name) LIKE LOWER(?)`;
+    params.push(`%${category}%`);
+  }
+  if (city) {
+    pQuery += ` AND LOWER(v.city) LIKE LOWER(?)`;
+    params.push(`%${city}%`);
+  }
+
+  // Order by value score: (rating * total_sales + 1) / price  desc → best bang for buck
+  pQuery += ` ORDER BY (p.rating * (p.total_sales + 1)) / p.price DESC, p.rating DESC LIMIT 100`;
+
+  const allProducts = (db.prepare(pQuery).all(...params) as any[]).map(p => ({
+    ...p,
+    images: (() => { try { return JSON.parse(p.images || '[]'); } catch { return []; } })(),
+  }));
+
+  /* ── Greedy knapsack fill ────────────────────────────────────────────── */
+  /* Allow multiple items from same vendor, but prioritise variety */
+  let remaining = budget;
+  const selected: any[] = [];
+  const usedIds  = new Set<string>();
+
+  /* Pass 1 – pick highest-value items that fit */
+  for (const p of allProducts) {
+    if (selected.length >= maxItems) break;
+    if (p.price <= remaining && !usedIds.has(p.id)) {
+      selected.push({ ...p, quantity: 1 });
+      remaining = parseFloat((remaining - p.price).toFixed(2));
+      usedIds.add(p.id);
+    }
+  }
+
+  /* Pass 2 – if budget still remains, try to add quantity to cheapest items */
+  if (remaining > 0 && selected.length > 0) {
+    for (const item of [...selected].sort((a, b) => a.price - b.price)) {
+      const extra = Math.min(
+        Math.floor(remaining / item.price),
+        (item.stock || 1) - item.quantity
+      );
+      if (extra > 0) {
+        item.quantity += extra;
+        remaining = parseFloat((remaining - item.price * extra).toFixed(2));
+      }
+    }
+  }
+
+  const totalCost  = parseFloat((budget - remaining).toFixed(2));
+  const coverage   = budget > 0 ? Math.round((totalCost / budget) * 100) : 0;
+
+  /* LAMA narrative */
+  const lamaMessage = selected.length > 0
+    ? `🛍️ With ₦${budget.toLocaleString()}, LAMA selected ${selected.length} item(s) worth ₦${totalCost.toLocaleString()} (${coverage}% of your budget)${remaining > 0 ? `. You'll have ₦${remaining.toLocaleString()} left over.` : ', using your full budget!'}`
+    : `😔 No products found within ₦${budget.toLocaleString()}${category && !isRandom ? ` in the "${category}" category` : ''}. Try a higher budget or a different category.`;
+
+  return res.json({
+    success: true,
+    data: {
+      budget,
+      category: isRandom ? 'all' : category,
+      city: city || 'all',
+      selected_items: selected,
+      total_cost:     totalCost,
+      remaining:      remaining,
+      coverage_pct:   coverage,
+      item_count:     selected.length,
+      lama_message:   lamaMessage,
+    },
+  });
+});
+
 /* ── Export the analysis runner so server.ts can schedule it ──────────────── */
 export { runLamaAnalysis };
 export default router;

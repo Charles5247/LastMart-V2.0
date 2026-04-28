@@ -482,6 +482,61 @@ function initializeDB(db: Database.Database) {
       ip_address TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    /* ── Coupon codes ─────────────────────────────────────────── */
+    CREATE TABLE IF NOT EXISTS coupons (
+      id TEXT PRIMARY KEY,
+      code TEXT UNIQUE NOT NULL,
+      type TEXT NOT NULL DEFAULT 'fixed',    -- 'fixed'|'percent'|'referral'
+      value REAL NOT NULL,                   -- amount off or percent
+      min_order REAL DEFAULT 0,
+      max_uses INTEGER DEFAULT 0,            -- 0 = unlimited
+      uses_count INTEGER DEFAULT 0,
+      is_active INTEGER DEFAULT 1,
+      expires_at TEXT,
+      created_by TEXT,                       -- admin user_id
+      description TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    /* ── Referral tracking ────────────────────────────────────── */
+    CREATE TABLE IF NOT EXISTS referrals (
+      id TEXT PRIMARY KEY,
+      referrer_id TEXT NOT NULL,             -- user who shared the link
+      referred_id TEXT,                      -- user who registered via link
+      vendor_id TEXT,                        -- set if via vendor store URL
+      coupon_id TEXT,                        -- coupon auto-generated for referred_id
+      status TEXT DEFAULT 'pending',         -- 'pending'|'completed'
+      reward_amount REAL DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      completed_at TEXT,
+      FOREIGN KEY (referrer_id) REFERENCES users(id),
+      FOREIGN KEY (coupon_id) REFERENCES coupons(id)
+    );
+
+    /* ── Coupon usage log ─────────────────────────────────────── */
+    CREATE TABLE IF NOT EXISTS coupon_uses (
+      id TEXT PRIMARY KEY,
+      coupon_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      order_id TEXT,
+      discount_amount REAL NOT NULL,
+      used_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
+    /* ── Vendor share links / QR tokens ──────────────────────── */
+    CREATE TABLE IF NOT EXISTS vendor_share_links (
+      id TEXT PRIMARY KEY,
+      vendor_id TEXT NOT NULL UNIQUE,
+      share_token TEXT UNIQUE NOT NULL,
+      qr_data TEXT,                          -- base64 QR PNG cached
+      scans INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+    );
   `);
 
   /* ── Migrations: safely add columns to existing tables ────── */
@@ -502,6 +557,11 @@ function initializeDB(db: Database.Database) {
     `ALTER TABLE orders ADD COLUMN ready_for_pickup INTEGER DEFAULT 0`,
     `ALTER TABLE orders ADD COLUMN ready_for_delivery INTEGER DEFAULT 0`,
     `ALTER TABLE orders ADD COLUMN ready_notified_at TEXT`,
+    `ALTER TABLE orders ADD COLUMN coupon_id TEXT`,
+    `ALTER TABLE orders ADD COLUMN discount_amount REAL DEFAULT 0`,
+    `ALTER TABLE users  ADD COLUMN referral_code TEXT`,
+    `ALTER TABLE users  ADD COLUMN referred_by TEXT`,
+    `ALTER TABLE vendors ADD COLUMN share_token TEXT`,
   ];
   for (const sql of migrations) {
     try { db.exec(sql); } catch { /* column already exists – ignore */ }

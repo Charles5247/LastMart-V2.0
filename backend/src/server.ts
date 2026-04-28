@@ -52,6 +52,8 @@ import uploadRoutes       from './routes/upload';
 import verificationRoutes from './routes/verification';
 import rankingRoutes      from './routes/ranking';
 import sseRoutes          from './routes/sse';
+import couponRoutes       from './routes/coupons';
+import qrRoutes           from './routes/qr';
 
 const app          = express();
 const PORT         = process.env.PORT         || 5000;
@@ -119,6 +121,8 @@ app.use('/api/upload',        uploadRoutes);    // Image uploads (50 MB limit)
 app.use('/api/verification',  verificationRoutes); // KYC, product vetting, T&C
 app.use('/api/ranking',       rankingRoutes);   // Paid ranking, ad-boost, ready-notify
 app.use('/api/sse',           sseRoutes);        // Real-time SSE push notifications
+app.use('/api/coupons',       couponRoutes);     // Coupons, referrals, auto-discounts
+app.use('/api/qr',            qrRoutes);         // Vendor QR codes + share links
 
 /* ─── 404 Handler ────────────────────────────────────────────────────────── */
 app.use((req, res) => {
@@ -139,7 +143,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 /* ─── Start Server ───────────────────────────────────────────────────────── */
 app.listen(PORT, () => {
-  console.log(`\n🚀 LastMart API Server v4.0 running at http://localhost:${PORT}`);
+  console.log(`\n🚀 LastMart API Server v5.0 running at http://localhost:${PORT}`);
   console.log(`   Health:       http://localhost:${PORT}/health`);
   console.log(`   CORS origin:  ${FRONTEND_URL}`);
   console.log(`\n📋 API Namespaces:`);
@@ -147,7 +151,7 @@ app.listen(PORT, () => {
     'auth', 'products', 'vendors', 'orders', 'cart', 'categories',
     'reviews', 'notifications', 'users', 'ads', 'admin',
     'payment', 'delivery', 'budget', 'lama', 'upload',
-    'verification', 'ranking',
+    'verification', 'ranking', 'coupons', 'qr',
   ].forEach(ns => console.log(`   /api/${ns}`));
   console.log();
 

@@ -1,0 +1,11 @@
+# Exclude the Express backend from Vercel frontend deployment
+# The backend is deployed separately (Railway, Render, or any Node.js host)
+backend/
+mobile/
+*.db
+*.db-shm
+*.db-wal
+lastmart_seed.sql
+DATABASE_SCHEMA.sql
+LOCAL_SETUP.md
+ecosystem.config.cjs

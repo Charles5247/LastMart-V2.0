@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import { useApp } from '@/components/AppContext';
-import { Package, Heart, Settings, ShoppingCart, Star, Bell, TrendingUp, Truck, CheckCircle, Clock, User, MapPin, X, Minus, Plus, Trash2 } from 'lucide-react';
+import { Package, Heart, Settings, ShoppingCart, Star, Bell, TrendingUp, Truck, CheckCircle, Clock, User, MapPin, X, Minus, Plus, Trash2, Gift, Brain } from 'lucide-react';
 import { formatPrice, getStatusColor } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
@@ -114,6 +114,20 @@ export default function CustomerDashboard() {
               <p className="text-2xl font-black text-gray-800">{stat.value}</p>
               <p className="text-xs text-gray-500 font-medium">{stat.label}</p>
             </div>
+          ))}
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          {[
+            { href: '/marketplace', label: 'Shop Now', icon: '🛍️', color: 'bg-orange-50 border-orange-200 text-orange-700' },
+            { href: '/dashboard/customer/orders', label: 'My Orders', icon: '📦', color: 'bg-blue-50 border-blue-200 text-blue-700' },
+            { href: '/dashboard/customer/referrals', label: 'Referrals & Coupons', icon: '🎁', color: 'bg-pink-50 border-pink-200 text-pink-700' },
+            { href: '/lama', label: 'AI Assistant', icon: '🤖', color: 'bg-purple-50 border-purple-200 text-purple-700' },
+          ].map(l => (
+            <Link key={l.href} href={l.href} className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium hover:opacity-80 transition-all ${l.color}`}>
+              <span className="text-lg">{l.icon}</span>{l.label}
+            </Link>
           ))}
         </div>
 
