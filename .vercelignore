@@ -1,11 +1,10 @@
-# Exclude the Express backend from Vercel frontend deployment
-# The backend is deployed separately (Railway, Render, or any Node.js host)
-backend/
+# Runtime files not needed on Vercel (Next.js frontend only)
+# The Express backend is deployed separately on Railway/Render/VPS
+# next.config.js rewrites /api/* → BACKEND_API_URL at runtime — no backend code needed here
+
 mobile/
 *.db
 *.db-shm
 *.db-wal
 lastmart_seed.sql
-DATABASE_SCHEMA.sql
-LOCAL_SETUP.md
 ecosystem.config.cjs

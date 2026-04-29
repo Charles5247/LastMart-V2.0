@@ -166,6 +166,13 @@ lastmart/
 - README updated with full development timeline
 - Commit: `v5.0`
 
+### Phase 5 — Vercel Deployment Fix (April 28, 2026)
+- **Root cause**: Vercel's `experimentalServices` feature does **not** support Express/Node.js backends. Adding a `"backend"` service entry causes *"no framework could be detected"* error because Vercel only recognises specific frontend frameworks (Next.js, Remix, etc.) in that feature.
+- **Fix**: Reverted `vercel.json` to a clean Next.js-only config. Vercel deploys the frontend only; `next.config.js` proxies `/api/*` requests to `BACKEND_API_URL` (set as an env var pointing to Railway/Render) at runtime — no backend code ever runs on Vercel.
+- **`.vercelignore`**: Removed `backend/` from the ignore list (it was causing confusion); only non-essential runtime files are ignored.
+- README updated with explicit `vercel.json` rules, architecture warning, and Railway setup guide
+- Commit: `v5.1`
+
 ---
 
 ## 🚀 Quick Start (Development)
@@ -266,35 +273,72 @@ cd backend && npm run seed
 
 ## 🌐 Deployment Guide
 
+> ⚠️ **Architecture note — why the backend cannot run on Vercel:**
+> LastMart uses `better-sqlite3` (native binary) and a persistent Express server.
+> Vercel's serverless runtime does **not** support native Node.js add-ons or long-running
+> processes. Attempting to deploy the backend on Vercel (e.g. via `experimentalServices`)
+> will always fail with *"no framework could be detected"* or native module errors.
+> **The only correct approach is to deploy frontend and backend separately.**
+>
+> `next.config.js` already proxies all `/api/*` requests to `BACKEND_API_URL` at runtime,
+> so the frontend on Vercel talks to the backend on Railway/Render/VPS transparently.
+
+---
+
 ### Option A: Vercel (Frontend) + Railway (Backend) ⭐ Recommended
 
 #### Frontend → Vercel
 
 1. Connect your GitHub repo at [vercel.com](https://vercel.com) → Import → `LastMart-V2.0`
-2. Set environment variables in Vercel dashboard:
-   ```
-   BACKEND_API_URL=https://your-backend.railway.app
-   NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_...
-   ```
-3. Vercel will use the included `vercel.json` automatically.
-4. The `.vercelignore` file prevents the `backend/` folder from being included in the Vercel build.
+2. Vercel auto-detects Next.js and uses the included `vercel.json`.
+3. Set these environment variables in the Vercel dashboard **before** deploying:
+   | Variable | Value |
+   |----------|-------|
+   | `BACKEND_API_URL` | `https://your-backend.railway.app` |
+   | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | `pk_live_...` |
+4. Click **Deploy** — done.
 
-> **Note**: The `better-sqlite3` package (used in the backend) requires native compilation and **cannot** run on Vercel. The backend must be deployed separately (Railway, Render, VPS, etc.).
+> **Important `vercel.json` rules:**
+> - Do **not** add `experimentalServices` — Vercel cannot detect/run the Express backend.
+> - Do **not** add a `"backend"` service entry — it will always error.
+> - The included `vercel.json` is correct as-is; do not modify it.
+
+```json
+{
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install --legacy-peer-deps",
+  "env": {
+    "BACKEND_API_URL": "@backend_api_url"
+  },
+  "build": {
+    "env": {
+      "BACKEND_API_URL": "@backend_api_url"
+    }
+  }
+}
+```
 
 #### Backend → Railway
 
-```bash
-# From the backend/ directory
-cd backend
-railway init && railway up
-# Set all environment variables in Railway dashboard
-```
+1. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
+2. Select `LastMart-V2.0` and set the **root directory** to `backend`
+3. Railway auto-detects the `Procfile` and runs `node dist/server.js`
+4. Set all environment variables in the Railway dashboard (see env table below)
+5. Copy the Railway public URL → paste it as `BACKEND_API_URL` in your Vercel project
 
-Or connect GitHub repo at [railway.app](https://railway.app) → New Project → Deploy from GitHub → set root directory to `backend/`.
-
-**`backend/Procfile`** (Railway uses this):
+**`backend/Procfile`** (already committed — Railway reads this automatically):
 ```
 web: node dist/server.js
+```
+
+**Railway build settings** (set in dashboard):
+```
+Root Directory : backend
+Build Command  : npm install && npm run build
+Start Command  : npm start
 ```
 
 ---
@@ -410,7 +454,7 @@ Full route docs: see each file in `backend/src/routes/`.
 
 ## 📅 Status
 
-- **Version**: 5.0.0
+- **Version**: 5.1.0
 - **Last Updated**: April 28, 2026
 - **GitHub**: https://github.com/Charles5247/LastMart-V2.0
 - **Recommended Deployment**: Vercel (frontend) + Railway (backend)
