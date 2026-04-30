@@ -173,6 +173,15 @@ lastmart/
 - README updated with explicit `vercel.json` rules, architecture warning, and Railway setup guide
 - Commit: `v5.1`
 
+### Phase 6 — Security CVE Fix + Railway Unblock (April 28, 2026)
+- **Root cause**: Railway's security scanner blocked deployment because `package-lock.json` pinned `next@14.2.29`, which contains two HIGH severity CVEs:
+  - `CVE-2025-55184` — https://github.com/vercel/next.js/security/advisories/GHSA-mwv6-3258-q52c
+  - `CVE-2025-67779` — https://github.com/vercel/next.js/security/advisories/GHSA-5j59-xgg2-r9c4
+- **Fix 1**: Upgraded `next` from `^14.2.29` → `^14.2.35` (patched release). Both CVEs cleared. `package-lock.json` regenerated.
+- **Fix 2**: Added `.npmrc` at repo root with `legacy-peer-deps=true` to resolve peer dependency conflict between `eslint@^9` and `eslint-config-next@14.2.x` (which requires `eslint@^7 || ^8`). Without this, Railway's `npm install` step would fail after the security scan passes.
+- Build verified locally with `next build` — exit 0, all pages compiled.
+- Commit: `v5.2`
+
 ---
 
 ## 🚀 Quick Start (Development)
@@ -454,7 +463,7 @@ Full route docs: see each file in `backend/src/routes/`.
 
 ## 📅 Status
 
-- **Version**: 5.1.0
+- **Version**: 5.2.0
 - **Last Updated**: April 28, 2026
 - **GitHub**: https://github.com/Charles5247/LastMart-V2.0
 - **Recommended Deployment**: Vercel (frontend) + Railway (backend)
