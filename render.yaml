@@ -1,0 +1,91 @@
+# ─── Render.com deployment ────────────────────────────────────────────────────
+# Deploys frontend + backend as separate Web Services on Render.
+#
+# HOW TO USE:
+#   1. Push this file to GitHub (already done).
+#   2. Go to https://dashboard.render.com → New → Blueprint.
+#   3. Connect your GitHub repo (Charles5247/LastMart-V2.0).
+#   4. Render reads this file and creates both services automatically.
+#   5. After both services deploy, copy the backend URL and set
+#      FRONTEND_URL on the backend + BACKEND_API_URL on the frontend.
+#
+# IMPORTANT: After first deploy update FRONTEND_URL on the backend service
+# to match the actual Render frontend URL (e.g. https://lastmart-frontend.onrender.com).
+
+services:
+
+  # ── Backend: Express API ───────────────────────────────────────────────────
+  - type: web
+    name: lastmart-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      # ⚠️  After frontend deploys, update this to the real Render frontend URL
+      - key: FRONTEND_URL
+        value: https://lastmart-frontend.onrender.com
+      - key: DATABASE_PATH
+        value: /var/data/lastmart.db
+      # Payment keys — set manually in Render dashboard
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: FLUTTERWAVE_SECRET_KEY
+        sync: false
+      - key: FLUTTERWAVE_PUBLIC_KEY
+        sync: false
+      - key: FLW_WEBHOOK_HASH
+        sync: false
+      # Email — set manually in Render dashboard
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_SECURE
+        value: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM_NAME
+        value: LastMart
+      - key: EMAIL_FROM_ADDRESS
+        sync: false
+    # Persistent disk for SQLite database (1 GB free tier)
+    disk:
+      name: lastmart-db
+      mountPath: /var/data
+      sizeGB: 1
+
+  # ── Frontend: Next.js ──────────────────────────────────────────────────────
+  - type: web
+    name: lastmart-frontend
+    runtime: node
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: node .next/standalone/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: HOSTNAME
+        value: 0.0.0.0
+      # ⚠️  Set this to your actual Render backend URL after it deploys
+      # e.g. https://lastmart-backend.onrender.com
+      - key: BACKEND_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1

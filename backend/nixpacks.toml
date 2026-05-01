@@ -1,0 +1,14 @@
+# Nixpacks build config for Railway — Backend (Express + TypeScript)
+# Railway reads this file when rootDir is set to "backend"
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "node dist/server.js"

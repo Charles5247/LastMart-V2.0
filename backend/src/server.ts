@@ -62,11 +62,25 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 /* ─── Middleware ─────────────────────────────────────────────────────────── */
 
 /**
- * CORS: allow the Next.js frontend origin plus localhost variants.
- * Credentials=true lets auth cookies pass through in development.
+ * CORS: allow configured origins plus localhost variants.
+ * FRONTEND_URL can be a comma-separated list for multi-origin support,
+ * e.g. "https://lastmart.vercel.app,https://www.lastmart.com"
  */
+const allowedOrigins = [
+  ...FRONTEND_URL.split(',').map((o: string) => o.trim()),
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+];
 app.use(cors({
-  origin: [FRONTEND_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (curl, Postman, mobile apps, same-origin SSR)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // In development allow all origins
+    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
 }));
 

@@ -1,28 +1,43 @@
+# ─── LastMart .gitignore ──────────────────────────────────────────────────────
+
 # Dependencies
 node_modules/
 backend/node_modules/
+mobile/node_modules/
 
 # Build outputs
 .next/
-backend/dist/
 out/
+backend/dist/
 
-# Environment files
+# Environment files — NEVER commit these
 .env
 .env.local
 .env.production
+.env.production.local
+.env.staging
 backend/.env
+backend/.env.production
 
 # Database files
 *.db
 *.db-shm
 *.db-wal
 
-# PM2 logs
+# Uploaded files (local dev)
+public/uploads/
+backend/uploads/
+
+# PM2
+.pm2/
 logs/
 *.log
 
 # Misc
 .DS_Store
+Thumbs.db
 *.tsbuildinfo
 .wrangler/
+
+# Docker
+.dockerignore

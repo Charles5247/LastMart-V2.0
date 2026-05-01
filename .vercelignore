@@ -1,6 +1,11 @@
-# Runtime files not needed on Vercel (Next.js frontend only)
-# The Express backend is deployed separately on Railway/Render/VPS
-# next.config.js rewrites /api/* → BACKEND_API_URL at runtime — no backend code needed here
+# ─── .vercelignore ────────────────────────────────────────────────────────────
+# Vercel deploys the Next.js frontend ONLY.
+# The Express backend runs separately on Railway / Render / Fly.io / VPS.
+# next.config.js proxies /api/* → BACKEND_API_URL at runtime.
+#
+# Set these env vars in Vercel dashboard (Settings → Environment Variables):
+#   BACKEND_API_URL            = https://your-backend.up.railway.app
+#   NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY = pk_live_...
 
 mobile/
 *.db
@@ -8,3 +13,10 @@ mobile/
 *.db-wal
 lastmart_seed.sql
 ecosystem.config.cjs
+docker-compose.yml
+render.yaml
+fly.toml
+fly.backend.toml
+netlify.toml
+nixpacks.toml
+railway.json

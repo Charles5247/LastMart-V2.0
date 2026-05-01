@@ -1,15 +1,14 @@
 {
   "version": 2,
-  "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "installCommand": "npm install --legacy-peer-deps",
   "env": {
-    "BACKEND_API_URL": "@backend_api_url"
+    "NEXT_TELEMETRY_DISABLED": "1"
   },
   "build": {
     "env": {
-      "BACKEND_API_URL": "@backend_api_url"
+      "NEXT_TELEMETRY_DISABLED": "1"
     }
   }
 }

@@ -1,0 +1,92 @@
+# ─── Docker Compose — Full stack (frontend + backend) ────────────────────────
+# Usage:
+#   cp .env.example .env        # fill in your secrets
+#   docker compose up -d        # start both services
+#   docker compose logs -f      # tail logs
+#   docker compose down         # stop
+#
+# Services:
+#   backend  → http://localhost:5000
+#   frontend → http://localhost:3000
+
+version: '3.9'
+
+services:
+
+  # ── Express API ─────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lastmart-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      DATABASE_PATH: /data/lastmart.db
+      # Payments
+      PAYSTACK_SECRET_KEY:      ${PAYSTACK_SECRET_KEY:-}
+      PAYSTACK_PUBLIC_KEY:      ${PAYSTACK_PUBLIC_KEY:-}
+      FLUTTERWAVE_SECRET_KEY:   ${FLUTTERWAVE_SECRET_KEY:-}
+      FLUTTERWAVE_PUBLIC_KEY:   ${FLUTTERWAVE_PUBLIC_KEY:-}
+      FLW_WEBHOOK_HASH:         ${FLW_WEBHOOK_HASH:-}
+      # Email
+      SENDGRID_API_KEY:         ${SENDGRID_API_KEY:-}
+      SMTP_HOST:                ${SMTP_HOST:-}
+      SMTP_PORT:                ${SMTP_PORT:-587}
+      SMTP_SECURE:              ${SMTP_SECURE:-false}
+      SMTP_USER:                ${SMTP_USER:-}
+      SMTP_PASS:                ${SMTP_PASS:-}
+      EMAIL_FROM_NAME:          ${EMAIL_FROM_NAME:-LastMart}
+      EMAIL_FROM_ADDRESS:       ${EMAIL_FROM_ADDRESS:-noreply@lastmart.com}
+    volumes:
+      - lastmart_db:/data           # persistent SQLite database
+      - lastmart_uploads:/uploads   # persistent uploaded files
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - lastmart
+
+  # ── Next.js Frontend ─────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Baked into the Next.js build so rewrites() know the backend URL
+        BACKEND_API_URL: http://backend:5000
+    container_name: lastmart-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # At runtime, Next.js server-side rewrites /api/* → this URL
+      BACKEND_API_URL: http://backend:5000
+      NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY:-}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - lastmart
+
+# ── Named volumes ─────────────────────────────────────────────────────────────
+volumes:
+  lastmart_db:
+    driver: local
+  lastmart_uploads:
+    driver: local
+
+# ── Internal network ──────────────────────────────────────────────────────────
+networks:
+  lastmart:
+    driver: bridge

@@ -2,17 +2,16 @@
 
 > A full-stack local marketplace platform. Customers shop from vendors in their city and receive delivery within 48 hours.
 
-**Live Stack**: Next.js 14 · Express.js · SQLite/PostgreSQL · Tailwind CSS v4 · TypeScript · React Native (Expo)
-
+**Stack**: Next.js 14 · Express.js · SQLite/PostgreSQL · Tailwind CSS v4 · TypeScript · React Native (Expo)  
 **GitHub**: https://github.com/Charles5247/LastMart-V2.0
 
 ---
 
-## ✅ Completed Features (v5.0)
+## ✅ Completed Features (v5.3)
 
 | Module | Features |
 |--------|---------|
-| **Authentication** | JWT login/register, role-based access (admin, vendor, customer), Terms & Conditions acceptance, referral code on signup |
+| **Authentication** | JWT login/register, role-based access (admin, vendor, customer), Terms & Conditions, referral code on signup |
 | **Marketplace** | Product browsing, search, category filters, location-based vendor discovery, store visit tracking |
 | **Cart & Checkout** | Add to cart, quantity management, checkout flow, coupon/discount code at checkout |
 | **Payment** | Paystack (card, bank transfer, USSD, mobile money), Flutterwave (card, M-Pesa, bank), demo mode |
@@ -21,11 +20,11 @@
 | **File Uploads** | Product images, KYC docs, vetting documents (local disk + Cloudinary ready) |
 | **Real-time Notifications** | Server-Sent Events (SSE) — no WebSocket server needed |
 | **Email Notifications** | SendGrid / SMTP / Nodemailer — order confirmation, KYC status, welcome email |
-| **LAMA AI** | Price suggestions, demand forecasting, platform insights, trend analysis, **budget-based product recommendations** |
+| **LAMA AI** | Price suggestions, demand forecasting, platform insights, trend analysis, budget-based product recommendations |
 | **Ranking & Ads** | Bronze/Silver/Gold/Platinum vendor & product ranking, Ad Boost packages |
 | **Analytics** | Revenue charts, store visit heatmap, conversion funnel, LAMA forecast |
 | **Multi-language** | English, Yoruba (Yorùbá), Hausa, Igbo |
-| **Admin Panel** | Manage vendors, customers, KYC, products, orders, notifications, analytics, **coupon code management** |
+| **Admin Panel** | Manage vendors, customers, KYC, products, orders, notifications, analytics, coupon management |
 | **Vendor QR Codes** | Generate shareable QR + store URL; customers who visit via link get 0.5% coupon |
 | **Referral System** | Auto-generated referral links, 0.5% discount for referred users, referral stats dashboard |
 | **Coupon System** | Admin-created coupon codes (fixed/percent), usage tracking, auto-referral coupons |
@@ -48,7 +47,7 @@ lastmart/
 │   │   ├── dashboard/
 │   │   │   ├── admin/
 │   │   │   │   ├── page.tsx              # Admin overview
-│   │   │   │   ├── coupons/page.tsx      # ✨ Coupon management (NEW)
+│   │   │   │   ├── coupons/page.tsx      # ✨ Coupon management
 │   │   │   │   ├── vendors/              # Manage & approve/suspend vendors
 │   │   │   │   ├── customers/            # Manage & suspend customers
 │   │   │   │   ├── products/             # All products
@@ -60,7 +59,7 @@ lastmart/
 │   │   │   │   └── analytics/            # Platform analytics
 │   │   │   ├── vendor/
 │   │   │   │   ├── page.tsx              # Vendor dashboard
-│   │   │   │   ├── qr/page.tsx           # ✨ QR code & share link (NEW)
+│   │   │   │   ├── qr/page.tsx           # ✨ QR code & share link
 │   │   │   │   ├── products/             # Manage products
 │   │   │   │   ├── orders/               # View orders
 │   │   │   │   ├── ranking/              # Apply for ranking packages
@@ -69,7 +68,7 @@ lastmart/
 │   │   │   │   └── ads/                  # Advertisement management
 │   │   │   └── customer/
 │   │   │       ├── page.tsx              # Customer dashboard
-│   │   │       ├── referrals/page.tsx    # ✨ Referral & coupon wallet (NEW)
+│   │   │       ├── referrals/page.tsx    # ✨ Referral & coupon wallet
 │   │   │       ├── orders/               # Order history
 │   │   │       ├── saved/                # Saved vendors
 │   │   │       └── settings/             # Profile settings
@@ -79,16 +78,16 @@ lastmart/
 │   │   ├── verification/    # KYC submission page
 │   │   └── terms/           # Terms & Conditions
 │   ├── components/
-│   │   ├── layout/Navbar.tsx     # Responsive navbar
-│   │   ├── AppContext.tsx         # Global state
-│   │   ├── ui/ProductCard.tsx     # Product card component
+│   │   ├── layout/Navbar.tsx      # Responsive navbar
+│   │   ├── AppContext.tsx          # Global state
+│   │   ├── ui/ProductCard.tsx      # Product card component
 │   │   └── LanguageSwitcher.tsx
 │   ├── hooks/
-│   │   └── useSSE.ts             # Real-time SSE hook
+│   │   └── useSSE.ts              # Real-time SSE hook
 │   ├── lib/
-│   │   ├── i18n.ts               # Internationalization
+│   │   ├── i18n.ts                # Internationalization
 │   │   └── utils.ts
-│   └── locales/                  # Translation files (en, yo, ha, ig)
+│   └── locales/                   # Translation files (en, yo, ha, ig)
 │
 ├── backend/                 # Express.js API server (Port 5000)
 │   └── src/
@@ -99,27 +98,38 @@ lastmart/
 │       │   ├── email.ts     # Email service (SendGrid/SMTP)
 │       │   └── sse.ts       # SSE manager
 │       └── routes/
-│           ├── auth.ts      # Login, register (with referral on signup)
-│           ├── products.ts, vendors.ts, orders.ts, cart.ts
+│           ├── auth.ts, products.ts, vendors.ts, orders.ts, cart.ts
 │           ├── categories.ts, reviews.ts, users.ts, admin.ts
 │           ├── payment.ts   # Paystack + Flutterwave
 │           ├── upload.ts    # File uploads
-│           ├── verification.ts # KYC + product vetting
+│           ├── verification.ts  # KYC + product vetting
 │           ├── ranking.ts   # Ranking packages
-│           ├── lama.ts      # AI insights, price suggestions, budget recs
-│           ├── notifications.ts, sse.ts
-│           ├── budget.ts, delivery.ts, ads.ts
-│           ├── coupons.ts   # ✨ Coupons + referral system (NEW)
-│           └── qr.ts        # ✨ Vendor QR codes + share links (NEW)
+│           ├── lama.ts      # AI insights + budget recommendations
+│           ├── notifications.ts, sse.ts, budget.ts, delivery.ts, ads.ts
+│           ├── coupons.ts   # ✨ Coupons + referral system
+│           └── qr.ts        # ✨ Vendor QR codes + share links
 │
 ├── mobile/                  # React Native (Expo) app
 │
-├── vercel.json              # ✨ Vercel deployment config (NEW)
-├── .vercelignore            # ✨ Excludes backend from Vercel build (NEW)
+├── Dockerfile               # Frontend multi-stage build (standalone)
+├── backend/Dockerfile       # Backend multi-stage build
+├── docker-compose.yml       # ✨ Full-stack Docker Compose
+├── render.yaml              # ✨ Render Blueprint (frontend + backend)
+├── railway.json             # ✨ Railway frontend config
+├── nixpacks.toml            # ✨ Railway/Nixpacks frontend build
+├── backend/railway.json     # ✨ Railway backend config
+├── backend/nixpacks.toml    # ✨ Railway/Nixpacks backend build
+├── backend/Procfile         # ✨ Render/Heroku process file
+├── fly.toml                 # ✨ Fly.io frontend config
+├── fly.backend.toml         # ✨ Fly.io backend config
+├── vercel.json              # ✨ Vercel (frontend-only)
+├── .vercelignore            # ✨ Excludes non-frontend files from Vercel
+├── netlify.toml             # ✨ Netlify (frontend-only)
+├── .env.example             # ✨ Environment variable template
+├── ecosystem.config.cjs     # PM2 config for VPS/local
+├── next.config.js           # Next.js config + API proxy + standalone output
 ├── package.json             # Frontend dependencies (engines: node>=20)
-├── next.config.js           # Next.js config + API proxy
-├── DATABASE_SCHEMA.sql      # Full DB schema reference
-└── ecosystem.config.cjs     # PM2 config for local/VPS dev
+└── DATABASE_SCHEMA.sql      # Full DB schema reference
 ```
 
 ---
@@ -127,60 +137,52 @@ lastmart/
 ## 📅 Development Timeline
 
 ### Phase 1 — Foundation (March 2026)
-- **March 14**: Project scaffolded with Next.js 14, Tailwind v4, TypeScript
-- **March 14**: Express.js backend, SQLite schema, JWT authentication
+- **March 14**: Scaffolded with Next.js 14, Tailwind v4, TypeScript; Express backend, SQLite, JWT
 - **March 16**: Homepage, marketplace browsing, product listings
 - **March 18**: Cart, checkout, order management
-- Commit: `Initial commit`
 
 ### Phase 2 — Core Features (Late March – Early April 2026)
-- **March 18 – April 22**: KYC verification system (customer + vendor documents)
+- KYC verification system (customer + vendor documents)
 - Product vetting with certification uploads
 - Multi-language support: English, Yorùbá, Hausa, Igbo
-- Vendor analytics, store visit tracking
-- Admin panel (manage vendors, KYC, orders, notifications)
-- Ranking & advertising packages (Bronze → Platinum)
-- React Native (Expo) mobile app scaffold
-- Commit: `v2.0`
+- Admin panel, ranking & advertising packages, React Native scaffold
 
 ### Phase 3 — Advanced Features (April 22–24, 2026)
-- **April 22–23**: Real payment gateways — Paystack + Flutterwave integration
+- Real payment gateways: Paystack + Flutterwave
 - KYC file upload (NIN, BVN, CAC, TIN, photos, utility bills)
-- Server-Sent Events (SSE) for real-time push notifications
-- Email system: SendGrid + Nodemailer (order, KYC, welcome emails)
-- LAMA AI: price suggestions, demand forecasting, platform insights
-- Vendor analytics dashboard with charts
-- Deployment documentation (Vercel + Railway, Netlify + Render, Docker, VPS)
-- Commits: `v3.0` (dcc062c), `v4.0` (d1552f4)
+- Server-Sent Events (SSE) for real-time notifications
+- Email system: SendGrid + Nodemailer
+- LAMA AI: price suggestions, demand forecasting
+- Vendor analytics, deployment documentation
 
-### Phase 4 — UX & Engagement (April 25, 2026)
-- **April 25**: Mobile responsiveness audit & fixes across all screen sizes
-- LAMA AI: budget-based product recommendation tab
-- Vendor QR code generator + shareable store URL (`/dashboard/vendor/qr`)
-- Referral coupon system — 0.5% auto-discount for referred users
-- Admin coupon management (`/dashboard/admin/coupons`)
-- Customer referral dashboard (`/dashboard/customer/referrals`)
-- Navigation links added to all dashboards
-- `vercel.json` created; `.vercelignore` excludes backend from Vercel build
-- `engines` field added to `package.json` (node >=20, npm >=10)
-- README updated with full development timeline
-- Commit: `v5.0`
+### Phase 4 — UX & Engagement (April 25, 2026) `v5.0`
+- Mobile responsiveness audit & fixes
+- LAMA AI budget-based product recommendations
+- Vendor QR code generator + shareable store URL
+- Referral coupon system (0.5% auto-discount)
+- Admin coupon management dashboard
+- Customer referral dashboard
 
-### Phase 5 — Vercel Deployment Fix (April 28, 2026)
-- **Root cause**: Vercel's `experimentalServices` feature does **not** support Express/Node.js backends. Adding a `"backend"` service entry causes *"no framework could be detected"* error because Vercel only recognises specific frontend frameworks (Next.js, Remix, etc.) in that feature.
-- **Fix**: Reverted `vercel.json` to a clean Next.js-only config. Vercel deploys the frontend only; `next.config.js` proxies `/api/*` requests to `BACKEND_API_URL` (set as an env var pointing to Railway/Render) at runtime — no backend code ever runs on Vercel.
-- **`.vercelignore`**: Removed `backend/` from the ignore list (it was causing confusion); only non-essential runtime files are ignored.
-- README updated with explicit `vercel.json` rules, architecture warning, and Railway setup guide
-- Commit: `v5.1`
+### Phase 5 — Vercel Fix (April 28, 2026) `v5.1`
+- **Root cause**: `experimentalServices` in `vercel.json` does not support Express backends
+- **Fix**: Clean Next.js-only `vercel.json`; `next.config.js` proxies `/api/*` to `BACKEND_API_URL`
 
-### Phase 6 — Security CVE Fix + Railway Unblock (April 28, 2026)
-- **Root cause**: Railway's security scanner blocked deployment because `package-lock.json` pinned `next@14.2.29`, which contains two HIGH severity CVEs:
-  - `CVE-2025-55184` — https://github.com/vercel/next.js/security/advisories/GHSA-mwv6-3258-q52c
-  - `CVE-2025-67779` — https://github.com/vercel/next.js/security/advisories/GHSA-5j59-xgg2-r9c4
-- **Fix 1**: Upgraded `next` from `^14.2.29` → `^14.2.35` (patched release). Both CVEs cleared. `package-lock.json` regenerated.
-- **Fix 2**: Added `.npmrc` at repo root with `legacy-peer-deps=true` to resolve peer dependency conflict between `eslint@^9` and `eslint-config-next@14.2.x` (which requires `eslint@^7 || ^8`). Without this, Railway's `npm install` step would fail after the security scan passes.
-- Build verified locally with `next build` — exit 0, all pages compiled.
-- Commit: `v5.2`
+### Phase 6 — Security CVE Fix (April 28, 2026) `v5.2`
+- Upgraded `next` → `14.2.35` fixing CVE-2025-55184 and CVE-2025-67779
+- Added `.npmrc` with `legacy-peer-deps=true` to unblock Railway security scan
+
+### Phase 7 — Universal Deployment (May 1, 2026) `v5.3`
+- Rewrote all deployment configs for universal hosting compatibility
+- `Dockerfile` (frontend): multi-stage standalone build — works on Render, Railway, Fly.io, AWS, VPS
+- `backend/Dockerfile`: multi-stage build with persistent `/data` volume
+- `docker-compose.yml`: full-stack compose with health checks and named volumes
+- `render.yaml`: Render Blueprint — one-click deploy both services
+- `railway.json` + `nixpacks.toml`: Railway configs for frontend and backend
+- `fly.toml` + `fly.backend.toml`: Fly.io configs for frontend and backend
+- `netlify.toml`: Netlify config with Next.js plugin
+- `ecosystem.config.cjs`: updated for standalone output
+- `next.config.js`: `output: 'standalone'` always enabled
+- `README.md`: complete deployment guide for every platform
 
 ---
 
@@ -195,8 +197,6 @@ lastmart/
 ```bash
 git clone https://github.com/Charles5247/LastMart-V2.0.git
 cd LastMart-V2.0
-
-# Install all dependencies (frontend + backend)
 npm run install:all
 ```
 
@@ -205,188 +205,313 @@ npm run install:all
 **Frontend** — create `.env.local` in project root:
 ```env
 BACKEND_API_URL=http://localhost:5000
-NEXT_PUBLIC_API_URL=http://localhost:5000
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_your_paystack_public_key
 ```
 
 **Backend** — create `backend/.env`:
 ```env
-# Server
 PORT=5000
 FRONTEND_URL=http://localhost:3000
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
-
-# Database (SQLite - default, no config needed)
 DATABASE_PATH=../lastmart.db
-
-# Payment Gateways
 PAYSTACK_SECRET_KEY=sk_test_your_paystack_secret_key
 PAYSTACK_PUBLIC_KEY=pk_test_your_paystack_public_key
 FLUTTERWAVE_SECRET_KEY=FLWSECK_TEST_your_flutterwave_key
 FLUTTERWAVE_PUBLIC_KEY=FLWPUBK_TEST_your_flutterwave_key
-FLW_WEBHOOK_HASH=your_flutterwave_webhook_hash
-
-# Email (choose one)
 SENDGRID_API_KEY=SG.your_sendgrid_key
-# OR SMTP:
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your@gmail.com
 SMTP_PASS=your_app_password
 EMAIL_FROM_NAME=LastMart
 EMAIL_FROM_ADDRESS=noreply@lastmart.com
-
-# File Storage (optional - local disk is default)
-CLOUDINARY_URL=cloudinary://api_key:api_secret@cloud_name
 ```
 
 ### 3. Run Development Servers
 
 ```bash
-# Run both frontend + backend together
+# Run frontend + backend together
 npm run dev:all
 
-# OR run separately:
-npm run dev:backend    # Express API on http://localhost:5000
-npm run dev:frontend   # Next.js on http://localhost:3000
+# OR separately
+npm run dev:backend    # Express API  → http://localhost:5000
+npm run dev:frontend   # Next.js      → http://localhost:3000
 ```
 
-### 4. Build for Production
+### 4. Seed Test Data
 
 ```bash
-# Build frontend
-npm run build
-
-# Build backend
-npm run build:backend
-
-# Start both
-npm run start:backend  # Express on port 5000
-npm run start          # Next.js on port 3000
+cd backend && npm run seed
 ```
 
 ---
 
 ## 🗄️ Database
 
-**Development**: SQLite (auto-created as `lastmart.db` on first run — no setup needed)
+**Development**: SQLite — auto-created as `lastmart.db` on first run, no config needed.
 
-```bash
-# Seed test data
-cd backend && npm run seed
+**Production**: Switch to PostgreSQL by setting `DATABASE_URL` in `backend/.env`:
+```env
+DATABASE_URL=postgresql://user:password@host:5432/lastmart
 ```
-
-**Production**: PostgreSQL (Supabase / Neon / Railway) — set `DATABASE_URL` in backend `.env` and run `DATABASE_SCHEMA.sql`.
+Then apply `DATABASE_SCHEMA.sql` via your PostgreSQL client.
 
 ---
 
 ## 🌐 Deployment Guide
 
-> ⚠️ **Architecture note — why the backend cannot run on Vercel:**
-> LastMart uses `better-sqlite3` (native binary) and a persistent Express server.
-> Vercel's serverless runtime does **not** support native Node.js add-ons or long-running
-> processes. Attempting to deploy the backend on Vercel (e.g. via `experimentalServices`)
-> will always fail with *"no framework could be detected"* or native module errors.
-> **The only correct approach is to deploy frontend and backend separately.**
+> **Architecture overview**
 >
-> `next.config.js` already proxies all `/api/*` requests to `BACKEND_API_URL` at runtime,
-> so the frontend on Vercel talks to the backend on Railway/Render/VPS transparently.
+> LastMart has two independent services:
+> - **Frontend** (Next.js) — runs on Vercel / Netlify / Render / Railway / Fly.io / VPS
+> - **Backend** (Express API) — runs on Railway / Render / Fly.io / Docker / VPS
+>
+> `next.config.js` sets `output: 'standalone'` and proxies all `/api/*` requests
+> to `BACKEND_API_URL` at runtime, so every platform just needs that one env var set.
+>
+> ⚠️ **Do NOT deploy the backend to Vercel.** Vercel does not support:
+> - Native Node.js add-ons (`better-sqlite3` requires native compilation)
+> - Long-running processes (Express server)
+> - `experimentalServices` for non-framework backends
 
 ---
 
-### Option A: Vercel (Frontend) + Railway (Backend) ⭐ Recommended
+### Option A: Vercel (Frontend) + Railway (Backend) ⭐ Recommended Free Tier
 
-#### Frontend → Vercel
+#### Step 1 — Deploy Backend on Railway
 
-1. Connect your GitHub repo at [vercel.com](https://vercel.com) → Import → `LastMart-V2.0`
-2. Vercel auto-detects Next.js and uses the included `vercel.json`.
-3. Set these environment variables in the Vercel dashboard **before** deploying:
+1. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
+2. Select `Charles5247/LastMart-V2.0`
+3. Set **Root Directory** to `backend` in Railway settings
+4. Railway auto-detects `backend/nixpacks.toml` and `backend/Procfile`
+5. Set environment variables in the Railway dashboard:
+
    | Variable | Value |
    |----------|-------|
-   | `BACKEND_API_URL` | `https://your-backend.railway.app` |
+   | `NODE_ENV` | `production` |
+   | `PORT` | `5000` |
+   | `JWT_SECRET` | (generate a random 32-char string) |
+   | `FRONTEND_URL` | `https://your-app.vercel.app` (set after Vercel deploys) |
+   | `DATABASE_PATH` | `/app/data/lastmart.db` |
+   | `PAYSTACK_SECRET_KEY` | `sk_live_...` |
+   | `PAYSTACK_PUBLIC_KEY` | `pk_live_...` |
+   | `SENDGRID_API_KEY` | `SG.xxx` (or SMTP vars) |
+
+6. Copy the Railway public URL (e.g. `https://lastmart-backend.up.railway.app`)
+
+#### Step 2 — Deploy Frontend on Vercel
+
+1. Go to [vercel.com](https://vercel.com) → **Add New Project** → Import `LastMart-V2.0`
+2. Vercel auto-detects Next.js and uses the included `vercel.json`
+3. Set environment variables **before** clicking Deploy:
+
+   | Variable | Value |
+   |----------|-------|
+   | `BACKEND_API_URL` | `https://lastmart-backend.up.railway.app` |
    | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | `pk_live_...` |
-4. Click **Deploy** — done.
 
-> **Important `vercel.json` rules:**
-> - Do **not** add `experimentalServices` — Vercel cannot detect/run the Express backend.
-> - Do **not** add a `"backend"` service entry — it will always error.
-> - The included `vercel.json` is correct as-is; do not modify it.
+4. Click **Deploy**
 
-```json
-{
-  "version": 2,
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install --legacy-peer-deps",
-  "env": {
-    "BACKEND_API_URL": "@backend_api_url"
-  },
-  "build": {
-    "env": {
-      "BACKEND_API_URL": "@backend_api_url"
+#### Step 3 — Update CORS on Backend
+
+Go to Railway → backend service → Variables → update `FRONTEND_URL` to your Vercel URL.
+
+> **`vercel.json` rules (do not modify):**
+> - ❌ Do NOT add `experimentalServices`
+> - ❌ Do NOT add a `"backend"` service entry
+> - ✅ The included `vercel.json` is correct as-is
+
+---
+
+### Option B: Render (Frontend + Backend via Blueprint) ⭐ One-Click
+
+Render can deploy both services from `render.yaml` automatically.
+
+1. Go to [dashboard.render.com](https://dashboard.render.com) → **New** → **Blueprint**
+2. Connect your GitHub repo `Charles5247/LastMart-V2.0`
+3. Render reads `render.yaml` and creates both services
+4. After both deploy, update:
+   - `FRONTEND_URL` on the backend service → your Render frontend URL
+   - `BACKEND_API_URL` on the frontend service → your Render backend URL
+5. Set secret env vars (payment keys, email, JWT_SECRET) in the Render dashboard
+
+**Manual Render setup** (if not using Blueprint):
+
+**Backend:**
+- New Web Service → Connect repo → Root Dir: `backend`
+- Build: `npm install && npm run build`
+- Start: `node dist/server.js`
+- Add a **Disk** (1 GB) mounted at `/var/data` for SQLite
+
+**Frontend:**
+- New Web Service → Connect repo → Root Dir: (leave empty)
+- Build: `npm install --legacy-peer-deps && npm run build`
+- Start: `node .next/standalone/server.js`
+- Env var: `BACKEND_API_URL=https://your-backend.onrender.com`
+
+---
+
+### Option C: Netlify (Frontend) + Render (Backend)
+
+**Frontend → Netlify:**
+1. Go to [app.netlify.com](https://app.netlify.com) → **Add new site** → Import from Git
+2. Select `Charles5247/LastMart-V2.0`
+3. Netlify auto-detects `netlify.toml` (build command + `@netlify/plugin-nextjs`)
+4. Set env var: `BACKEND_API_URL=https://your-backend.onrender.com`
+5. Deploy
+
+**Backend → Render:** (same as Option B backend steps above)
+
+> ⚠️ Netlify requires `@netlify/plugin-nextjs` for Next.js SSR support.
+> Install it: `npm install -D @netlify/plugin-nextjs` then redeploy.
+
+---
+
+### Option D: Docker Compose (VPS / AWS EC2 / DigitalOcean)
+
+Deploy both services together with a single command.
+
+```bash
+# 1. Clone repo on your server
+git clone https://github.com/Charles5247/LastMart-V2.0.git /var/www/lastmart
+cd /var/www/lastmart
+
+# 2. Create .env from template
+cp .env.example .env
+nano .env   # fill in JWT_SECRET, payment keys, email settings, etc.
+
+# 3. Build and start (first run takes ~5 minutes to build images)
+docker compose up -d
+
+# 4. Check services
+docker compose ps
+docker compose logs -f
+
+# Services:
+#   frontend → http://your-server:3000
+#   backend  → http://your-server:5000 (internal only in production)
+```
+
+**With Nginx reverse proxy** (recommended for production):
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location /api/ {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
     }
-  }
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
 }
 ```
 
-#### Backend → Railway
-
-1. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
-2. Select `LastMart-V2.0` and set the **root directory** to `backend`
-3. Railway auto-detects the `Procfile` and runs `node dist/server.js`
-4. Set all environment variables in the Railway dashboard (see env table below)
-5. Copy the Railway public URL → paste it as `BACKEND_API_URL` in your Vercel project
-
-**`backend/Procfile`** (already committed — Railway reads this automatically):
-```
-web: node dist/server.js
-```
-
-**Railway build settings** (set in dashboard):
-```
-Root Directory : backend
-Build Command  : npm install && npm run build
-Start Command  : npm start
+**Update images after a code change:**
+```bash
+git pull
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ---
 
-### Option B: Netlify (Frontend) + Render (Backend)
-
-**Frontend `netlify.toml`**:
-```toml
-[build]
-  command = "npm run build"
-  publish = ".next"
-
-[[redirects]]
-  from   = "/api/*"
-  to     = "https://your-backend.onrender.com/api/:splat"
-  status = 200
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-```
-
-**Backend → Render**: New Web Service → root dir `backend` → build `npm install && npm run build` → start `npm start`.
-
----
-
-### Option C: VPS (Ubuntu + PM2)
+### Option E: VPS with PM2 (Ubuntu + Node.js)
 
 ```bash
+# 1. Install Node.js 20 + PM2
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo npm install -g pm2
+
+# 2. Clone and install
 git clone https://github.com/Charles5247/LastMart-V2.0.git /var/www/lastmart
 cd /var/www/lastmart
 npm run install:all
-npm run build && npm run build:backend
+
+# 3. Set env vars
+cp .env.example .env && nano .env
+cp backend/.env.example backend/.env && nano backend/.env
+
+# 4. Build both apps
+npm run build           # Next.js (creates .next/standalone/)
+npm run build:backend   # Express TypeScript (creates backend/dist/)
+
+# 5. Start with PM2
 pm2 start ecosystem.config.cjs
-pm2 save && pm2 startup
+pm2 save && pm2 startup  # auto-start on reboot
+
+# 6. Check status
+pm2 list
+pm2 logs
 ```
 
 ---
 
-## 💳 Payment Setup
+### Option F: Fly.io (Frontend + Backend separately)
+
+**Backend:**
+```bash
+fly launch --config fly.backend.toml
+fly secrets set JWT_SECRET=your-secret FRONTEND_URL=https://lastmart-frontend.fly.dev
+fly deploy --config fly.backend.toml
+```
+
+**Frontend:**
+```bash
+fly launch --config fly.toml
+fly secrets set BACKEND_API_URL=https://lastmart-backend.fly.dev
+fly deploy --config fly.toml
+```
+
+---
+
+### Option G: AWS (Elastic Beanstalk / App Runner / ECS)
+
+**App Runner (simplest):**
+1. AWS Console → App Runner → Create service
+2. Source: Container registry → ECR
+3. Build and push Docker images:
+   ```bash
+   # Backend
+   docker build -t lastmart-backend ./backend
+   docker tag lastmart-backend:latest <account>.dkr.ecr.<region>.amazonaws.com/lastmart-backend
+   docker push <account>.dkr.ecr.<region>.amazonaws.com/lastmart-backend
+
+   # Frontend
+   docker build -t lastmart-frontend --build-arg BACKEND_API_URL=https://your-backend.amazonaws.com .
+   docker tag lastmart-frontend:latest <account>.dkr.ecr.<region>.amazonaws.com/lastmart-frontend
+   docker push <account>.dkr.ecr.<region>.amazonaws.com/lastmart-frontend
+   ```
+4. Set env vars in App Runner configuration
+
+**ECS (Fargate):** Use `docker-compose.yml` as a reference for task definitions.
+
+---
+
+## 🔑 Environment Variables Summary
+
+| Variable | Where | Required | Description |
+|----------|-------|----------|-------------|
+| `BACKEND_API_URL` | Frontend | ✅ | Backend URL for API proxy (e.g. `https://xxx.railway.app`) |
+| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Frontend | Payments | Paystack public key |
+| `JWT_SECRET` | Backend | ✅ | Secret for JWT signing (32+ chars) |
+| `FRONTEND_URL` | Backend | ✅ | Frontend origin for CORS |
+| `DATABASE_PATH` | Backend | SQLite | Path to `.db` file |
+| `DATABASE_URL` | Backend | PostgreSQL | PostgreSQL connection string |
+| `PAYSTACK_SECRET_KEY` | Backend | Payments | Paystack secret key |
+| `FLUTTERWAVE_SECRET_KEY` | Backend | Payments | Flutterwave secret key |
+| `SENDGRID_API_KEY` | Backend | Emails | SendGrid key |
+| `SMTP_HOST/USER/PASS` | Backend | Emails | SMTP config (Gmail etc.) |
+
+---
+
+## 💳 Payment Webhook URLs
 
 | Gateway | Webhook URL |
 |---------|------------|
@@ -399,7 +524,7 @@ pm2 save && pm2 startup
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Register (optional `ref` query for referral) |
+| POST | `/api/auth/register` | Register (optional `?ref=code` for referral) |
 | POST | `/api/auth/login` | Login |
 | GET | `/api/products` | List products |
 | GET | `/api/vendors` | List vendors |
@@ -414,6 +539,7 @@ pm2 save && pm2 startup
 | GET | `/api/coupons/validate/:code` | Validate coupon |
 | POST | `/api/coupons/referral/generate` | Generate referral link |
 | GET | `/api/qr/vendor/:id` | Get vendor QR + share link |
+| GET | `/api/health` | Backend health check |
 | GET | `/api/sse` | Real-time SSE stream |
 | GET | `/api/admin/analytics` | Platform analytics |
 
@@ -423,15 +549,17 @@ Full route docs: see each file in `backend/src/routes/`.
 
 ## 🛠️ Tech Stack
 
-**Frontend**: Next.js 14, React 19, TypeScript, Tailwind CSS v4, Recharts, i18next  
-**Backend**: Express.js, TypeScript, better-sqlite3, JWT, Multer, Nodemailer, Axios  
-**Payment**: Paystack, Flutterwave  
-**Storage**: Local disk / Cloudinary / AWS S3  
-**Email**: SendGrid / SMTP / Nodemailer  
-**Real-time**: Server-Sent Events (SSE)  
-**Mobile**: React Native (Expo), Expo Router, SecureStore  
-**AI**: LAMA (rule-based analytics engine)  
-**Deployment**: Vercel + Railway / Netlify + Render / Docker / VPS  
+| Layer | Technologies |
+|-------|-------------|
+| **Frontend** | Next.js 14, React 19, TypeScript, Tailwind CSS v4, Recharts, i18next |
+| **Backend** | Express.js, TypeScript, better-sqlite3, JWT, Multer, Nodemailer, Axios |
+| **Payment** | Paystack, Flutterwave |
+| **Storage** | Local disk / Cloudinary / AWS S3 |
+| **Email** | SendGrid / SMTP / Nodemailer |
+| **Real-time** | Server-Sent Events (SSE) |
+| **Mobile** | React Native (Expo), Expo Router, SecureStore |
+| **AI** | LAMA (rule-based analytics engine) |
+| **Deployment** | Vercel · Netlify · Render · Railway · Fly.io · Docker · AWS · VPS |
 
 ---
 
@@ -439,34 +567,18 @@ Full route docs: see each file in `backend/src/routes/`.
 
 | Role | Capabilities |
 |------|-------------|
-| **Admin** | Full platform control — manage vendors, KYC, orders, analytics, notifications, **coupon management** |
-| **Vendor** | Manage store, products, orders, KYC, ranking, analytics, **QR code + share link** |
-| **Customer** | Browse, cart, checkout, order tracking, KYC, budget planner, **referral links + coupon wallet** |
+| **Admin** | Full platform control — manage vendors, KYC, orders, analytics, notifications, coupon management |
+| **Vendor** | Manage store, products, orders, KYC, ranking, analytics, QR code + share link |
+| **Customer** | Browse, cart, checkout, order tracking, KYC, budget planner, referral links + coupon wallet |
 
 ---
 
-## 📋 Environment Variables Summary
+## 📋 Status
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `JWT_SECRET` | ✅ | Secret for JWT signing |
-| `PAYSTACK_SECRET_KEY` | Payments | Paystack API key |
-| `FLUTTERWAVE_SECRET_KEY` | Payments | Flutterwave API key |
-| `SENDGRID_API_KEY` | Emails | SendGrid key |
-| `SMTP_HOST/USER/PASS` | Emails | SMTP config |
-| `CLOUDINARY_URL` | Cloud uploads | Cloudinary URL |
-| `DATABASE_URL` | PostgreSQL | DB connection string |
-| `FRONTEND_URL` | ✅ Backend | Frontend origin for CORS |
-| `BACKEND_API_URL` | ✅ Frontend | Backend URL for API proxy |
-
----
-
-## 📅 Status
-
-- **Version**: 5.2.0
-- **Last Updated**: April 28, 2026
+- **Version**: 5.3.0
+- **Last Updated**: May 1, 2026
 - **GitHub**: https://github.com/Charles5247/LastMart-V2.0
-- **Recommended Deployment**: Vercel (frontend) + Railway (backend)
+- **Supported Platforms**: Vercel, Netlify, Render, Railway, Fly.io, Docker, AWS, VPS
 
 ---
 

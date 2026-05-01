@@ -1,0 +1,39 @@
+# ─── Netlify deployment config — Frontend only ────────────────────────────────
+# Backend must be deployed separately (Railway / Render / Fly.io / VPS).
+# Set BACKEND_API_URL in Netlify UI → Site settings → Environment variables.
+#
+# HOW TO USE:
+#   1. Push repo to GitHub.
+#   2. Go to https://app.netlify.com → Add new site → Import from Git.
+#   3. Select repo Charles5247/LastMart-V2.0.
+#   4. Netlify auto-detects this file; build settings are pre-filled.
+#   5. Add environment variable: BACKEND_API_URL = https://your-backend-url
+#   6. Deploy.
+
+[build]
+  command   = "npm install --legacy-peer-deps && npm run build"
+  publish   = ".next"
+
+[build.environment]
+  NODE_VERSION              = "20"
+  NPM_FLAGS                 = "--legacy-peer-deps"
+  NEXT_TELEMETRY_DISABLED   = "1"
+
+# Required Netlify plugin for Next.js support
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Cache Next.js build artifacts for faster rebuilds
+[[plugins]]
+  package = "@netlify/plugin-cache-headers"
+
+# Security / caching headers
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"
