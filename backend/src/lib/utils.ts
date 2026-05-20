@@ -1,3 +1,6 @@
+import { Notifications } from "./db";
+
+
 export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = toRad(lat2 - lat1);
@@ -17,4 +20,16 @@ export function formatPrice(amount: number): string {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency', currency: 'NGN', minimumFractionDigits: 0,
   }).format(amount);
+}
+
+export async function createNotification(userId: string, type: string, title: string, message: string, data: object = {}) {
+  const notification = new Notifications({
+    user_id: userId,
+    type,
+    title,
+    message,
+    data,
+  })
+
+  await notification.save();
 }

@@ -31,6 +31,9 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
 
 /* ─── Route imports ──────────────────────────────────────────────────────── */
 import authRoutes         from './routes/auth';
@@ -91,6 +94,43 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 /** Parse cookies (used for auth_token in httpOnly cookies) */
 app.use(cookieParser());
 
+mongoose.connect(process.env.MONGODB_LOCAL_URL || 'mongodb://localhost:27017/lastmart')
+.then(() => console.log('MongoDB Connected'))
+.catch(err => console.log(err));
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'LastMart API Documentation',
+      version: '5.0.0',
+      description: 'Detailed documentation for the LastMart Backend API',
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}`,
+        description: 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+  },
+  apis: [ path.join(__dirname, './docs/*.ts'), path.join(__dirname, './routes/*.ts') ], 
+};
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
 /**
  * Serve uploaded images as static files.
  * Files are stored at <project-root>/public/uploads/
@@ -114,6 +154,10 @@ app.get('/health', (_req, res) => {
 });
 
 /* ─── API Routes ─────────────────────────────────────────────────────────── */
+
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.use('/api/auth',          authRoutes);
 app.use('/api/products',      productRoutes);
 app.use('/api/vendors',       vendorRoutes);

@@ -12,6 +12,9 @@
  */
 
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 export interface EmailOptions {
   to:       string | string[];
@@ -22,7 +25,7 @@ export interface EmailOptions {
 }
 
 const FROM_NAME    = process.env.EMAIL_FROM_NAME    || 'LastMart';
-const FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || 'noreply@lastmart.com';
+const FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || 'fortuneobioha926@gmail.com';
 const DEFAULT_FROM = `"${FROM_NAME}" <${FROM_ADDRESS}>`;
 
 /* ── SendGrid transport ───────────────────────────────────────────────────── */
@@ -104,6 +107,24 @@ export const EmailTemplates = {
            style="display:inline-block;background:#16a34a;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px;">
           Go to Dashboard →
         </a>
+      </div>
+    `,
+  }),
+
+  verification: (name: string, code: number) => ({
+    subject: `Welcome to LastMart, ${name}! 🎉`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;margin:auto;background:#f9fafb;padding:32px;border-radius:12px;">
+        <h1 style="color:#16a34a;">LastMart</h1>
+        <p>Hi <strong>${name}</strong>,</p>
+        <p>Thank you for signing up with LastMart. Your account has been successfully created. To complete your registration, please use the verification code below</p>
+        <p><strong>Your code is:</strong></p>
+        
+        <h2><strong>${code}</strong></h2>
+      
+        <p>If you did not initiate this request, please ignore this message</p>
+        <br>
+        <p>Best Regards, <br><strong>LastMart Team</strong></p>
       </div>
     `,
   }),

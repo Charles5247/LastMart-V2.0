@@ -18,6 +18,10 @@
 
 import Database from 'better-sqlite3';
 import path from 'path';
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import { userRoles, kycStatuses, vendorStatuses, rankingLevel, productVerificationStatus, orderStatuses, deliveryModes, paymentMethods, paymentStatus, advertStatus, transactionType, transactionStatus, paymentGateways, budgetPeriods, lamaInsightType, lamaTargetRoles, kycIdTypes, businessType, productAvailability, productAuthenticity, rankingType, rankingStatus, rankingAdPlacement, userTCRoles, couponTypes, referralStatus,  } from './types';
+import { IAdvertisement, IBudgetPlan, ICartItem, ICategory, ICoupon, IDeliveryAddress, ILamaInsight, INotification, IOrder, IOrderItem, IPayment, IProduct, IRecurringPurchase, IReview, ITransaction, IUser, IVendor } from './interface';
 
 /** Absolute path to the SQLite database file at the project root */
 const DB_PATH = path.join(__dirname, '../../..', 'lastmart.db');
@@ -584,6 +588,438 @@ function initializeDB(db: Database.Database) {
       insertPkg.run(p.id, p.name, p.type, p.days, p.price, p.priority, p.badge, p.features);
     }
   }
+
+
 }
+
+
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: userRoles, default: userRoles.CUSTOMER },
+  avatar: String,
+  phone: String,
+  address: String,
+  city: String,
+  latitude: Number,
+  longitude: Number,
+  gps_enabled: { type: Boolean, default: false },
+  preferred_currency: { type: String, default: 'NGN' },
+  is_verified: { type: Boolean, default: false },
+  verification_token: { type: Number, default: null },
+  verification_expires_at: { type: Date, default: null },
+  is_suspended: { type: Boolean, default: false },
+  suspension_reason: String,
+  kyc_status: { type: String, enum: kycStatuses, default: kycStatuses.NOT_SUBMITTED },
+  terms_accepted: { type: Boolean, default: false },
+  referral_code: String,
+  referred_by: {type: mongoose.Schema.Types.ObjectId},
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const vendorSchema = new mongoose.Schema({
+  user_id : {type: mongoose.Schema.Types.ObjectId, required: true, unique: true, ref: 'User'},
+  store_name: { type: String, required: true },
+  description: String,
+  logo: String,
+  banner: String,
+  category: String,
+  city: { type: String, required: true },
+  address: String,
+  latitude: Number,
+  longitude: Number,
+  phone: String,
+  email: String,
+  status: { type: String, enum: vendorStatuses, default: vendorStatuses.PENDING },
+  is_featured: { type: Boolean, default: false },
+  rating: { type: Number, default: 0 },
+  total_reviews: { type: Number, default: 0 },
+  total_sales: { type: Number, default: 0 },
+  ad_balance: { type: Number, default: 0 },
+  kyc_status: { type: String, enum: kycStatuses, default: kycStatuses.NOT_SUBMITTED },
+  ranking_level: { type: String, enum: rankingLevel, default: rankingLevel.NONE },
+  share_token: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const categorySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  icon: String,
+  image: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const productSchema = new mongoose.Schema({
+  vendor_id : {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor'},
+  category_id : {type: mongoose.Schema.Types.ObjectId, ref: 'Category'},
+  name: { type: String, required: true },
+  description: String,
+  price: { type: Number, required: true },
+  original_price: Number,
+  images: [{type: String}],
+  stock: { type: Number, default: 0 },
+  unit: { type: String, default: 'piece' },
+  is_active: { type: Boolean, default: true },
+  is_featured: { type: Boolean, default: false },
+  is_sponsored: { type: Boolean, default: false },
+  rating: { type: Number, default: 0 },
+  total_reviews: { type: Number, default: 0 },
+  total_sales: { type: Number, default: 0 },
+  tags: [{ type: String }],
+  verification_status: { type: String, enum: productVerificationStatus, default: productVerificationStatus.PENDING },
+  is_ranked: { type: Boolean, default: false },
+  rank_expires_at: Date,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const orderSchema = new mongoose.Schema({
+  customer_id : {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User'},
+  vendor_id : {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor'},
+  status: { type: String, enum: orderStatuses, default: orderStatuses.PENDING },
+  total_amount: { type: Number, required: true },
+  delivery_fee: { type: Number, default: 0 },
+  delivery_address: { type: String, required: true },
+  delivery_city: { type: String, required: true },
+  delivery_lat: Number,
+  delivery_lng: Number,
+  delivery_mode: { type: String, enum: deliveryModes, default: deliveryModes.STANDARD },
+  payment_method: { type: String, enum: paymentMethods, default: paymentMethods.CARD },
+  payment_status: { type: String, enum: paymentStatus, default: paymentStatus.PENDING },
+  notes: String,
+  estimated_delivery: Date,
+  actual_delivery: Date,
+  tracking_updates: [{ type: String }],
+  vendor_ready_notified: { type: Boolean, default: false },
+  ready_for_pickup: { type: Boolean, default: false },
+  ready_for_delivery: { type: Boolean, default: false },
+  ready_notified_at: Date,
+  coupon_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
+  discount_amount: { type: Number, default: 0 },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const orderItemSchema = new mongoose.Schema({
+  order_id : {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Order'},
+  product_id : {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product'},
+  quantity: { type: Number, required: true },
+  price: { type: Number, required: true },
+  product_name: { type: String, required: true },
+  product_image: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const cartItemSchema = new mongoose.Schema({
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User', unique: true },
+  product_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product', unique: true },
+  quantity: { type: Number, required: true, default: 1 },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const reviewSchema = new mongoose.Schema({
+  customer_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor' },
+  product_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+  order_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  comment: String,
+  images: [{ type: String }]
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const notificationSchema = new mongoose.Schema({
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  type: { type: String, required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  data: { type: Object, default: {} },
+  is_read: { type: Boolean, default: false },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const advertisementSchema = new mongoose.Schema({
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor' },
+  product_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+  type: { type: String, required: true },
+  title: { type: String, required: true },
+  description: String,
+  image: String,
+  budget: { type: Number, required: true },
+  spent: { type: Number, default: 0 },
+  clicks: { type: Number, default: 0 },
+  impressions: { type: Number, default: 0 },
+  status: { type: String, enum: advertStatus, default: advertStatus.ACTIVE },
+  start_date: { type: Date, required: true },
+  end_date: { type: Date, required: true },
+  target_city: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const savedVendorSchema = new mongoose.Schema({
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User', unique: true},
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor', unique: true},
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const transactionSchema = new mongoose.Schema({
+  order_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  amount: { type: Number, required: true },
+  type: { type: String, required: true, enum: transactionType },
+  status: { type: String, enum: transactionStatus, default: transactionStatus.COMPLETED },
+  payment_method: String,
+  reference: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const paymentSchema = new mongoose.Schema({
+  order_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  amount: { type: Number, required: true },
+  currency: { type: String, default: 'NGN' },
+  gateway: { type: String, required: true, enum: paymentGateways },
+  gateway_ref: String,
+  gateway_tx_id: String,
+  method: { type: String, required: true, enum: paymentMethods },
+  crypto_address: String,
+  crypto_currency: String,
+  crypto_amount: Number,
+  crypto_rate: Number,
+  giftcard_code: String,
+  giftcard_pin: String,
+  status: {type: String, enum: paymentStatus, default: paymentStatus.PENDING},
+  metadata: { type: Object, default: {} },
+  paid_at: Date,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const deliveryAddressSchema = new mongoose.Schema({
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  label: { type: String, required: true },                     // 'Home'|'Work'|'Other'
+  recipient_name: { type: String, required: true },
+  recipient_phone: { type: String, required: true },
+  address: { type: String, required: true },
+  city: { type: String, required: true },
+  state: String,
+  country: { type: String, default: 'Nigeria' },
+  latitude: Number,
+  longitude: Number,
+  is_default: { type: Boolean, default: false },
+  delivery_instructions: String
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const budgetPlanSchema = new mongoose.Schema({
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  name: { type: String, required: true },
+  total_budget: { type: Number, required: true },
+  spent: { type: Number, default: 0 },
+  currency: { type: String, default: 'NGN' },
+  period: { type: String, required: true, enum: budgetPeriods },
+  start_date: { type: Date, required: true },
+  end_date: Date,
+  is_active: { type: Boolean, default: true },
+  notes: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const recurringPurchaseSchema = new mongoose.Schema({
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  budget_plan_id : { type: mongoose.Schema.Types.ObjectId, ref: 'BudgetPlan' },
+  product_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product' }, 
+  quantity: { type: Number, default: 1 },
+  frequency: { type: String, required: true, enum: budgetPeriods },
+  next_order_date: { type: Date, required: true },
+  last_ordered_at: Date,
+  delivery_address_id : { type: mongoose.Schema.Types.ObjectId, ref: 'DeliveryAddress' },
+  is_active: { type: Boolean, default: true },
+  auto_order: { type: Boolean, default: false },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const lamaInsightSchema = new mongoose.Schema({
+  type: { type: String, required: true, enum: lamaInsightType },
+  target_role: { type: String, required: true, enum: lamaTargetRoles },
+  target_user_id: String,
+  title: { type: String, required: true },
+  body: { type: String, required: true },
+  data: { type: Object, default: {} },
+  is_read: { type: Boolean, default: false },
+  expires_at: Date,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const productImageSchema = new mongoose.Schema({
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor' },
+  product_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+  filename: { type: String, required: true },
+  original_name: String,
+  file_path: { type: String, required: true },
+  file_size: Number,
+  mime_type: String,
+  is_validated: { type: Boolean, default: false },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const kycVerificationSchema = new mongoose.Schema({
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  type: { type: String, required: true, enum: ['customer_kyc', 'vendor_kyc'] },
+  // Customer KYC fields
+  bvn: String,
+  nin: String,
+  selfie_url: String,
+  id_type: { type: String, enum: kycIdTypes },
+  id_number: String,
+  id_front_url: String,
+  id_back_url: String,
+  // Vendor-specific KYC fields
+  business_name: String,
+  business_reg_number: String,
+  tin: String,
+  business_type: { type: String, enum: businessType },
+  business_address: String,
+  cac_doc_url: String,
+  tax_cert_url: String,
+  utility_bill_url: String,
+  director_id_url: String,
+  // Status tracking
+  status: { type: String, enum: kycStatuses, default: kycStatuses.NOT_SUBMITTED },
+  reviewed_by: String,
+  rejection_reason: String,
+  submitted_at: { type: Date, default: Date.now },
+  reviewed_at: Date,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const productVerificationSchema = new mongoose.Schema({
+  product_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product' },
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor' },
+  // Availability proof
+  availability_status: { type: String, enum: productAvailability, default: productAvailability.PENDING },
+  stock_proof_url: String,
+  expected_restock_date: Date,
+  // Authenticity proof
+  authenticity_status: { type: String, enum: productAuthenticity, default: productAuthenticity.PENDING },
+  brand_auth_doc_url: String,
+  invoice_url: String,
+  lab_cert_url: String,
+  origin_doc_url: String,
+  // Disclaimers acknowledged
+  disclaimer_accepted: { type: Boolean, default: false },
+  disclaimer_text: String,
+  // Admin review
+  reviewed_by: String,
+  review_notes: String,
+  status: { type: String, enum: productVerificationStatus, default: productVerificationStatus.PENDING },
+  submitted_at: { type: Date, default: Date.now },
+  reviewed_at: Date,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const rankingPackageSchema = new mongoose.Schema({
+  name: { type: String, required: true, enum: rankingLevel },
+  type: { type: String, required: true, enum: rankingType },
+  duration_days: { type: Number, required: true },
+  price: { type: Number, required: true },
+  features: { type: [String], default: [] },
+  badge_icon: String,
+  priority_level: { type: Number, default: 1 },
+  is_active: { type: Boolean, default: true },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const vendorRankingSchema = new mongoose.Schema({
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor' },
+  product_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+  package_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'RankingPackage' },
+  type: { type: String, required: true, enum: rankingType },
+  status: { type: String, enum: rankingStatus, default: rankingStatus.PENDING },
+  start_date: Date,
+  end_date: Date,
+  amount_paid: Number,
+  payment_reference: String,
+  placement: { type: String, enum: rankingAdPlacement },
+  admin_approved: { type: Boolean, default: false },
+  approved_by: String,
+  lama_recommended: { type: Boolean, default: false },
+  notes: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const storeVisitSchema = new mongoose.Schema({
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor' },
+  visitor_id : { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  visitor_name: String,
+  session_id: String,
+  ip_address: String,
+  visited_at: { type: Date, default: Date.now },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const termsAcceptanceSchema = new mongoose.Schema({
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  version: { type: String, required: true, default: '1.0' },
+  role: { type: String, required: true, enum: userTCRoles },
+  accepted_at: { type: Date, default: Date.now },
+  ip_address: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const couponSchema = new mongoose.Schema({
+  code: { type: String, required: true, unique: true },
+  type: { type: String, required: true, enum: couponTypes, default: couponTypes.FIXED },
+  value: { type: Number, required: true },
+  min_order: { type: Number, default: 0 },
+  max_uses: { type: Number, default: 0 },
+  uses_count: { type: Number, default: 0 }, 
+  is_active: { type: Boolean, default: true },
+  expires_at: Date,
+  created_by: String,
+  description: String,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const referralSchema = new mongoose.Schema({
+  referrer_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  referred_id : { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor' },
+  coupon_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
+  status: { type: String, enum: referralStatus, default: referralStatus.PENDING },
+  reward_amount: { type: Number, default: 0 },
+  created_at: { type: Date, default: Date.now },
+  completed_at: Date,
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const couponUseSchema = new mongoose.Schema({
+  coupon_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Coupon' },
+  user_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  order_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
+  discount_amount: { type: Number, required: true },
+  used_at: { type: Date, default: Date.now },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+const vendorShareLinkSchema = new mongoose.Schema({
+  vendor_id : { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Vendor', unique: true },
+  share_token: { type: String, required: true, unique: true },
+  qr_data: String,
+  scans: { type: Number, default: 0 },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+
+userSchema.pre('save', async function(this: any) {
+  if (this.isModified('password')){
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+})
+
+
+const Users = mongoose.model<IUser>('User', userSchema);
+const Vendors = mongoose.model<IVendor>('Vendor', vendorSchema);
+const Categories = mongoose.model<ICategory>('Category', categorySchema);
+const Products = mongoose.model<IProduct>('Product', productSchema);
+const Orders = mongoose.model<IOrder>('Order', orderSchema);
+const OrderItems = mongoose.model<IOrderItem>('OrderItem', orderItemSchema);
+const CartItems = mongoose.model<ICartItem>('CartItem', cartItemSchema);
+const Reviews = mongoose.model<IReview>('Review', reviewSchema);
+const Notifications = mongoose.model<INotification>('Notification', notificationSchema);
+const Advertisements = mongoose.model<IAdvertisement>('Advertisement', advertisementSchema);
+const SavedVendors = mongoose.model('SavedVendor', savedVendorSchema);
+const Transactions = mongoose.model<ITransaction>('Transaction', transactionSchema);
+const Payments = mongoose.model<IPayment>('Payment', paymentSchema);
+const DeliveryAddresses = mongoose.model<IDeliveryAddress>('DeliveryAddress', deliveryAddressSchema);
+const BudgetPlans = mongoose.model<IBudgetPlan>('BudgetPlan', budgetPlanSchema);
+const RecurringPurchases = mongoose.model<IRecurringPurchase>('RecurringPurchase', recurringPurchaseSchema);
+const LamaInsights = mongoose.model<ILamaInsight>('LamaInsight', lamaInsightSchema);
+const ProductImages = mongoose.model('ProductImage', productImageSchema);
+const KYCVerifications = mongoose.model('KYCVerification', kycVerificationSchema);
+const ProductVerifications = mongoose.model('ProductVerification', productVerificationSchema);
+const RankingPackages = mongoose.model('RankingPackage', rankingPackageSchema);
+const VendorRankings = mongoose.model('VendorRanking', vendorRankingSchema);
+const StoreVisits = mongoose.model('StoreVisit', storeVisitSchema);
+const TermsAcceptances = mongoose.model('TermsAcceptance', termsAcceptanceSchema);
+const Coupons = mongoose.model<ICoupon>('Coupon', couponSchema);
+const Referrals = mongoose.model('Referral', referralSchema);
+const CouponUses = mongoose.model('CouponUse', couponUseSchema);
+const VendorShareLinks = mongoose.model('VendorShareLink', vendorShareLinkSchema);
+
+
+export {Users, Vendors, Categories, Products, Orders, OrderItems, CartItems, Reviews, Notifications, Advertisements, SavedVendors, Transactions, Payments, DeliveryAddresses, BudgetPlans, RecurringPurchases, LamaInsights, ProductImages, KYCVerifications, ProductVerifications, RankingPackages, VendorRankings, StoreVisits, TermsAcceptances, Coupons, Referrals, CouponUses, VendorShareLinks};
+
+
 
 export default getDB;

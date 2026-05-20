@@ -2,14 +2,9 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import getDB from '../lib/db';
 import { getUserFromRequest, requireAuth } from '../lib/auth';
-import { calculateDistance } from '../lib/utils';
+import { calculateDistance, createNotification } from '../lib/utils';
 
 const router = Router();
-
-function createNotification(db: any, userId: string, type: string, title: string, message: string, data: object = {}) {
-  db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)`)
-    .run(uuidv4(), userId, type, title, message, JSON.stringify(data));
-}
 
 // GET /api/vendors
 router.get('/', (req: Request, res: Response) => {
@@ -84,7 +79,7 @@ router.get('/:id', (req: Request, res: Response) => {
 
         // Notify the vendor about the store visit
         const displayName = visitorName || 'A customer';
-        createNotification(db, vendor.user_id, 'store_visit',
+        createNotification(vendor.user_id, 'store_visit',
           '👀 New Store Visit',
           `${displayName} just visited your store "${vendor.store_name}".`,
           { vendor_id: id, visitor_id: visitorId, visitor_name: visitorName }
