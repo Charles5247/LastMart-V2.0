@@ -96,7 +96,7 @@ app.use(cookieParser());
 
 mongoose.connect(process.env.MONGODB_LOCAL_URL || 'mongodb://localhost:27017/lastmart')
 .then(() => console.log('MongoDB Connected'))
-.catch(err => console.log(err));
+.catch((err: any) => console.log(err));
 
 const swaggerOptions = {
   definition: {

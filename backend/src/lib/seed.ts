@@ -345,7 +345,7 @@ if (require.main === module) {
     socketTimeoutMS: 30000
   })
   .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err));
+  .catch((err: any) => console.log(err));
 
-  seedNewDatabase().then(() => process.exit(0)).catch(err => { console.error(err); process.exit(1); });
+  seedNewDatabase().then(() => process.exit(0)).catch((err: any) => { console.error(err); process.exit(1); });
 }
