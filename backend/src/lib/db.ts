@@ -23,8 +23,10 @@ import bcrypt from 'bcryptjs';
 import { userRoles, kycStatuses, vendorStatuses, rankingLevel, productVerificationStatus, orderStatuses, deliveryModes, paymentMethods, paymentStatus, advertStatus, transactionType, transactionStatus, paymentGateways, budgetPeriods, lamaInsightType, lamaTargetRoles, kycIdTypes, businessType, productAvailability, productAuthenticity, rankingType, rankingStatus, rankingAdPlacement, userTCRoles, couponTypes, referralStatus,  } from './types';
 import { IAdvertisement, IBudgetPlan, ICartItem, ICategory, ICoupon, IDeliveryAddress, ILamaInsight, INotification, IOrder, IOrderItem, IPayment, IProduct, IRecurringPurchase, IReview, ITransaction, IUser, IVendor } from './interface';
 
-/** Absolute path to the SQLite database file at the project root */
-const DB_PATH = path.join(__dirname, '../../..', 'lastmart.db');
+/** Absolute path to the SQLite database file. Uses DATABASE_PATH when provided. */
+const DB_PATH = process.env.DATABASE_PATH
+  ? path.resolve(process.cwd(), process.env.DATABASE_PATH)
+  : path.join(__dirname, '../../..', 'lastmart.db');
 
 /** Singleton database instance – reused across all requests */
 let db: Database.Database;
