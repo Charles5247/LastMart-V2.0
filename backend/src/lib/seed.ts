@@ -12,7 +12,21 @@ export async function seedDatabase() {
   const db = getDB();
 
   const existing = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
-  if (existing.count > 0) return;
+  if (existing.count > 0) {
+    db.prepare(
+      'UPDATE users SET is_verified = 1 WHERE email IN (?, ?, ?, ?, ?, ?, ?, ?)' 
+    ).run(
+      'admin@lastmart.com',
+      'tunde@lastmart.com',
+      'amaka@lastmart.com',
+      'emeka@lastmart.com',
+      'fatima@lastmart.com',
+      'chidi@lastmart.com',
+      'bola@example.com',
+      'ngozi@example.com'
+    );
+    return;
+  }
 
   console.log('Seeding database...');
 
@@ -34,8 +48,8 @@ export async function seedDatabase() {
 
   const adminId = uuidv4();
   const adminPassword = await bcrypt.hash('admin123', 10);
-  db.prepare(`INSERT INTO users (id, name, email, password, role, city) VALUES (?, ?, ?, ?, ?, ?)`).run(
-    adminId, 'Admin User', 'admin@lastmart.com', adminPassword, 'admin', 'Lagos'
+  db.prepare(`INSERT INTO users (id, name, email, password, role, city, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
+    adminId, 'Admin User', 'admin@lastmart.com', adminPassword, 'admin', 'Lagos', 1
   );
 
   const vendors = [
@@ -52,8 +66,8 @@ export async function seedDatabase() {
     const vendorId = uuidv4();
     const password = await bcrypt.hash('vendor123', 10);
 
-    db.prepare(`INSERT INTO users (id, name, email, password, role, city, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      userId, v.name, v.email, password, 'vendor', v.city, v.lat, v.lng
+    db.prepare(`INSERT INTO users (id, name, email, password, role, city, latitude, longitude, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      userId, v.name, v.email, password, 'vendor', v.city, v.lat, v.lng, 1
     );
     db.prepare(`INSERT INTO vendors (id, user_id, store_name, description, category, city, latitude, longitude, status, is_featured, rating, total_reviews) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       vendorId, userId, v.store,
@@ -73,8 +87,8 @@ export async function seedDatabase() {
   for (const c of customers) {
     const id = uuidv4();
     const password = await bcrypt.hash('customer123', 10);
-    db.prepare(`INSERT INTO users (id, name, email, password, role, city, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      id, c.name, c.email, password, 'customer', c.city, c.lat, c.lng
+    db.prepare(`INSERT INTO users (id, name, email, password, role, city, latitude, longitude, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, c.name, c.email, password, 'customer', c.city, c.lat, c.lng, 1
     );
     customerIds.push(id);
   }
