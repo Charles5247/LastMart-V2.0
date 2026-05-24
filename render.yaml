@@ -19,7 +19,7 @@ services:
     name: lastmart-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm rebuild better-sqlite3 --update-binary && npm run build
     startCommand: node dist/server.js
     healthCheckPath: /health
     envVars:

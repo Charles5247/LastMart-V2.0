@@ -8,7 +8,7 @@ nixPkgs = ["nodejs_20"]
 cmds = ["npm install"]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = ["npm rebuild better-sqlite3 --update-binary", "npm run build"]
 
 [start]
 cmd = "node dist/server.js"
