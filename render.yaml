@@ -34,6 +34,10 @@ services:
         value: https://lastmart-frontend.onrender.com
       - key: DATABASE_PATH
         value: /var/data/lastmart.db
+      - key: MONGODB_LOCAL_URL
+        sync: false
+      # MongoDB connection string — set manually in Render dashboard
+      # Example: mongodb+srv://user:password@cluster.mongodb.net/lastmart
       # Payment keys — set manually in Render dashboard
       - key: PAYSTACK_SECRET_KEY
         sync: false

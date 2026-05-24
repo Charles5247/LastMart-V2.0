@@ -19,7 +19,6 @@ function generateVerificationCode(): {token: number, expiresIn: Date} {
 // POST /api/auth/login
 router.post('/login', async (req: Request, res: Response) => {
   try {
-    await seedNewDatabase();
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -59,8 +58,6 @@ router.post('/login', async (req: Request, res: Response) => {
 // POST /api/auth/register
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    await seedNewDatabase();
-
     const { name, email, password, role, city, phone, address, latitude, longitude, store_name, store_description, category, referral_code } = req.body;
 
     if (!name || !email || !password) {

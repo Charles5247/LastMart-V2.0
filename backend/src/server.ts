@@ -95,8 +95,16 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
 mongoose.connect(process.env.MONGODB_LOCAL_URL || 'mongodb://localhost:27017/lastmart')
-.then(() => console.log('MongoDB Connected'))
-.catch((err: any) => console.log(err));
+.then(() => {
+  console.log('MongoDB Connected');
+  // Seed database once on startup
+  const { seedNewDatabase } = require('./lib/seed');
+  seedNewDatabase().catch((err: any) => console.error('Seed error:', err));
+})
+.catch((err: any) => {
+  console.error('MongoDB Connection Error:', err.message);
+  console.warn('Continuing without MongoDB. Make sure MONGODB_LOCAL_URL is set.');
+});
 
 const swaggerOptions = {
   definition: {

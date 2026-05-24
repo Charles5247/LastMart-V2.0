@@ -160,10 +160,11 @@ export async function seedDatabase() {
 }
 
 export async function seedNewDatabase() {
-  const usersCount: number = (await Users.find({})).length;
-  if (usersCount > 0) return;
+  try {
+    const usersCount: number = (await Users.find({})).length;
+    if (usersCount > 0) return;
 
-  console.log('Seeding database...');
+    console.log('Seeding database...');
 
   // Creating product categories
 
@@ -336,6 +337,10 @@ export async function seedNewDatabase() {
     // })
   }
 
+  } catch (error: any) {
+    console.error('Database seed error:', error.message);
+    throw error;
+  }
 }
 
 // Run if called directly
