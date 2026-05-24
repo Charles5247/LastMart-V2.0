@@ -31,9 +31,9 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
-import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import { seedDatabase } from './lib/seed';
 
 /* ─── Route imports ──────────────────────────────────────────────────────── */
 import authRoutes         from './routes/auth';
@@ -94,17 +94,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 /** Parse cookies (used for auth_token in httpOnly cookies) */
 app.use(cookieParser());
 
-mongoose.connect(process.env.MONGODB_LOCAL_URL || 'mongodb://localhost:27017/lastmart')
-.then(() => {
-  console.log('MongoDB Connected');
-  // Seed database once on startup
-  const { seedNewDatabase } = require('./lib/seed');
-  seedNewDatabase().catch((err: any) => console.error('Seed error:', err));
-})
-.catch((err: any) => {
-  console.error('MongoDB Connection Error:', err.message);
-  console.warn('Continuing without MongoDB. Make sure MONGODB_LOCAL_URL is set.');
-});
+seedDatabase().catch((err: any) => console.error('Seed error:', err));
 
 const swaggerOptions = {
   definition: {
