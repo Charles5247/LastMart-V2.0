@@ -117,7 +117,7 @@ export default function Navbar() {
               {user ? (
                 <>
                   {/* Cart */}
-                  <Link href="/dashboard/customer" className="relative flex flex-col items-center text-white hover:bg-orange-600/50 px-3 py-1.5 rounded-md transition-colors group">
+                  <Link href="/cart" className="relative flex flex-col items-center text-white hover:bg-orange-600/50 px-3 py-1.5 rounded-md transition-colors group">
                     <div className="relative">
                       <ShoppingCart className="w-6 h-6" />
                       {cartCount > 0 && (

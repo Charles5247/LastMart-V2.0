@@ -6,8 +6,9 @@
  *   Step 2 – Payment method selection (card, bank, USSD, crypto, gift card)
  *   Step 3 – Order confirmation + payment verification
  *
- * All API calls go through Next.js /api/* which proxies to the Express backend.
- * Works fully offline: demo payments always succeed without real gateway calls.
+ * GUEST CHECKOUT: Users who are not logged in can checkout with just an email
+ * and phone number. The guest session is tracked via a temporary token returned
+ * from POST /api/auth/guest.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -21,7 +22,8 @@ import toast from 'react-hot-toast';
 import {
   MapPin, Plus, Check, ChevronRight, Truck, Zap, Moon, Calendar, Store,
   CreditCard, Building2, Smartphone, Bitcoin, Gift, ArrowLeft, ArrowRight,
-  Copy, RefreshCw, ShoppingBag, Loader, Star, Shield
+  Copy, RefreshCw, ShoppingBag, Loader, Star, Shield, User, Mail, Phone,
+  Lock, X, Info
 } from 'lucide-react';
 
 /* ─── Types ─────────────────────────────────────────────────────────────────── */
@@ -43,7 +45,13 @@ interface CartSummary {
   items: any[]; subtotal: number; count: number;
 }
 
-/* ─── Delivery mode icons ────────────────────────────────────────────────────── */
+interface GuestDetails {
+  name:  string;
+  email: string;
+  phone: string;
+}
+
+/* ─── Delivery mode icons ───────────────────────────────────────────────── */
 const MODE_ICON: Record<string, React.ReactNode> = {
   standard:  <Truck    size={18} />,
   express:   <Zap      size={18} />,
@@ -52,7 +60,7 @@ const MODE_ICON: Record<string, React.ReactNode> = {
   pickup:    <Store    size={18} />,
 };
 
-/* ─── Payment group labels & icons ──────────────────────────────────────────── */
+/* ─── Payment group labels ──────────────────────────────────────────────── */
 const GROUP_META: Record<string, { label: string; icon: React.ReactNode }> = {
   card:     { label: 'Card',         icon: <CreditCard  size={16} /> },
   bank:     { label: 'Bank',         icon: <Building2   size={16} /> },
@@ -63,74 +71,124 @@ const GROUP_META: Record<string, { label: string; icon: React.ReactNode }> = {
 };
 
 export default function CheckoutPage() {
-  const router   = useRouter();
-  const { user, token, refreshCart } = useApp();
+  const router                           = useRouter();
+  const { user, token: authToken, refreshCart } = useApp();
 
-  /* ── Wizard state ─────────────────────────────────────────────────────────── */
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  /* ── Guest state ──────────────────────────────────────────────────────── */
+  const isGuest                          = !user;
+  const [guestMode, setGuestMode]        = useState<'choose' | 'form' | 'ready'>('choose');
+  const [guestDetails, setGuestDetails]  = useState<GuestDetails>({ name: '', email: '', phone: '' });
+  const [guestToken, setGuestToken]      = useState<string | null>(null);
+  const [guestLoading, setGuestLoading]  = useState(false);
+
+  /* Derive the effective auth token (real user OR guest session token) */
+  const token = authToken ?? guestToken;
+
+  /* ── Wizard state ─────────────────────────────────────────────────────── */
+  const [step, setStep]                  = useState<1 | 2 | 3>(1);
 
   /* Step 1: delivery */
-  const [addresses,      setAddresses]      = useState<Address[]>([]);
-  const [selectedAddr,   setSelectedAddr]   = useState<string | null>(null);
-  const [deliveryModes,  setDeliveryModes]  = useState<DeliveryMode[]>([]);
-  const [selectedMode,   setSelectedMode]   = useState<string>('standard');
-  const [showNewAddr,    setShowNewAddr]    = useState(false);
-  const [addrForm,       setAddrForm]       = useState({
+  const [addresses,     setAddresses]    = useState<Address[]>([]);
+  const [selectedAddr,  setSelectedAddr] = useState<string | null>(null);
+  const [deliveryModes, setDeliveryModes]= useState<DeliveryMode[]>([]);
+  const [selectedMode,  setSelectedMode] = useState<string>('standard');
+  const [showNewAddr,   setShowNewAddr]  = useState(false);
+  const [addrForm,      setAddrForm]     = useState({
     label: 'Home', recipient_name: '', recipient_phone: '', address: '',
-    city: '', state: '', delivery_instructions: '', is_default: true
+    city: '', state: '', delivery_instructions: '', is_default: true,
   });
 
   /* Step 2: payment */
-  const [payMethods,     setPayMethods]     = useState<PaymentMethod[]>([]);
-  const [selectedPay,    setSelectedPay]    = useState<string>('paystack_card');
-  const [activeGroup,    setActiveGroup]    = useState<string>('card');
-  const [giftCode,       setGiftCode]       = useState('');
-  const [giftPin,        setGiftPin]        = useState('');
+  const [payMethods,    setPayMethods]   = useState<PaymentMethod[]>([]);
+  const [selectedPay,   setSelectedPay]  = useState<string>('paystack_card');
+  const [activeGroup,   setActiveGroup]  = useState<string>('card');
+  const [giftCode,      setGiftCode]     = useState('');
+  const [giftPin,       setGiftPin]      = useState('');
 
   /* Step 3: processing */
-  const [cart,           setCart]           = useState<CartSummary>({ items: [], subtotal: 0, count: 0 });
-  const [paymentResult,  setPaymentResult]  = useState<any>(null);
-  const [orderIds,       setOrderIds]       = useState<string[]>([]);
-  const [loading,        setLoading]        = useState(false);
-  const [pageLoading,    setPageLoading]    = useState(true);
+  const [cart,          setCart]         = useState<CartSummary>({ items: [], subtotal: 0, count: 0 });
+  const [paymentResult, setPaymentResult]= useState<any>(null);
+  const [orderIds,      setOrderIds]     = useState<string[]>([]);
+  const [loading,       setLoading]      = useState(false);
+  const [pageLoading,   setPageLoading]  = useState(true);
 
-  const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  const authHeaders = () => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  });
 
-  /* ── Bootstrap data ─────────────────────────────────────────────────────────── */
+  /* ── Guest session creation ───────────────────────────────────────────── */
+  const createGuestSession = async () => {
+    if (!guestDetails.name.trim() || !guestDetails.email.trim() || !guestDetails.phone.trim()) {
+      toast.error('Please fill in your name, email, and phone number'); return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestDetails.email)) {
+      toast.error('Please enter a valid email address'); return;
+    }
+    setGuestLoading(true);
+    try {
+      const res  = await fetch('/api/auth/guest', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(guestDetails),
+      });
+      const data = await res.json();
+      if (data.success && data.data?.token) {
+        setGuestToken(data.data.token);
+        setGuestMode('ready');
+        /* Pre-fill address form with guest details */
+        setAddrForm(f => ({
+          ...f,
+          recipient_name:  guestDetails.name,
+          recipient_phone: guestDetails.phone,
+        }));
+        setShowNewAddr(true);
+      } else {
+        toast.error(data.error ?? 'Failed to start guest session');
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    }
+    setGuestLoading(false);
+  };
+
+  /* ── Bootstrap data (runs once token is available) ───────────────────── */
   useEffect(() => {
-    if (!token) { router.push('/auth/login'); return; }
+    if (!token) {
+      /* Not logged in and no guest token yet — show the guest/login choice */
+      setPageLoading(false);
+      return;
+    }
     Promise.all([
-      fetch('/api/delivery/addresses',  { headers }).then(r => r.json()),
-      fetch('/api/delivery/modes',      { headers }).then(r => r.json()),
-      fetch('/api/payment/methods',     { headers }).then(r => r.json()),
-      fetch('/api/cart',                { headers }).then(r => r.json()),
+      fetch('/api/delivery/addresses',  { headers: authHeaders() }).then(r => r.json()),
+      fetch('/api/delivery/modes',      { headers: authHeaders() }).then(r => r.json()),
+      fetch('/api/payment/methods',     { headers: authHeaders() }).then(r => r.json()),
+      fetch('/api/cart',                { headers: authHeaders() }).then(r => r.json()),
     ]).then(([addrRes, modeRes, payRes, cartRes]) => {
       if (addrRes.success) {
-        setAddresses(addrRes.data);
-        const def = addrRes.data.find((a: Address) => a.is_default === 1);
+        setAddresses(addrRes.data ?? []);
+        const def = addrRes.data?.find((a: Address) => a.is_default === 1);
         if (def) setSelectedAddr(def.id);
       }
-      if (modeRes.success) setDeliveryModes(modeRes.data);
-      if (payRes.success)  setPayMethods(payRes.data);
+      if (modeRes.success) setDeliveryModes(modeRes.data ?? []);
+      if (payRes.success)  setPayMethods(payRes.data ?? []);
       if (cartRes.success) {
         const items    = cartRes.data?.items ?? [];
-        const subtotal = items.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
+        const subtotal = items.reduce((s: number, i: any) => s + (i.price ?? i.product?.price ?? 0) * i.quantity, 0);
         setCart({ items, subtotal, count: items.length });
       }
       setPageLoading(false);
     });
-  }, [token]);
+  }, [token]); // eslint-disable-line
 
-  /* ── Helpers ────────────────────────────────────────────────────────────────── */
-  const authHeaders = () => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` });
-
+  /* ── Helpers ─────────────────────────────────────────────────────────── */
   const deliveryFee = () => deliveryModes.find(m => m.id === selectedMode)?.fee ?? 500;
   const total       = () => cart.subtotal + deliveryFee();
 
   const formatPrice = (n: number) =>
     new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
 
-  /* ── Step 1: Save address ──────────────────────────────────────────────────── */
+  /* ── Step 1: Save address ─────────────────────────────────────────────── */
   const saveAddress = async () => {
     if (!addrForm.recipient_name || !addrForm.address || !addrForm.city || !addrForm.recipient_phone) {
       toast.error('Please fill all required fields'); return;
@@ -151,24 +209,29 @@ export default function CheckoutPage() {
     setLoading(false);
   };
 
-  /* ── Step 2 → 3: Place orders + initiate payment ──────────────────────────── */
+  /* ── Step 2 → 3: Place orders + initiate payment ──────────────────────── */
   const placeOrder = async () => {
     if (!selectedAddr || cart.items.length === 0) {
       toast.error('Cart is empty or no address selected'); return;
     }
     setLoading(true);
     try {
-      /* 1. Place orders (the orders route groups by vendor internally) */
-      const addr = addresses.find(a => a.id === selectedAddr);
+      const addr     = addresses.find(a => a.id === selectedAddr);
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
-          delivery_address:      addr?.address,
-          delivery_city:         addr?.city,
-          delivery_mode:         selectedMode,
-          payment_method:        selectedPay,
-          notes:                 addr?.delivery_instructions,
+          delivery_address: addr?.address,
+          delivery_city:    addr?.city,
+          delivery_mode:    selectedMode,
+          payment_method:   selectedPay,
+          notes:            addr?.delivery_instructions,
+          /* Guest fields for order confirmation email */
+          ...(isGuest && guestToken ? {
+            guest_email: guestDetails.email,
+            guest_name:  guestDetails.name,
+            guest_phone: guestDetails.phone,
+          } : {}),
         }),
       });
       const orderData = await orderRes.json();
@@ -177,7 +240,6 @@ export default function CheckoutPage() {
       const ids = (orderData.data as any[]).map((o: any) => o.id);
       setOrderIds(ids);
 
-      /* 2. Initiate payment for the first order (covers total) */
       const payRes = await fetch('/api/payment/initiate', {
         method: 'POST',
         headers: authHeaders(),
@@ -200,32 +262,28 @@ export default function CheckoutPage() {
     setLoading(false);
   };
 
-  /* ── Step 3: Verify / redeem payment ─────────────────────────────────────── */
+  /* ── Step 3: Verify payment ──────────────────────────────────────────── */
   const verifyPayment = async () => {
     if (!paymentResult) return;
     setLoading(true);
     try {
       let res, data;
-
       if (activeGroup === 'giftcard') {
-        /* Gift card flow */
         res  = await fetch('/api/payment/giftcard', {
           method: 'POST', headers: authHeaders(),
           body: JSON.stringify({ payment_id: paymentResult.payment_id, code: giftCode, pin: giftPin }),
         });
         data = await res.json();
       } else {
-        /* Card / bank / USSD / crypto flow */
         res  = await fetch('/api/payment/verify', {
           method: 'POST', headers: authHeaders(),
           body: JSON.stringify({ payment_id: paymentResult.payment_id, reference: paymentResult.reference }),
         });
         data = await res.json();
       }
-
       if (data.success) {
         toast.success('Payment confirmed! 🎉');
-        setTimeout(() => router.push('/dashboard/customer/orders'), 2000);
+        setTimeout(() => router.push(isGuest ? '/' : '/dashboard/customer/orders'), 2000);
       } else {
         toast.error(data.error || 'Payment verification failed');
       }
@@ -233,24 +291,200 @@ export default function CheckoutPage() {
     setLoading(false);
   };
 
-  /* ── Loading / auth guard ──────────────────────────────────────────────────── */
+  /* ── Loading state ───────────────────────────────────────────────────── */
   if (pageLoading) return (
     <div className="min-h-screen flex items-center justify-center">
       <Loader className="animate-spin text-orange-500" size={36} />
     </div>
   );
-  if (!user) return null;
 
-  /* ─── Render ─────────────────────────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────────────────────────
+     GUEST ENTRY SCREEN — shown before any checkout data is loaded
+  ───────────────────────────────────────────────────────────────────────── */
+  if (isGuest && guestMode !== 'ready') {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-gray-50 py-12">
+          <div className="max-w-md mx-auto px-4">
+
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShoppingBag className="w-8 h-8 text-orange-500" />
+              </div>
+              <h1 className="text-2xl font-black text-gray-800 mb-2">Checkout</h1>
+              <p className="text-gray-500 text-sm">Choose how you want to continue</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Sign in option */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border-2 border-orange-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <User size={18} className="text-orange-600" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-gray-800">Sign In</h2>
+                    <p className="text-xs text-gray-500">Access your saved addresses & order history</p>
+                  </div>
+                </div>
+                <Link
+                  href="/auth/login?redirect=/checkout"
+                  className="btn-primary w-full py-3 flex items-center justify-center gap-2 text-sm"
+                >
+                  <Lock size={15} /> Sign In to Checkout
+                </Link>
+                <p className="text-center text-xs text-gray-400 mt-3">
+                  No account?{' '}
+                  <Link href="/auth/register?redirect=/checkout" className="text-orange-600 hover:underline font-medium">
+                    Create one free
+                  </Link>
+                </p>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-sm text-gray-400 font-medium">or</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              {/* Guest option */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                    <Mail size={18} className="text-gray-600" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-gray-800">Continue as Guest</h2>
+                    <p className="text-xs text-gray-500">Just your name, email & phone</p>
+                  </div>
+                </div>
+
+                {guestMode === 'choose' ? (
+                  <button
+                    onClick={() => setGuestMode('form')}
+                    className="btn-secondary w-full py-3 text-sm"
+                  >
+                    Continue as Guest
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="label">Full Name *</label>
+                      <input
+                        className="input"
+                        placeholder="Your name"
+                        value={guestDetails.name}
+                        onChange={e => setGuestDetails(d => ({ ...d, name: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="label">Email Address *</label>
+                      <div className="relative">
+                        <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="email"
+                          className="input pl-9"
+                          placeholder="you@example.com"
+                          value={guestDetails.email}
+                          onChange={e => setGuestDetails(d => ({ ...d, email: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="label">Phone Number *</label>
+                      <div className="relative">
+                        <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="tel"
+                          className="input pl-9"
+                          placeholder="+234 800 000 0000"
+                          value={guestDetails.phone}
+                          onChange={e => setGuestDetails(d => ({ ...d, phone: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2 text-xs text-gray-500 bg-blue-50 rounded-lg p-3">
+                      <Info size={13} className="text-blue-500 flex-shrink-0 mt-0.5" />
+                      <span>Your order confirmation will be sent to this email. We'll never share your details.</span>
+                    </div>
+
+                    <button
+                      onClick={createGuestSession}
+                      disabled={guestLoading}
+                      className="btn-primary w-full py-3 flex items-center justify-center gap-2 text-sm"
+                    >
+                      {guestLoading
+                        ? <Loader size={15} className="animate-spin" />
+                        : <><ArrowRight size={15} /> Continue to Delivery</>
+                      }
+                    </button>
+
+                    <button
+                      onClick={() => setGuestMode('choose')}
+                      className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-1"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Benefits reminder */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-xs font-semibold text-gray-500 mb-2">Why create an account?</p>
+                <ul className="space-y-1 text-xs text-gray-500">
+                  {[
+                    'Save addresses for faster checkout',
+                    'Track your orders in real-time',
+                    'Exclusive member discounts & coupons',
+                    'Faster support response',
+                  ].map(b => (
+                    <li key={b} className="flex items-center gap-1.5">
+                      <Check size={11} className="text-green-500" /> {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  /* ─── Render full checkout (authenticated OR guest with token) ─────────── */
   return (
     <>
       <Navbar />
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-5xl mx-auto px-4">
 
+          {/* Guest banner */}
+          {isGuest && guestToken && (
+            <div className="mb-4 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-blue-700 text-sm">
+                <User size={15} className="flex-shrink-0" />
+                <span>Checking out as <strong>{guestDetails.email}</strong></span>
+              </div>
+              <Link
+                href="/auth/register?redirect=/checkout"
+                className="text-xs text-blue-600 hover:underline font-medium whitespace-nowrap"
+              >
+                Create account →
+              </Link>
+            </div>
+          )}
+
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
             <Link href="/marketplace" className="hover:text-orange-600">Marketplace</Link>
+            <ChevronRight size={14} />
+            <Link href="/cart" className="hover:text-orange-600">Cart</Link>
             <ChevronRight size={14} />
             <span className="text-gray-800 font-medium">Checkout</span>
           </div>
@@ -278,37 +512,39 @@ export default function CheckoutPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* ── Main content ───────────────────────────────────────────────── */}
             <div className="lg:col-span-2 space-y-4">
 
-              {/* ═══ STEP 1: DELIVERY ════════════════════════════════════════════ */}
+              {/* ═══ STEP 1: DELIVERY ═════════════════════════════════════════ */}
               {step === 1 && (
                 <>
-                  {/* Saved addresses */}
                   <section className="bg-white rounded-2xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="font-semibold text-gray-800 flex items-center gap-2">
                         <MapPin size={18} className="text-orange-500" /> Delivery Address
                       </h2>
-                      <button
-                        onClick={() => setShowNewAddr(!showNewAddr)}
-                        className="flex items-center gap-1 text-orange-600 text-sm font-medium hover:underline"
-                      >
-                        <Plus size={15} /> New Address
-                      </button>
+                      {!isGuest && (
+                        <button
+                          onClick={() => setShowNewAddr(!showNewAddr)}
+                          className="flex items-center gap-1 text-orange-600 text-sm font-medium hover:underline"
+                        >
+                          <Plus size={15} /> New Address
+                        </button>
+                      )}
                     </div>
 
                     {/* New address form */}
                     {showNewAddr && (
                       <div className="mb-4 p-4 bg-orange-50 rounded-xl border border-orange-100 space-y-3">
                         <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="label">Label</label>
-                            <select className="input" value={addrForm.label}
-                              onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))}>
-                              {['Home','Work','Other'].map(l => <option key={l}>{l}</option>)}
-                            </select>
-                          </div>
+                          {!isGuest && (
+                            <div>
+                              <label className="label">Label</label>
+                              <select className="input" value={addrForm.label}
+                                onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))}>
+                                {['Home','Work','Other'].map(l => <option key={l}>{l}</option>)}
+                              </select>
+                            </div>
+                          )}
                           <div>
                             <label className="label">Full Name *</label>
                             <input className="input" placeholder="Recipient name" value={addrForm.recipient_name}
@@ -334,14 +570,17 @@ export default function CheckoutPage() {
                         </div>
                         <div>
                           <label className="label">Delivery instructions (optional)</label>
-                          <input className="input" placeholder="Gate colour, landmark…" value={addrForm.delivery_instructions}
+                          <input className="input" placeholder="Gate colour, landmark…"
+                            value={addrForm.delivery_instructions}
                             onChange={e => setAddrForm(f => ({ ...f, delivery_instructions: e.target.value }))} />
                         </div>
-                        <div className="flex items-center gap-2">
-                          <input type="checkbox" id="setDefault" checked={addrForm.is_default}
-                            onChange={e => setAddrForm(f => ({ ...f, is_default: e.target.checked }))} />
-                          <label htmlFor="setDefault" className="text-sm text-gray-600">Set as default address</label>
-                        </div>
+                        {!isGuest && (
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" id="setDefault" checked={addrForm.is_default}
+                              onChange={e => setAddrForm(f => ({ ...f, is_default: e.target.checked }))} />
+                            <label htmlFor="setDefault" className="text-sm text-gray-600">Set as default address</label>
+                          </div>
+                        )}
                         <button onClick={saveAddress} disabled={loading}
                           className="btn-primary w-full flex items-center justify-center gap-2">
                           {loading && <Loader size={14} className="animate-spin" />} Save Address
@@ -385,6 +624,26 @@ export default function CheckoutPage() {
                       <Truck size={18} className="text-orange-500" /> Delivery Mode
                     </h2>
                     <div className="space-y-3">
+                      {deliveryModes.length === 0 && (
+                        /* Fallback if API not available */
+                        [{
+                          id: 'standard', label: 'Standard Delivery', description: 'Regular delivery',
+                          fee: 500, eta: '48 hours', icon: '🚚',
+                        }].map(mode => (
+                          <label key={mode.id}
+                            className="flex items-center gap-4 p-4 rounded-xl border-2 border-orange-400 bg-orange-50 cursor-pointer">
+                            <input type="radio" name="mode" value={mode.id} defaultChecked />
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl bg-orange-100 text-orange-600">{mode.icon}</div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-gray-800">{mode.label}</p>
+                              <p className="text-xs text-gray-500">{mode.description} · {mode.eta}</p>
+                            </div>
+                            <span className="text-sm font-bold text-gray-800">
+                              {formatPrice(mode.fee)}
+                            </span>
+                          </label>
+                        ))
+                      )}
                       {deliveryModes.map(mode => (
                         <label key={mode.id}
                           className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all
@@ -416,7 +675,7 @@ export default function CheckoutPage() {
                 </>
               )}
 
-              {/* ═══ STEP 2: PAYMENT ══════════════════════════════════════════════ */}
+              {/* ═══ STEP 2: PAYMENT ═══════════════════════════════════════════ */}
               {step === 2 && (
                 <>
                   <section className="bg-white rounded-2xl p-6 shadow-sm">
@@ -424,7 +683,6 @@ export default function CheckoutPage() {
                       <CreditCard size={18} className="text-orange-500" /> Payment Method
                     </h2>
 
-                    {/* Group tabs */}
                     <div className="flex flex-wrap gap-2 mb-5">
                       {Object.entries(GROUP_META).map(([g, meta]) =>
                         payMethods.some(m => m.group === g) ? (
@@ -444,7 +702,6 @@ export default function CheckoutPage() {
                       )}
                     </div>
 
-                    {/* Methods in active group */}
                     <div className="space-y-2">
                       {payMethods.filter(m => m.group === activeGroup).map(m => (
                         <label key={m.id}
@@ -459,7 +716,6 @@ export default function CheckoutPage() {
                       ))}
                     </div>
 
-                    {/* Gift card extra fields */}
                     {activeGroup === 'giftcard' && (
                       <div className="mt-4 space-y-3 p-4 bg-yellow-50 rounded-xl border border-yellow-100">
                         <p className="text-sm font-medium text-yellow-800">Enter your gift card details</p>
@@ -470,7 +726,6 @@ export default function CheckoutPage() {
                       </div>
                     )}
 
-                    {/* Crypto info */}
                     {activeGroup === 'crypto' && (
                       <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100 text-sm text-blue-800">
                         <Shield size={14} className="inline mr-1" />
@@ -493,7 +748,7 @@ export default function CheckoutPage() {
                 </>
               )}
 
-              {/* ═══ STEP 3: CONFIRMATION ════════════════════════════════════════ */}
+              {/* ═══ STEP 3: CONFIRMATION ══════════════════════════════════════ */}
               {step === 3 && paymentResult && (
                 <section className="bg-white rounded-2xl p-8 shadow-sm text-center space-y-6">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -504,9 +759,13 @@ export default function CheckoutPage() {
                     <p className="text-gray-500 text-sm">
                       {orderIds.length} order{orderIds.length > 1 ? 's' : ''} created. Complete payment below.
                     </p>
+                    {isGuest && (
+                      <p className="text-xs text-blue-600 mt-2">
+                        Confirmation will be sent to <strong>{guestDetails.email}</strong>
+                      </p>
+                    )}
                   </div>
 
-                  {/* Card / bank / USSD → checkout URL */}
                   {(activeGroup === 'card' || activeGroup === 'bank' || activeGroup === 'ussd' || activeGroup === 'mobile') && (
                     <div className="space-y-4">
                       <a href={paymentResult.checkout_url} target="_blank" rel="noreferrer"
@@ -522,7 +781,6 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {/* Crypto → wallet address */}
                   {activeGroup === 'crypto' && (
                     <div className="space-y-4 text-left">
                       <div className="bg-gray-900 text-green-400 rounded-xl p-4 font-mono text-sm space-y-2">
@@ -550,7 +808,6 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {/* Gift card form */}
                   {activeGroup === 'giftcard' && (
                     <div className="space-y-3 text-left">
                       <input className="input" placeholder="Gift card code"
@@ -565,15 +822,21 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  <Link href="/dashboard/customer/orders"
-                    className="block text-sm text-orange-600 hover:underline">
-                    View my orders →
-                  </Link>
+                  {!isGuest && (
+                    <Link href="/dashboard/customer/orders" className="block text-sm text-orange-600 hover:underline">
+                      View my orders →
+                    </Link>
+                  )}
+                  {isGuest && (
+                    <Link href="/auth/register" className="block text-sm text-orange-600 hover:underline">
+                      Create an account to track your order →
+                    </Link>
+                  )}
                 </section>
               )}
             </div>
 
-            {/* ── Order summary sidebar ─────────────────────────────────────── */}
+            {/* ── Order summary sidebar ──────────────────────────────────────── */}
             <div className="space-y-4">
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h3 className="font-semibold text-gray-800 mb-4">Order Summary</h3>
@@ -589,7 +852,9 @@ export default function CheckoutPage() {
                         <p className="text-sm font-medium text-gray-800 truncate">{item.product?.name}</p>
                         <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                       </div>
-                      <span className="text-sm font-semibold text-gray-800">{formatPrice(item.price * item.quantity)}</span>
+                      <span className="text-sm font-semibold text-gray-800">
+                        {formatPrice((item.price ?? item.product?.price ?? 0) * item.quantity)}
+                      </span>
                     </div>
                   ))}
                 </div>
