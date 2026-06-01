@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 /**
  * ─── LAMA AI Agent Dashboard ──────────────────────────────────────────────────
  * LAMA (LastMart Automated Market Agent) - The platform's AI-powered assistant.

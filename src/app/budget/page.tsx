@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 /**
  * ─── Budget Planner Page ──────────────────────────────────────────────────────
  * Allows customers to:

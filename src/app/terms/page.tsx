@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import { Store, Shield, AlertTriangle, CheckCircle, FileText, Scale, Ban } from 'lucide-react';

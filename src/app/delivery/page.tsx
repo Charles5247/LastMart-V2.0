@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 /**
  * ─── Delivery Address Manager Page ───────────────────────────────────────────
  * Customers manage their saved delivery addresses and learn about available

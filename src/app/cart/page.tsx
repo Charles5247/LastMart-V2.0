@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 /**
  * ─── Dedicated Cart Page ──────────────────────────────────────────────────────
  * Full cart experience with:

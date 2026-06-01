@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 /**
  * ─── Checkout Page ────────────────────────────────────────────────────────────
  * A three-step checkout flow:
