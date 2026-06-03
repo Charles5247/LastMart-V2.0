@@ -90,6 +90,11 @@ function LoginContent() {
               </div>
             </div>
 
+            <div className="flex items-center justify-between">
+              <div />
+              <Link href="/auth/forgot" className="text-sm text-orange-300 hover:text-orange-200">Forgot password?</Link>
+            </div>
+
             <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-orange-500 to-pink-600 text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50">
               {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
             </button>

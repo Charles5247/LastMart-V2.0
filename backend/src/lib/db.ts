@@ -562,6 +562,8 @@ function initializeDB(db: Database.Database) {
     `ALTER TABLE users  ADD COLUMN referral_code TEXT`,
     `ALTER TABLE users  ADD COLUMN referred_by TEXT`,
     `ALTER TABLE vendors ADD COLUMN share_token TEXT`,
+    `ALTER TABLE users  ADD COLUMN password_reset_token TEXT`,
+    `ALTER TABLE users  ADD COLUMN password_reset_expires TEXT`,
   ];
   for (const sql of migrations) {
     try { db.exec(sql); } catch { /* column already exists – ignore */ }

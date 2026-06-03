@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import getDB from '../lib/db';
 import { signToken } from '../lib/auth';
 import { seedDatabase } from '../lib/seed';
+import { sendEmail, EmailTemplates } from '../lib/email';
+import { requireAuth } from '../lib/auth';
 
 const router = Router();
 
@@ -117,6 +119,89 @@ router.post('/register', async (req: Request, res: Response) => {
     return res.status(201).json({ success: true, data: { user, token }, message: 'Registration successful' });
   } catch (error: any) {
     console.error('Register error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/auth/forgot
+router.post('/forgot', async (req: Request, res: Response) => {
+  try {
+    await seedDatabase();
+    const db = getDB();
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, error: 'Email is required' });
+
+    const user = db.prepare('SELECT id, name, email FROM users WHERE email = ?').get(email) as any;
+    // Always respond success to avoid leaking which emails are registered
+    if (!user) return res.json({ success: true });
+
+    const token = uuidv4();
+    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+    db.prepare('UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?').run(token, expires, user.id);
+
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/reset?token=${token}&email=${encodeURIComponent(user.email)}`;
+    await sendEmail(EmailTemplates.passwordReset(user.name || 'User', resetLink));
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('Forgot password error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/auth/reset
+router.post('/reset', async (req: Request, res: Response) => {
+  try {
+    await seedDatabase();
+    const db = getDB();
+    const { token, email, password } = req.body;
+    if (!token || !email || !password) return res.status(400).json({ success: false, error: 'Token, email and new password are required' });
+
+    const user = db.prepare('SELECT id, password_reset_token, password_reset_expires FROM users WHERE email = ?').get(email) as any;
+    if (!user || !user.password_reset_token) return res.status(400).json({ success: false, error: 'Invalid or expired token' });
+    if (user.password_reset_token !== token) return res.status(400).json({ success: false, error: 'Invalid token' });
+    if (!user.password_reset_expires || new Date(user.password_reset_expires) < new Date()) return res.status(400).json({ success: false, error: 'Token expired' });
+
+    const hashed = await bcrypt.hash(password, 10);
+    db.prepare('UPDATE users SET password = ?, password_reset_token = NULL, password_reset_expires = NULL, updated_at = (datetime("now")) WHERE id = ?').run(hashed, user.id);
+
+    return res.json({ success: true, message: 'Password updated' });
+  } catch (error: any) {
+    console.error('Reset password error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/auth/admin-reset - admin can trigger a reset for any user
+router.post('/admin-reset', async (req: Request, res: Response) => {
+  try {
+    const auth = requireAuth(req, ['admin']);
+    if ('error' in auth) return res.status(auth.status).json({ success: false, error: auth.error });
+
+    await seedDatabase();
+    const db = getDB();
+    const { user_id, email } = req.body;
+    if (!user_id && !email) return res.status(400).json({ success: false, error: 'user_id or email required' });
+
+    const user = user_id
+      ? db.prepare('SELECT id, name, email FROM users WHERE id = ?').get(user_id)
+      : db.prepare('SELECT id, name, email FROM users WHERE email = ?').get(email);
+
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const token = uuidv4();
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours for admin-initiated
+    db.prepare('UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?').run(token, expires, user.id);
+
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/reset?token=${token}&email=${encodeURIComponent(user.email)}`;
+    // Send email to user
+    await sendEmail(EmailTemplates.passwordReset(user.name || 'User', resetLink));
+
+    // Also return link to admin (caller) so they can share / print if needed
+    return res.json({ success: true, resetLink });
+  } catch (error: any) {
+    console.error('Admin reset error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 });
