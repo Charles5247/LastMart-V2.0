@@ -80,7 +80,7 @@ export default function Navbar() {
       {/* ── Main nav bar ── */}
       <div className="bg-orange-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 h-[60px]">
+          <div className="flex flex-wrap items-center gap-3 h-[60px]">
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0 mr-2">
@@ -96,12 +96,12 @@ export default function Navbar() {
             </div>
 
             {/* Search bar */}
-            <form onSubmit={handleSearch} className="flex-1 flex max-w-2xl">
+            <form onSubmit={handleSearch} className="hidden md:flex-1 md:flex max-w-2xl min-w-0">
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search for products, vendors, categories..."
-                className="flex-1 px-4 py-2.5 text-sm text-gray-800 focus:outline-none rounded-l-md bg-white placeholder-gray-400"
+                className="flex-1 min-w-0 px-4 py-2.5 text-sm text-gray-800 focus:outline-none rounded-l-md bg-white placeholder-gray-400"
               />
               <button
                 type="submit"
