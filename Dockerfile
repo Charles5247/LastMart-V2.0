@@ -7,7 +7,10 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 # Copy only manifests first for layer-caching
 COPY package.json package-lock.json .npmrc ./
-RUN npm install --legacy-peer-deps
+RUN apk add --no-cache python3 make g++ gcc musl-dev linux-headers build-base sqlite-dev && \
+	npm install --legacy-peer-deps && \
+	# remove build tools to keep layer small (they are not needed at runtime)
+	apk del --no-cache python3 make g++ gcc musl-dev build-base
 
 # ── Stage 2: Build ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
