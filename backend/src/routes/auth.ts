@@ -141,7 +141,10 @@ router.post('/forgot', async (req: Request, res: Response) => {
     db.prepare('UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?').run(token, expires, user.id);
 
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/reset?token=${token}&email=${encodeURIComponent(user.email)}`;
-    await sendEmail(EmailTemplates.passwordReset(user.name || 'User', resetLink));
+    await sendEmail({
+      to: user.email,
+      ...EmailTemplates.passwordReset(user.name || 'User', resetLink),
+    });
 
     return res.json({ success: true });
   } catch (error: any) {
@@ -185,8 +188,8 @@ router.post('/admin-reset', async (req: Request, res: Response) => {
     if (!user_id && !email) return res.status(400).json({ success: false, error: 'user_id or email required' });
 
     const user = user_id
-      ? db.prepare('SELECT id, name, email FROM users WHERE id = ?').get(user_id)
-      : db.prepare('SELECT id, name, email FROM users WHERE email = ?').get(email);
+      ? db.prepare('SELECT id, name, email FROM users WHERE id = ?').get(user_id) as any
+      : db.prepare('SELECT id, name, email FROM users WHERE email = ?').get(email) as any;
 
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
@@ -196,7 +199,10 @@ router.post('/admin-reset', async (req: Request, res: Response) => {
 
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/reset?token=${token}&email=${encodeURIComponent(user.email)}`;
     // Send email to user
-    await sendEmail(EmailTemplates.passwordReset(user.name || 'User', resetLink));
+    await sendEmail({
+      to: user.email,
+      ...EmailTemplates.passwordReset(user.name || 'User', resetLink),
+    });
 
     // Also return link to admin (caller) so they can share / print if needed
     return res.json({ success: true, resetLink });
