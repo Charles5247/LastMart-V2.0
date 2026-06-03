@@ -3,7 +3,8 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useApp } from '@/components/AppContext';
-import { Store, Eye, EyeOff, Mail, Lock, User, MapPin, Phone, Building, ArrowRight, Shield, CheckCircle, ExternalLink } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, MapPin, Phone, Building, ArrowRight, Shield, CheckCircle, ExternalLink } from 'lucide-react';
+import BrandLogo from '@/components/ui/BrandLogo';
 import toast from 'react-hot-toast';
 
 function RegisterContent() {
@@ -71,12 +72,9 @@ function RegisterContent() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-orange-950 to-pink-950 flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Store className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-3xl font-black text-white">LastMart</span>
-          </Link>
+          <div className="flex items-center justify-center">
+            <BrandLogo className="justify-center" />
+          </div>
           <p className="text-gray-400 mt-2">Create your account today</p>
         </div>
 

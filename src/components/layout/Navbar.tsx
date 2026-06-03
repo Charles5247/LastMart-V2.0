@@ -4,10 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import {
   ShoppingCart, Bell, Menu, X, MapPin, Search, ChevronDown,
   User, Package, Heart, Settings, LogOut, LayoutDashboard,
-  Store, Grid3x3, ChevronRight, Truck, Shield, Headphones
+  Grid3x3, ChevronRight, Truck, Shield, Headphones
 } from 'lucide-react';
 import { useApp } from '@/components/AppContext';
 import LocationPicker from '@/components/ui/LocationPicker';
+import BrandLogo from '@/components/ui/BrandLogo';
 
 const NAV_CATEGORIES = [
   { label: 'Electronics', icon: '📱' },
@@ -83,12 +84,9 @@ export default function Navbar() {
           <div className="flex flex-wrap items-center gap-3 h-[60px]">
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0 mr-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <Store className="w-5 h-5 text-orange-500" />
-              </div>
-              <span className="text-xl font-black text-white tracking-tight">LastMart</span>
-            </Link>
+            <div className="flex-shrink-0 mr-2">
+              <BrandLogo />
+            </div>
 
             {/* Location picker with GPS support */}
             <div className="hidden lg:block flex-shrink-0">
