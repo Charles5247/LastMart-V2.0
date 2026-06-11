@@ -6,11 +6,12 @@ import { signToken } from '../lib/auth';
 import { seedDatabase } from '../lib/seed';
 import { sendEmail, EmailTemplates } from '../lib/email';
 import { requireAuth } from '../lib/auth';
+import { loginLimiter, registerLimiter, resetLimiter, verifyCodeLimiter } from '../lib/rateLimiter';
 
 const router = Router();
 
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', loginLimiter, async (req: Request, res: Response) => {
   try {
     await seedDatabase();
     const db = getDB();
@@ -49,7 +50,7 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/auth/register
+// POST /api/auth/registeregisterLimiter, r
 router.post('/register', async (req: Request, res: Response) => {
   try {
     await seedDatabase();
@@ -124,7 +125,7 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/forgot
-router.post('/forgot', async (req: Request, res: Response) => {
+router.post('/forgot', resetLimiter, async (req: Request, res: Response) => {
   try {
     await seedDatabase();
     const db = getDB();
@@ -154,7 +155,7 @@ router.post('/forgot', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/reset
-router.post('/reset', async (req: Request, res: Response) => {
+router.post('/reset', resetLimiter, async (req: Request, res: Response) => {
   try {
     await seedDatabase();
     const db = getDB();

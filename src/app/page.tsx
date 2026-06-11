@@ -32,11 +32,11 @@ export const metadata: Metadata = {
   openGraph: {
     title:       'LastMart — Shop Local, Delivered Fast',
     description: 'Nigeria\'s fastest local marketplace. Discover thousands of products from verified vendors in your city.',
-    url:         'https://lastmart.com',
+    url:         'https://lastmart.onrender.com',
     siteName:    'LastMart',
     type:        'website',
     images: [{
-      url:    'https://lastmart.com/og-image.png',
+      url:    'https://lastmart.onrender.com/og-image.png',
       width:  1200,
       height: 630,
       alt:    'LastMart — Nigeria\'s Local Marketplace',
@@ -46,10 +46,10 @@ export const metadata: Metadata = {
     card:        'summary_large_image',
     title:       'LastMart — Shop Local, Delivered Fast',
     description: 'Nigeria\'s fastest local marketplace. Discover thousands of products from verified vendors in your city.',
-    images:      ['https://lastmart.com/og-image.png'],
+    images:      ['https://lastmart.onrender.com/og-image.png'],
   },
   alternates: {
-    canonical: 'https://lastmart.com',
+    canonical: 'https://lastmart.onrender.com',
   },
 };
 
