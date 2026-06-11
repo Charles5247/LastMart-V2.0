@@ -125,7 +125,7 @@ router.post('/initiate', async (req: Request, res: Response) => {
           customizations: {
             title:       'LastMart Payment',
             description: `Order #${order_id.slice(0, 8)}`,
-            logo:        `${FRONTEND_URL}/Logo-1.png`,
+            logo:        `${FRONTEND_URL}/backless-colored-logo.png`,
           },
           meta: { order_id, user_id: user.userId, payment_id: paymentId },
         },

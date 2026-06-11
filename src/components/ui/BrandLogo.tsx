@@ -1,9 +1,13 @@
 import Link from 'next/link';
 
-export default function BrandLogo({ className = '' }: { className?: string }) {
+type LogoVariant = 'colored' | 'outline';
+
+export default function BrandLogo({ className = '', variant = 'outline' }: { className?: string; variant?: LogoVariant }) {
+  const logoSrc = variant === 'colored' ? '/backless-colored-logo.png' : '/backless-logo.png';
+  
   return (
     <Link href="/" className={`inline-flex items-center ${className}`}>
-      <img src="/Logo-1.png" alt="LastMart logo" className="h-10 w-auto" />
+      <img src={logoSrc} alt="LastMart logo" className="h-10 w-auto" />
     </Link>
   );
 }
