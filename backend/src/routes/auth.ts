@@ -10,6 +10,7 @@ import { registerLimiter, resetLimiter, verifyCodeLimiter } from '../lib/rateLim
 
 const router = Router();
 
+/* ─── Failed Login Tracking (counts only invalid attempts) ──────────────── */
 const FAILED_LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_FAILED_LOGIN_ATTEMPTS = 5;
 const failedLoginAttempts = new Map<string, { count: number; firstAttempt: number }>();
@@ -53,8 +54,8 @@ function resetFailedLogins(req: Request) {
   failedLoginAttempts.delete(getClientKey(req));
 }
 
-const FAILED_LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_FAILED_LOGINasync (req: Request, res: Response) => {
+// POST /api/auth/login
+router.post('/login', async (req: Request, res: Response) => {
   try {
     if (isLoginBlocked(req)) {
       return res.status(429).json({
@@ -85,67 +86,8 @@ const MAX_FAILED_LOGINasync (req: Request, res: Response) => {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    resetFailedLogins(req
-      recordFailedLogin(req);
-      return res.status(400).json({ success: false, error: 'Email and password are required' });
-    }
-
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as any;
-    if (!user) {
-      recordFailedLogin(req);
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    }
-
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      recordFailedLogin(req);
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    }
-
-    resetFailedLogins(req
-  return attempt.count >= MAX_FAILED_LOGIN_ATTEMPTS;
-}
-
-function getRetryAfterSeconds(req: Request): number {
-  const key = getClientKey(req);
-  const attempt = failedLoginAttempts.get(key);
-  if (!attempt) return 0;
-  const elapsed = Date.now() - attempt.firstAttempt;
-  return Math.max(0, Math.ceil((FAILED_LOGIN_WINDOW_MS - elapsed) / 1000));
-}
-
-function recordFailedLogin(req: Request) {
-  const key = getClientKey(req);
-  const now = Date.now();
-  const attempt = failedLoginAttempts.get(key);
-  if (!attempt || now - attempt.firstAttempt > FAILED_LOGIN_WINDOW_MS) {
-    failedLoginAttempts.set(key, { count: 1, firstAttempt: now });
-  } else {
-    attempt.count += 1;
-    failedLoginAttempts.set(key, attempt);
-  }
-}
-
-function resetFailedLogins(req: Request) {
-  failedLoginAttempts.delete(getClientKey(req));
-}
-
-// POST /api/auth/login
-router.post('/login', loginLimiter, async (req: Request, res: Response) => {
-  try {
-    await seedDatabase();
-    const db = getDB();
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ success: false, error: 'Email and password are required' });
-    }
-
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as any;
-    if (!user) return res.status(401).json({ success: false, error: 'Invalid credentials' });
-
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    // Clear failed attempts on successful login
+    resetFailedLogins(req);
 
     let vendorInfo = null;
     if (user.role === 'vendor') {
@@ -170,7 +112,7 @@ router.post('/login', loginLimiter, async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/auth/registeregisterLimiter, r
+// POST /api/auth/register
 router.post('/register', async (req: Request, res: Response) => {
   try {
     await seedDatabase();
