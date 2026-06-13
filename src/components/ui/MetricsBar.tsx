@@ -20,8 +20,8 @@ interface Metric {
 const DEFAULT_METRICS: Metric[] = [
   {
     icon:     Users,
-    value:    '50,000+',
-    rawNum:   50000,
+    value:    '5000+',
+    rawNum:   5000,
     label:    'Happy Customers',
   },
   {
@@ -38,8 +38,8 @@ const DEFAULT_METRICS: Metric[] = [
   },
   {
     icon:     MapPin,
-    value:    '200+',
-    rawNum:   200,
+    value:    '10+',
+    rawNum:   0,
     label:    'Cities Covered',
   },
   {
@@ -63,7 +63,7 @@ function MetricItem({ metric }: { metric: Metric }) {
 
   return (
     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 py-6 px-4 text-center sm:text-left">
-      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+      <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
         <Icon className="w-6 h-6 text-white" />
       </div>
       <div>
@@ -104,7 +104,7 @@ export default function MetricsBar({
     return (
       <div
         ref={ref}
-        className={`panel-nav-bgcolor border-y border-orange-400/30 ${className}`}
+        
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center sm:justify-between gap-6 overflow-x-auto scrollbar-hide py-4">
@@ -126,7 +126,7 @@ export default function MetricsBar({
   return (
     <div
       ref={ref}
-      className={`panel-nav-bgcolor ${className}`}
+      
       aria-label="LastMart social proof metrics"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
