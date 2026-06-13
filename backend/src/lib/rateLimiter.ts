@@ -14,7 +14,7 @@ import rateLimit from 'express-rate-limit';
  */
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  max: 5, // limit each IP to 5 failed login attempts per windowMs
   message: {
     success: false,
     error: 'Too many login attempts. Please try again in 15 minutes.',
@@ -22,11 +22,7 @@ export const loginLimiter = rateLimit({
   },
   standardHeaders: true, // return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // disable the `X-RateLimit-*` headers
-  skip: (req) => {
-    // Skip rate limiting if X-Forwarded-For header is present (trusted proxy)
-    // This allows load balancers to bypass the limiter on health checks
-    return false;
-  },
+  skipSuccessfulRequests: true,
   keyGenerator: (req) => {
     // Use X-Forwarded-For if behind a proxy, otherwise use IP
     return req.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || 'unknown';

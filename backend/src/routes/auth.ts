@@ -6,9 +6,129 @@ import { signToken } from '../lib/auth';
 import { seedDatabase } from '../lib/seed';
 import { sendEmail, EmailTemplates } from '../lib/email';
 import { requireAuth } from '../lib/auth';
-import { loginLimiter, registerLimiter, resetLimiter, verifyCodeLimiter } from '../lib/rateLimiter';
+import { registerLimiter, resetLimiter, verifyCodeLimiter } from '../lib/rateLimiter';
 
 const router = Router();
+
+const FAILED_LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_FAILED_LOGIN_ATTEMPTS = 5;
+const failedLoginAttempts = new Map<string, { count: number; firstAttempt: number }>();
+
+function getClientKey(req: Request) {
+  return req.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || 'unknown';
+}
+
+function isLoginBlocked(req: Request): boolean {
+  const key = getClientKey(req);
+  const attempt = failedLoginAttempts.get(key);
+  if (!attempt) return false;
+  if (Date.now() - attempt.firstAttempt > FAILED_LOGIN_WINDOW_MS) {
+    failedLoginAttempts.delete(key);
+    return false;
+  }
+  return attempt.count >= MAX_FAILED_LOGIN_ATTEMPTS;
+}
+
+function getRetryAfterSeconds(req: Request): number {
+  const key = getClientKey(req);
+  const attempt = failedLoginAttempts.get(key);
+  if (!attempt) return 0;
+  const elapsed = Date.now() - attempt.firstAttempt;
+  return Math.max(0, Math.ceil((FAILED_LOGIN_WINDOW_MS - elapsed) / 1000));
+}
+
+function recordFailedLogin(req: Request) {
+  const key = getClientKey(req);
+  const now = Date.now();
+  const attempt = failedLoginAttempts.get(key);
+  if (!attempt || now - attempt.firstAttempt > FAILED_LOGIN_WINDOW_MS) {
+    failedLoginAttempts.set(key, { count: 1, firstAttempt: now });
+  } else {
+    attempt.count += 1;
+    failedLoginAttempts.set(key, attempt);
+  }
+}
+
+function resetFailedLogins(req: Request) {
+  failedLoginAttempts.delete(getClientKey(req));
+}
+
+const FAILED_LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_FAILED_LOGINasync (req: Request, res: Response) => {
+  try {
+    if (isLoginBlocked(req)) {
+      return res.status(429).json({
+        success: false,
+        error: 'Too many login attempts. Please try again later.',
+        retryAfter: getRetryAfterSeconds(req),
+      });
+    }
+
+    await seedDatabase();
+    const db = getDB();
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      recordFailedLogin(req);
+      return res.status(400).json({ success: false, error: 'Email and password are required' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as any;
+    if (!user) {
+      recordFailedLogin(req);
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      recordFailedLogin(req);
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+
+    resetFailedLogins(req
+      recordFailedLogin(req);
+      return res.status(400).json({ success: false, error: 'Email and password are required' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as any;
+    if (!user) {
+      recordFailedLogin(req);
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      recordFailedLogin(req);
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+
+    resetFailedLogins(req
+  return attempt.count >= MAX_FAILED_LOGIN_ATTEMPTS;
+}
+
+function getRetryAfterSeconds(req: Request): number {
+  const key = getClientKey(req);
+  const attempt = failedLoginAttempts.get(key);
+  if (!attempt) return 0;
+  const elapsed = Date.now() - attempt.firstAttempt;
+  return Math.max(0, Math.ceil((FAILED_LOGIN_WINDOW_MS - elapsed) / 1000));
+}
+
+function recordFailedLogin(req: Request) {
+  const key = getClientKey(req);
+  const now = Date.now();
+  const attempt = failedLoginAttempts.get(key);
+  if (!attempt || now - attempt.firstAttempt > FAILED_LOGIN_WINDOW_MS) {
+    failedLoginAttempts.set(key, { count: 1, firstAttempt: now });
+  } else {
+    attempt.count += 1;
+    failedLoginAttempts.set(key, attempt);
+  }
+}
+
+function resetFailedLogins(req: Request) {
+  failedLoginAttempts.delete(getClientKey(req));
+}
 
 // POST /api/auth/login
 router.post('/login', loginLimiter, async (req: Request, res: Response) => {
