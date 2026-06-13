@@ -7,7 +7,7 @@ export default function BrandLogo({ className = '', variant = 'outline' }: { cla
 
   return (
     <Link href="/" className={`inline-flex items-center ${className}`}>
-      <img src={logoSrc} alt="LastMart logo" className="h-12 sm:h-14 md:h-16 w-auto" />
+      <img src={logoSrc} alt="LastMart logo" className="h-20 sm:h-24 md:h-25 w-auto" />
     </Link>
   );
 }

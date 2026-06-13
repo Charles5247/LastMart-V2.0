@@ -11,7 +11,7 @@
   --border:       #e5e7eb;   /* gray-200    */
   --surface:      #ffffff;
   --bg:           #f3f4f6;   /* gray-100    */
-
+  --brand-gradient: linear-gradient(90deg, #ea580c, #f97316, #fbbf24);
   /* Shadows */
   --shadow-card:  0 1px 3px 0 rgb(0 0 0 / .08), 0 1px 2px -1px rgb(0 0 0 / .05);
   --shadow-hover: 0 4px 16px 0 rgb(0 0 0 / .12);
@@ -28,6 +28,17 @@ html {
 
 html, body {
   overflow-x: hidden;
+}
+.nav-bgcolor{
+  background: var(--brand-gradient) !important;
+}
+
+.panel-nav-bgcolor {
+  background: var(--brand-gradient) !important;
+}
+
+.bg-brand-gradient {
+  background: var(--brand-gradient) !important;
 }
 
 body {
@@ -208,6 +219,10 @@ body {
   border-radius: 8px;
   border: 1px solid var(--border);
   overflow: hidden;
+}
+
+.panel-nav-bgcolor {
+  background: var(--brand-gradient) !important;
 }
 
 /* ─── Form inputs ───────────────────────────────────────── */
