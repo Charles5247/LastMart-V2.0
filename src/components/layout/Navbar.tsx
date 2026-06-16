@@ -85,7 +85,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <div className="flex-shrink-0 mr-2">
-              <BrandLogo />
+              <BrandLogo size="lg" showText={false} />
             </div>
 
             {/* Location picker with GPS support */}
@@ -201,14 +201,27 @@ export default function Navbar() {
                             <Link href="/dashboard/customer/orders" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
                               <Package className="w-4 h-4 mr-3 text-blue-500" /> My Orders
                             </Link>
-                            <Link href="/dashboard/customer/saved" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
-                              <Heart className="w-4 h-4 mr-3 text-red-500" /> Saved Vendors
+                            <Link href="/dashboard/customer/wishlist" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                              <Heart className="w-4 h-4 mr-3 text-red-500" /> Wishlist
+                            </Link>
+                            <Link href="/dashboard/customer/disputes" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                              <Shield className="w-4 h-4 mr-3 text-orange-500" /> Disputes
                             </Link>
                             <Link href="/budget" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
                               <span className="w-4 h-4 mr-3 text-green-500 font-bold text-xs flex items-center justify-center">₦</span> Budget Planner
                             </Link>
-                            <Link href="/delivery" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
-                              <Truck className="w-4 h-4 mr-3 text-orange-500" /> Delivery Addresses
+                          </>)}
+                          {user.role === 'vendor' && (<>
+                            <Link href="/dashboard/vendor/messages" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                              <span className="w-4 h-4 mr-3 text-blue-500">💬</span> Messages
+                            </Link>
+                            <Link href="/dashboard/vendor/payouts" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                              <span className="w-4 h-4 mr-3 text-green-500">💰</span> Payouts
+                            </Link>
+                          </>)}
+                          {user.role === 'rider' && (<>
+                            <Link href="/dashboard/rider" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                              <span className="w-4 h-4 mr-3 text-orange-500">🏍️</span> Rider Dashboard
                             </Link>
                           </>)}
                           <Link href="/lama" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
@@ -267,6 +280,9 @@ export default function Navbar() {
                 {cat.label}
               </Link>
             ))}
+            <Link href="/whatsapp" className="flex items-center gap-1.5 text-green-400 hover:text-green-300 text-sm px-4 py-2.5 hover:bg-white/10 transition-colors whitespace-nowrap flex-shrink-0 border-l border-white/10 ml-auto">
+              <span className="text-base leading-none">💬</span> WhatsApp Shop
+            </Link>
           </div>
         </div>
       </div>

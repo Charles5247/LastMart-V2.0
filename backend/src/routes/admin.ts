@@ -491,4 +491,85 @@ router.get('/store-visits', (req: Request, res: Response) => {
   }
 });
 
+/* ─── GET /api/admin/disputes ──────────────────────────────────────────────── */
+router.get('/disputes', requireAuth, (req: any, res: Response) => {
+  try {
+    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const db = getDB();
+    const { status } = req.query;
+    let query = `SELECT d.*, u.name as buyer_name, o.total_amount as order_amount, v.store_name as vendor_name
+      FROM disputes d JOIN users u ON d.buyer_id = u.id JOIN orders o ON d.order_id = o.id
+      LEFT JOIN vendors v ON o.vendor_id = v.id`;
+    const params: any[] = [];
+    if (status) { query += ' WHERE d.status = ?'; params.push(status); }
+    query += ' ORDER BY d.created_at DESC';
+    const disputes = db.prepare(query).all(...params);
+    return res.json({ success: true, data: disputes });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/* ─── POST /api/admin/disputes/:id/resolve ──────────────────────────────────── */
+router.post('/disputes/:id/resolve', requireAuth, (req: any, res: Response) => {
+  try {
+    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const db = getDB();
+    const { decision, admin_note, refund_amount } = req.body;
+    if (!decision || !admin_note) return res.status(400).json({ success: false, message: 'Decision and note required' });
+    const status = decision === 'rejected' ? 'rejected' : 'resolved';
+    db.prepare('UPDATE disputes SET status=?, decision=?, admin_note=?, refund_amount=?, resolved_at=CURRENT_TIMESTAMP WHERE id=?')
+      .run(status, decision, admin_note, refund_amount || null, req.params.id);
+    return res.json({ success: true, message: 'Dispute resolved' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/* ─── GET /api/admin/riders ─────────────────────────────────────────────────── */
+router.get('/riders', requireAuth, (req: any, res: Response) => {
+  try {
+    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const db = getDB();
+    const riders = db.prepare(`
+      SELECT r.*, u.name, u.email, u.phone
+      FROM riders r JOIN users u ON r.user_id = u.id
+      ORDER BY r.created_at DESC
+    `).all();
+    return res.json({ success: true, data: riders });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/* ─── PUT /api/admin/riders/:id/kyc ─────────────────────────────────────────── */
+router.put('/riders/:id/kyc', requireAuth, (req: any, res: Response) => {
+  try {
+    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const db = getDB();
+    const { kyc_status, note } = req.body;
+    db.prepare('UPDATE riders SET kyc_status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(kyc_status, req.params.id);
+    if (kyc_status === 'approved') {
+      const rider = db.prepare('SELECT user_id FROM riders WHERE id=?').get(req.params.id) as any;
+      if (rider) db.prepare("UPDATE users SET role='rider' WHERE id=?").run(rider.user_id);
+    }
+    return res.json({ success: true, message: `Rider KYC ${kyc_status}` });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/* ─── PUT /api/admin/riders/:id/status ──────────────────────────────────────── */
+router.put('/riders/:id/status', requireAuth, (req: any, res: Response) => {
+  try {
+    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const db = getDB();
+    const { is_active } = req.body;
+    db.prepare('UPDATE riders SET is_active=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(is_active ? 1 : 0, req.params.id);
+    return res.json({ success: true, message: `Rider ${is_active ? 'activated' : 'suspended'}` });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

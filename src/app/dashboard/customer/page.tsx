@@ -123,8 +123,12 @@ export default function CustomerDashboard() {
           {[
             { href: '/marketplace', label: 'Shop Now', icon: '🛍️', color: 'bg-orange-50 border-orange-200 text-orange-700' },
             { href: '/dashboard/customer/orders', label: 'My Orders', icon: '📦', color: 'bg-blue-50 border-blue-200 text-blue-700' },
-            { href: '/dashboard/customer/referrals', label: 'Referrals & Coupons', icon: '🎁', color: 'bg-pink-50 border-pink-200 text-pink-700' },
+            { href: '/dashboard/customer/wishlist', label: 'Wishlist', icon: '❤️', color: 'bg-red-50 border-red-200 text-red-700' },
+            { href: '/dashboard/customer/referrals', label: 'Referrals', icon: '🎁', color: 'bg-pink-50 border-pink-200 text-pink-700' },
+            { href: '/dashboard/customer/disputes', label: 'Disputes', icon: '⚖️', color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
+            { href: '/dashboard/customer/returns', label: 'Returns', icon: '↩️', color: 'bg-green-50 border-green-200 text-green-700' },
             { href: '/lama', label: 'AI Assistant', icon: '🤖', color: 'bg-purple-50 border-purple-200 text-purple-700' },
+            { href: '/whatsapp', label: 'WhatsApp Shop', icon: '💬', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
           ].map(l => (
             <Link key={l.href} href={l.href} className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium hover:opacity-80 transition-all ${l.color}`}>
               <span className="text-lg">{l.icon}</span>{l.label}

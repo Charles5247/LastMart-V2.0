@@ -308,6 +308,8 @@ export default function AdminDashboard() {
             { href: '/dashboard/admin/kyc', icon: Shield, label: 'KYC Reviews', badge: stats?.pendingKyc || 0, color: 'from-indigo-400 to-indigo-600' },
             { href: '/dashboard/admin/rankings', icon: Crown, label: 'Rankings & Ads', badge: analytics?.rankingApps?.length || 0, color: 'from-yellow-400 to-yellow-600' },
             { href: '/dashboard/admin/product-verification', icon: Package, label: 'Product Vetting', badge: stats?.pendingProductVerifications || 0, color: 'from-teal-400 to-teal-600' },
+            { href: '/dashboard/admin/disputes', icon: AlertTriangle, label: 'Disputes', badge: 0, color: 'from-red-400 to-red-600' },
+            { href: '/dashboard/admin/riders', icon: Users, label: 'Rider Management', badge: 0, color: 'from-orange-400 to-orange-600' },
             { href: '/dashboard/admin/products', icon: Package, label: 'All Products', badge: 0, color: 'from-cyan-400 to-cyan-600' },
             { href: '/dashboard/admin/orders', icon: ShoppingBag, label: 'All Orders', badge: 0, color: 'from-orange-400 to-orange-600' },
             { href: '/dashboard/admin/notifications', icon: Bell, label: 'Send Notifications', badge: 0, color: 'from-pink-400 to-pink-600' },
