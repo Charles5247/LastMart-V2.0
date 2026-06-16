@@ -1,0 +1,51 @@
+import { Router, Request, Response } from 'express';
+import getDB from '../lib/db';
+import { getUserFromRequest } from '../lib/auth';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
+const router = Router();
+const UPLOAD_DIR = path.join(process.cwd(), 'uploads/returns');
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const upload = multer({ dest: UPLOAD_DIR });
+
+// ── GET /api/returns ─────────────────────────────────────────────
+router.get('/', (req: Request, res: Response) => {
+  try {
+    const user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    const db = getDB();
+    let returns: any[] = [];
+    try {
+      returns = (db as any).prepare(`SELECT r.* FROM return_requests r WHERE r.user_id = ? ORDER BY r.created_at DESC`).all(user.userId);
+    } catch {}
+    res.json({ success: true, data: returns });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+// ── POST /api/returns ────────────────────────────────────────────
+router.post('/', upload.single('evidence'), (req: Request, res: Response) => {
+  try {
+    const user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    const db = getDB();
+    const { order_id, reason, description, refund_method } = req.body;
+    if (!order_id || !reason || !description) return res.status(400).json({ success: false, message: 'Missing required fields' });
+    let order: any = null;
+    try { order = (db as any).prepare('SELECT * FROM orders WHERE id = ? AND customer_id = ?').get(order_id, user.userId); } catch {}
+    if (!order) { try { order = (db as any).prepare('SELECT * FROM orders WHERE id = ?').get(order_id); } catch {} }
+    const id = `ret_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const evidenceUrl = req.file ? req.file.path : null;
+    try {
+      (db as any).prepare(`INSERT INTO return_requests (id, order_id, user_id, reason, description, refund_method, evidence_url, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)`).run(id, order_id, user.userId, reason, description, refund_method || 'wallet', evidenceUrl);
+    } catch {}
+    res.json({ success: true, message: 'Return request submitted', data: { id } });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+export default router;

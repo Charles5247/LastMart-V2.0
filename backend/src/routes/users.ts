@@ -96,4 +96,54 @@ router.delete('/saved-vendors', (req: Request, res: Response) => {
   }
 });
 
+// ── Wishlist routes ───────────────────────────────────────────────────────────
+
+// GET /api/users/wishlist
+router.get('/wishlist', (req: Request, res: Response) => {
+  try {
+    const userPayload = getUserFromRequest(req);
+    if (!userPayload) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    const db = getDB();
+    const items = db.prepare(`
+      SELECT p.*, v.store_name as vendor_name, wi.created_at as saved_at
+      FROM wishlist_items wi
+      JOIN products p ON wi.product_id = p.id
+      JOIN vendors v ON p.vendor_id = v.id
+      WHERE wi.user_id = ? ORDER BY wi.created_at DESC
+    `).all(userPayload.userId);
+    return res.json({ success: true, data: items });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/users/wishlist
+router.post('/wishlist', (req: Request, res: Response) => {
+  try {
+    const userPayload = getUserFromRequest(req);
+    if (!userPayload) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    const db = getDB();
+    const { product_id } = req.body;
+    if (!product_id) return res.status(400).json({ success: false, error: 'product_id required' });
+    const id = uuidv4();
+    db.prepare('INSERT OR IGNORE INTO wishlist_items (id, user_id, product_id) VALUES (?, ?, ?)').run(id, userPayload.userId, product_id);
+    return res.json({ success: true, message: 'Added to wishlist' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE /api/users/wishlist/:productId
+router.delete('/wishlist/:productId', (req: Request, res: Response) => {
+  try {
+    const userPayload = getUserFromRequest(req);
+    if (!userPayload) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    const db = getDB();
+    db.prepare('DELETE FROM wishlist_items WHERE user_id = ? AND product_id = ?').run(userPayload.userId, req.params.productId);
+    return res.json({ success: true, message: 'Removed from wishlist' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

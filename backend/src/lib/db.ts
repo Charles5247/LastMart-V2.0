@@ -564,10 +564,179 @@ function initializeDB(db: Database.Database) {
     `ALTER TABLE vendors ADD COLUMN share_token TEXT`,
     `ALTER TABLE users  ADD COLUMN password_reset_token TEXT`,
     `ALTER TABLE users  ADD COLUMN password_reset_expires TEXT`,
+    // New: vendor financial fields
+    `ALTER TABLE vendors ADD COLUMN available_balance REAL DEFAULT 0`,
+    `ALTER TABLE vendors ADD COLUMN escrow_balance REAL DEFAULT 0`,
+    `ALTER TABLE vendors ADD COLUMN total_paid_out REAL DEFAULT 0`,
+    `ALTER TABLE vendors ADD COLUMN bank_name TEXT`,
+    `ALTER TABLE vendors ADD COLUMN account_number TEXT`,
+    `ALTER TABLE vendors ADD COLUMN account_name TEXT`,
+    `ALTER TABLE vendors ADD COLUMN subscription_tier TEXT DEFAULT 'basic'`,
+    `ALTER TABLE vendors ADD COLUMN subscription_expires_at TEXT`,
+    // New: orders user_id alias (orders uses user_id in some queries)
+    `ALTER TABLE orders ADD COLUMN user_id TEXT`,
+    // New: wishlist items
+    `ALTER TABLE users ADD COLUMN wishlist_product_ids TEXT DEFAULT '[]'`,
   ];
   for (const sql of migrations) {
     try { db.exec(sql); } catch { /* column already exists – ignore */ }
   }
+
+  /* ── New tables for riders, disputes, returns, messages, payouts ── */
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS riders (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL UNIQUE,
+      vehicle_type TEXT NOT NULL DEFAULT 'motorcycle',
+      vehicle_plate TEXT,
+      license_number TEXT,
+      nin TEXT,
+      bank_name TEXT,
+      account_number TEXT,
+      account_name TEXT,
+      kyc_status TEXT DEFAULT 'none',
+      gov_id_url TEXT,
+      selfie_url TEXT,
+      vehicle_reg_url TEXT,
+      vehicle_photo_url TEXT,
+      is_available INTEGER DEFAULT 0,
+      is_active INTEGER DEFAULT 1,
+      rating REAL DEFAULT 0,
+      total_ratings INTEGER DEFAULT 0,
+      total_deliveries INTEGER DEFAULT 0,
+      acceptance_rate REAL DEFAULT 100,
+      completion_rate REAL DEFAULT 100,
+      available_balance REAL DEFAULT 0,
+      pending_balance REAL DEFAULT 0,
+      total_earned REAL DEFAULT 0,
+      city TEXT,
+      latitude REAL,
+      longitude REAL,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS deliveries (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL,
+      rider_id TEXT,
+      status TEXT DEFAULT 'pending',
+      pickup_address TEXT,
+      delivery_address TEXT,
+      vendor_area TEXT,
+      delivery_area TEXT,
+      rider_fee REAL DEFAULT 500,
+      proof_of_delivery TEXT,
+      completed_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (order_id) REFERENCES orders(id),
+      FOREIGN KEY (rider_id) REFERENCES riders(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS rider_withdrawals (
+      id TEXT PRIMARY KEY,
+      rider_id TEXT NOT NULL,
+      amount REAL NOT NULL,
+      bank_name TEXT,
+      account_number TEXT,
+      account_name TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (rider_id) REFERENCES riders(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS disputes (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL,
+      buyer_id TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      description TEXT,
+      evidence_url TEXT,
+      status TEXT DEFAULT 'pending',
+      admin_note TEXT,
+      decision TEXT,
+      refund_amount REAL,
+      resolved_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (order_id) REFERENCES orders(id),
+      FOREIGN KEY (buyer_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS return_requests (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      description TEXT,
+      refund_method TEXT DEFAULT 'wallet',
+      evidence_url TEXT,
+      status TEXT DEFAULT 'pending',
+      admin_note TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (order_id) REFERENCES orders(id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS conversations (
+      id TEXT PRIMARY KEY,
+      buyer_id TEXT NOT NULL,
+      vendor_id TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(buyer_id, vendor_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS messages (
+      id TEXT PRIMARY KEY,
+      conversation_id TEXT NOT NULL,
+      sender_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      is_read INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (conversation_id) REFERENCES conversations(id),
+      FOREIGN KEY (sender_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS vendor_payouts (
+      id TEXT PRIMARY KEY,
+      vendor_id TEXT NOT NULL,
+      amount REAL NOT NULL,
+      bank_name TEXT,
+      account_number TEXT,
+      account_name TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS vendor_promotions (
+      id TEXT PRIMARY KEY,
+      vendor_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      type TEXT NOT NULL,
+      discount_percent REAL,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      min_purchase REAL,
+      buy_quantity INTEGER,
+      get_quantity INTEGER,
+      product_ids TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS wishlist_items (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      product_id TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(user_id, product_id),
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (product_id) REFERENCES products(id)
+    );
+  `);
 
   /* ── Seed default ranking packages if none exist ──────────── */
   const pkgCount = (db.prepare('SELECT COUNT(*) as c FROM ranking_packages').get() as any).c;

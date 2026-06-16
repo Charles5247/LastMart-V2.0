@@ -54,6 +54,12 @@ import rankingRoutes      from './routes/ranking';
 import sseRoutes          from './routes/sse';
 import couponRoutes       from './routes/coupons';
 import qrRoutes           from './routes/qr';
+import riderRoutes        from './routes/riders';
+import disputeRoutes      from './routes/disputes';
+import returnRoutes       from './routes/returns';
+import messageRoutes      from './routes/messages';
+import vendorPayoutRoutes from './routes/vendorPayouts';
+import vendorPromoRoutes  from './routes/vendorPromotions';
 
 const app          = express();
 const PORT         = process.env.PORT         || 5000;
@@ -137,6 +143,12 @@ app.use('/api/ranking',       rankingRoutes);   // Paid ranking, ad-boost, ready
 app.use('/api/sse',           sseRoutes);        // Real-time SSE push notifications
 app.use('/api/coupons',       couponRoutes);     // Coupons, referrals, auto-discounts
 app.use('/api/qr',            qrRoutes);         // Vendor QR codes + share links
+app.use('/api/riders',        riderRoutes);      // Rider registration, KYC, deliveries
+app.use('/api/disputes',      disputeRoutes);    // Order disputes
+app.use('/api/returns',       returnRoutes);     // Return requests
+app.use('/api/messages',      messageRoutes);    // Buyer-vendor messaging
+app.use('/api/vendors',       vendorPayoutRoutes); // Vendor payouts (override for new routes)
+app.use('/api/vendors',       vendorPromoRoutes);  // Vendor promotions
 
 /* ─── 404 Handler ────────────────────────────────────────────────────────── */
 app.use((req, res) => {

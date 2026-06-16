@@ -74,8 +74,17 @@ export default function VendorDashboard() {
               </div>
             </div>
             <div className="flex gap-3 flex-wrap">
-              <Link href="/dashboard/vendor/ranking" className="flex items-center gap-2 bg-yellow-400/30 backdrop-blur-sm text-white border border-yellow-300/30 px-4 py-2 rounded-xl text-sm font-medium hover:bg-yellow-400/40 transition-all">
-                📈 Ranking & Ads
+              <Link href="/dashboard/vendor/messages" className="flex items-center gap-2 bg-blue-400/30 backdrop-blur-sm text-white border border-blue-300/30 px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-400/40 transition-all">
+                💬 Messages
+              </Link>
+              <Link href="/dashboard/vendor/payouts" className="flex items-center gap-2 bg-green-400/30 backdrop-blur-sm text-white border border-green-300/30 px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-400/40 transition-all">
+                💰 Payouts
+              </Link>
+              <Link href="/dashboard/vendor/promotions" className="flex items-center gap-2 bg-yellow-400/30 backdrop-blur-sm text-white border border-yellow-300/30 px-4 py-2 rounded-xl text-sm font-medium hover:bg-yellow-400/40 transition-all">
+                🎯 Promotions
+              </Link>
+              <Link href="/dashboard/vendor/subscription" className="flex items-center gap-2 bg-purple-400/30 backdrop-blur-sm text-white border border-purple-300/30 px-4 py-2 rounded-xl text-sm font-medium hover:bg-purple-400/40 transition-all">
+                👑 Subscription
               </Link>
               <Link href="/dashboard/vendor/products" className="flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white border border-white/30 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/30 transition-all">
                 <Plus className="w-4 h-4" /> Add Product
