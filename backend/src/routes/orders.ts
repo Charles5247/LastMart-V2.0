@@ -74,15 +74,33 @@ router.get('/:id', (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const userPayload = getUserFromRequest(req);
-    if (!userPayload || userPayload.role !== 'customer') {
+    if (!userPayload) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    if (userPayload.role !== 'customer') {
       return res.status(403).json({ success: false, error: 'Customer access required' });
     }
 
     const db = getDB();
-    const { items, delivery_address, delivery_city, delivery_lat, delivery_lng, payment_method, notes } = req.body;
+    const { items: bodyItems, delivery_address, delivery_city, delivery_lat, delivery_lng, payment_method, notes, delivery_mode } = req.body;
 
-    if (!items?.length || !delivery_address || !delivery_city) {
-      return res.status(400).json({ success: false, error: 'Items and delivery address are required' });
+    if (!delivery_address || !delivery_city) {
+      return res.status(400).json({ success: false, error: 'Delivery address and city are required' });
+    }
+
+    // If items not provided in body, load from user's cart
+    let items = bodyItems;
+    if (!items?.length) {
+      const cartItems = db.prepare(`
+        SELECT ci.*, p.price, p.stock, p.name as product_name, p.vendor_id, p.images
+        FROM cart_items ci
+        JOIN products p ON ci.product_id = p.id
+        WHERE ci.user_id = ?
+      `).all(userPayload.userId) as any[];
+      if (!cartItems.length) {
+        return res.status(400).json({ success: false, error: 'Cart is empty. Add items to cart before ordering.' });
+      }
+      items = cartItems.map((ci: any) => ({ product_id: ci.product_id, quantity: ci.quantity }));
     }
 
     const vendorGroups: Record<string, any[]> = {};
@@ -106,7 +124,7 @@ router.post('/', async (req: Request, res: Response) => {
 
       const trackingUpdates = JSON.stringify([{ status: 'pending', message: 'Order placed successfully', timestamp: new Date().toISOString() }]);
 
-      db.prepare(`INSERT INTO orders (id, customer_id, vendor_id, status, total_amount, delivery_fee, delivery_address, delivery_city, delivery_lat, delivery_lng, payment_method, payment_status, notes, estimated_delivery, tracking_updates) VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, 'completed', ?, ?, ?)`).run(
+      db.prepare(`INSERT INTO orders (id, customer_id, vendor_id, status, total_amount, delivery_fee, delivery_address, delivery_city, delivery_lat, delivery_lng, payment_method, payment_status, notes, estimated_delivery, tracking_updates) VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`).run(
         orderId, userPayload.userId, vendorId, totalAmount, deliveryFee,
         delivery_address, delivery_city, delivery_lat || null, delivery_lng || null,
         payment_method || 'card', notes || null, estimatedDelivery, trackingUpdates

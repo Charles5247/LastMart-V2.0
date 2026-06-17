@@ -60,6 +60,8 @@ import returnRoutes       from './routes/returns';
 import messageRoutes      from './routes/messages';
 import vendorPayoutRoutes from './routes/vendorPayouts';
 import vendorPromoRoutes  from './routes/vendorPromotions';
+import customOrderRoutes  from './routes/customOrders';
+import vendorKycRoutes    from './routes/vendorKyc';
 
 const app          = express();
 const PORT         = process.env.PORT         || 5000;
@@ -149,6 +151,8 @@ app.use('/api/returns',       returnRoutes);     // Return requests
 app.use('/api/messages',      messageRoutes);    // Buyer-vendor messaging
 app.use('/api/vendors',       vendorPayoutRoutes); // Vendor payouts (override for new routes)
 app.use('/api/vendors',       vendorPromoRoutes);  // Vendor promotions
+app.use('/api/custom-orders', customOrderRoutes);  // Specific + custom product requests
+app.use('/api/vendor-kyc',    vendorKycRoutes);    // Vendor KYC photo uploads
 
 /* ─── 404 Handler ────────────────────────────────────────────────────────── */
 app.use((req, res) => {
