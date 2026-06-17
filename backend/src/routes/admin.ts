@@ -22,7 +22,7 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import getDB from '../lib/db';
-import { requireAuth } from '../lib/auth';
+import { requireAuth, getUserFromRequest } from '../lib/auth';
 
 const router = Router();
 
@@ -492,9 +492,11 @@ router.get('/store-visits', (req: Request, res: Response) => {
 });
 
 /* ─── GET /api/admin/disputes ──────────────────────────────────────────────── */
-router.get('/disputes', requireAuth, (req: any, res: Response) => {
+router.get('/disputes', (req: Request, res: Response) => {
   try {
-    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const authUser = getUserFromRequest(req);
+    if (!authUser) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (authUser.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
     const db = getDB();
     const { status } = req.query;
     let query = `SELECT d.*, u.name as buyer_name, o.total_amount as order_amount, v.store_name as vendor_name
@@ -511,9 +513,11 @@ router.get('/disputes', requireAuth, (req: any, res: Response) => {
 });
 
 /* ─── POST /api/admin/disputes/:id/resolve ──────────────────────────────────── */
-router.post('/disputes/:id/resolve', requireAuth, (req: any, res: Response) => {
+router.post('/disputes/:id/resolve', (req: Request, res: Response) => {
   try {
-    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const authUser = getUserFromRequest(req);
+    if (!authUser) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (authUser.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
     const db = getDB();
     const { decision, admin_note, refund_amount } = req.body;
     if (!decision || !admin_note) return res.status(400).json({ success: false, message: 'Decision and note required' });
@@ -527,9 +531,11 @@ router.post('/disputes/:id/resolve', requireAuth, (req: any, res: Response) => {
 });
 
 /* ─── GET /api/admin/riders ─────────────────────────────────────────────────── */
-router.get('/riders', requireAuth, (req: any, res: Response) => {
+router.get('/riders', (req: Request, res: Response) => {
   try {
-    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const authUser = getUserFromRequest(req);
+    if (!authUser) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (authUser.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
     const db = getDB();
     const riders = db.prepare(`
       SELECT r.*, u.name, u.email, u.phone
@@ -543,9 +549,11 @@ router.get('/riders', requireAuth, (req: any, res: Response) => {
 });
 
 /* ─── PUT /api/admin/riders/:id/kyc ─────────────────────────────────────────── */
-router.put('/riders/:id/kyc', requireAuth, (req: any, res: Response) => {
+router.put('/riders/:id/kyc', (req: Request, res: Response) => {
   try {
-    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const authUser = getUserFromRequest(req);
+    if (!authUser) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (authUser.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
     const db = getDB();
     const { kyc_status, note } = req.body;
     db.prepare('UPDATE riders SET kyc_status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(kyc_status, req.params.id);
@@ -560,9 +568,11 @@ router.put('/riders/:id/kyc', requireAuth, (req: any, res: Response) => {
 });
 
 /* ─── PUT /api/admin/riders/:id/status ──────────────────────────────────────── */
-router.put('/riders/:id/status', requireAuth, (req: any, res: Response) => {
+router.put('/riders/:id/status', (req: Request, res: Response) => {
   try {
-    if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    const authUser = getUserFromRequest(req);
+    if (!authUser) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (authUser.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
     const db = getDB();
     const { is_active } = req.body;
     db.prepare('UPDATE riders SET is_active=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(is_active ? 1 : 0, req.params.id);

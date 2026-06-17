@@ -306,4 +306,106 @@ router.get('/:id', (req: Request, res: Response) => {
 /* Helper: needed for webhook raw-body signature verification */
 function express_raw_body(req: any, res: any, next: any) { next(); }
 
+/* ── GET /api/payment/verify-account?account_number=&bank_code= ────────────── */
+/**
+ * Resolves a Nigerian bank account number to the account holder's name.
+ * Uses Paystack's resolve account endpoint.
+ * Falls back to a demo response if PAYSTACK_SECRET_KEY is not configured.
+ */
+router.get('/verify-account', async (req: Request, res: Response) => {
+  const user = getUserFromRequest(req);
+  if (!user) return res.status(401).json({ success: false, error: 'Authentication required' });
+
+  const { account_number, bank_code } = req.query as { account_number: string; bank_code: string };
+  if (!account_number || !bank_code) {
+    return res.status(400).json({ success: false, error: 'account_number and bank_code are required' });
+  }
+  if (!/^\d{10}$/.test(account_number)) {
+    return res.status(400).json({ success: false, error: 'Account number must be exactly 10 digits' });
+  }
+
+  try {
+    if (PAYSTACK_SECRET) {
+      const psRes = await axios.get(
+        `https://api.paystack.co/bank/resolve?account_number=${account_number}&bank_code=${bank_code}`,
+        { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } }
+      );
+      if (psRes.data?.status && psRes.data?.data?.account_name) {
+        return res.json({
+          success: true,
+          data: {
+            account_name:   psRes.data.data.account_name,
+            account_number: psRes.data.data.account_number,
+            bank_id:        psRes.data.data.bank_id,
+          },
+        });
+      }
+      return res.status(400).json({ success: false, error: psRes.data?.message || 'Account not found' });
+    } else {
+      /* Demo mode — simulate a successful lookup for testing */
+      return res.json({
+        success: true,
+        data: {
+          account_name:   'DEMO ACCOUNT HOLDER',
+          account_number,
+          bank_id:        null,
+          demo: true,
+        },
+      });
+    }
+  } catch (err: any) {
+    const msg = err.response?.data?.message || err.message || 'Bank verification failed';
+    return res.status(400).json({ success: false, error: msg });
+  }
+});
+
+/* ── GET /api/payment/banks ───────────────────────────────────────────────── */
+/** Returns the list of Nigerian banks with their codes for account resolution. */
+router.get('/banks', async (_req: Request, res: Response) => {
+  try {
+    if (PAYSTACK_SECRET) {
+      const psRes = await axios.get('https://api.paystack.co/bank?country=nigeria&per_page=100', {
+        headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` },
+      });
+      if (psRes.data?.status) {
+        return res.json({ success: true, data: psRes.data.data });
+      }
+    }
+    /* Fallback static list of major Nigerian banks */
+    return res.json({
+      success: true,
+      data: [
+        { name: 'Access Bank',                 code: '044' },
+        { name: 'Citibank Nigeria',             code: '023' },
+        { name: 'Ecobank Nigeria',              code: '050' },
+        { name: 'Fidelity Bank',                code: '070' },
+        { name: 'First Bank of Nigeria',        code: '011' },
+        { name: 'First City Monument Bank',     code: '214' },
+        { name: 'Globus Bank',                  code: '00103' },
+        { name: 'Guaranty Trust Bank',          code: '058' },
+        { name: 'Heritage Bank',                code: '030' },
+        { name: 'Keystone Bank',                code: '082' },
+        { name: 'Kuda Bank',                    code: '50211' },
+        { name: 'Moniepoint',                   code: '50515' },
+        { name: 'OPay',                         code: '100004' },
+        { name: 'PalmPay',                      code: '100033' },
+        { name: 'Polaris Bank',                 code: '076' },
+        { name: 'Providus Bank',                code: '101' },
+        { name: 'Stanbic IBTC Bank',            code: '221' },
+        { name: 'Standard Chartered Bank',      code: '068' },
+        { name: 'Sterling Bank',                code: '232' },
+        { name: 'SunTrust Bank',                code: '100' },
+        { name: 'Union Bank of Nigeria',        code: '032' },
+        { name: 'United Bank for Africa',       code: '033' },
+        { name: 'Unity Bank',                   code: '215' },
+        { name: 'VFD Microfinance Bank',        code: '566' },
+        { name: 'Wema Bank',                    code: '035' },
+        { name: 'Zenith Bank',                  code: '057' },
+      ],
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;

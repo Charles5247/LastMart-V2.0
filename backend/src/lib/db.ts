@@ -577,6 +577,11 @@ function initializeDB(db: Database.Database) {
     `ALTER TABLE orders ADD COLUMN user_id TEXT`,
     // New: wishlist items
     `ALTER TABLE users ADD COLUMN wishlist_product_ids TEXT DEFAULT '[]'`,
+    // Vendor KYC photo columns
+    `ALTER TABLE vendors ADD COLUMN business_logo_url TEXT`,
+    `ALTER TABLE vendors ADD COLUMN passport_photo_url TEXT`,
+    `ALTER TABLE vendors ADD COLUMN storefront_photo_url TEXT`,
+    `ALTER TABLE vendors ADD COLUMN bank_code TEXT`,
   ];
   for (const sql of migrations) {
     try { db.exec(sql); } catch { /* column already exists – ignore */ }
@@ -735,6 +740,54 @@ function initializeDB(db: Database.Database) {
       UNIQUE(user_id, product_id),
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (product_id) REFERENCES products(id)
+    );
+
+    /* ── Specific/Custom Orders from Buyers ───────────────────── */
+    CREATE TABLE IF NOT EXISTS custom_orders (
+      id TEXT PRIMARY KEY,
+      buyer_id TEXT NOT NULL,
+      vendor_id TEXT NOT NULL,
+      product_id TEXT,
+      type TEXT NOT NULL CHECK(type IN ('specific','custom_request')),
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      budget_min REAL,
+      budget_max REAL,
+      reference_photo_url TEXT,
+      size_specs TEXT,
+      color_preference TEXT,
+      delivery_deadline TEXT,
+      status TEXT NOT NULL DEFAULT 'pending'
+        CHECK(status IN ('pending','accepted','quoted','rejected','completed','cancelled')),
+      vendor_quote REAL,
+      vendor_note TEXT,
+      buyer_note TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (buyer_id) REFERENCES users(id),
+      FOREIGN KEY (vendor_id) REFERENCES vendors(id),
+      FOREIGN KEY (product_id) REFERENCES products(id)
+    );
+
+    /* ── Vendor KYC / profile photos ──────────────────────────── */
+    CREATE TABLE IF NOT EXISTS vendor_kyc (
+      id TEXT PRIMARY KEY,
+      vendor_id TEXT NOT NULL UNIQUE,
+      business_logo_url TEXT,
+      passport_photo_url TEXT,
+      storefront_photo_url TEXT,
+      storefront_type TEXT CHECK(storefront_type IN ('store','supermarket','table_stand','home_hostel','online_only')),
+      cac_doc_url TEXT,
+      id_doc_url TEXT,
+      id_type TEXT,
+      id_number TEXT,
+      status TEXT NOT NULL DEFAULT 'pending'
+        CHECK(status IN ('pending','approved','rejected')),
+      admin_note TEXT,
+      submitted_at TEXT DEFAULT (datetime('now')),
+      reviewed_at TEXT,
+      FOREIGN KEY (vendor_id) REFERENCES vendors(id)
     );
   `);
 

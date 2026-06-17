@@ -8,8 +8,7 @@ import { useApp } from '@/components/AppContext';
 import { DollarSign, ArrowLeft, Wallet, TrendingUp, Clock, CheckCircle, Plus, Building2, Edit2 } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
-
-const NIGERIAN_BANKS = ['Access Bank','GTBank','Zenith Bank','First Bank','UBA','Wema Bank','Opay','Palmpay','Kuda Bank','FCMB','Polaris Bank','Sterling Bank','Stanbic IBTC','Fidelity Bank','Union Bank','Keystone Bank','Providus Bank'];
+import BankVerifyInput from '@/components/ui/BankVerifyInput';
 
 export default function VendorPayoutsPage() {
   const { user, vendor, token, isLoading } = useApp();
@@ -21,7 +20,7 @@ export default function VendorPayoutsPage() {
   const [showBankSetup, setShowBankSetup] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
-  const [bankForm, setBankForm] = useState({ bank_name: '', account_number: '', account_name: '' });
+  const [bankVerified, setBankVerified] = useState<any>(null);
   const [savingBank, setSavingBank] = useState(false);
 
   useEffect(() => {
@@ -46,7 +45,7 @@ export default function VendorPayoutsPage() {
   };
 
   const saveBankDetails = async () => {
-    if (!bankForm.bank_name || !bankForm.account_number || !bankForm.account_name) {
+    if (!bankVerified?.bank_name || !bankVerified?.account_number || !bankVerified?.account_name) {
       toast.error('All fields required'); return;
     }
     setSavingBank(true);
@@ -54,7 +53,12 @@ export default function VendorPayoutsPage() {
       const res = await fetch('/api/vendors/bank-details', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(bankForm),
+        body: JSON.stringify({
+          bank_name: bankVerified.bank_name,
+          bank_code: bankVerified.bank_code,
+          account_number: bankVerified.account_number,
+          account_name: bankVerified.account_name,
+        }),
       });
       const data = await res.json();
       if (data.success) { toast.success('Bank details saved!'); setShowBankSetup(false); fetchData(); }
@@ -205,31 +209,17 @@ export default function VendorPayoutsPage() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
               <h3 className="text-xl font-black text-gray-800 mb-5">Bank Account Details</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Bank Name</label>
-                  <select value={bankForm.bank_name} onChange={e => setBankForm(b => ({ ...b, bank_name: e.target.value }))}
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400">
-                    <option value="">Select bank</option>
-                    {NIGERIAN_BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Account Number</label>
-                  <input value={bankForm.account_number} onChange={e => setBankForm(b => ({ ...b, account_number: e.target.value }))}
-                    placeholder="10-digit account number" maxLength={10}
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Account Name</label>
-                  <input value={bankForm.account_name} onChange={e => setBankForm(b => ({ ...b, account_name: e.target.value }))}
-                    placeholder="Account holder name"
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
-                </div>
-              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                Select your bank and enter your 10-digit account number — we&apos;ll automatically verify and fetch your account name.
+              </p>
+              <BankVerifyInput
+                token={token}
+                onVerified={data => setBankVerified(data)}
+                required
+              />
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setShowBankSetup(false)} className="flex-1 border-2 border-gray-200 font-bold py-3 rounded-xl text-gray-600">Cancel</button>
-                <button onClick={saveBankDetails} disabled={savingBank}
+                <button onClick={saveBankDetails} disabled={savingBank || !bankVerified}
                   className="flex-1 bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 disabled:opacity-50">
                   {savingBank ? 'Saving...' : 'Save Details'}
                 </button>

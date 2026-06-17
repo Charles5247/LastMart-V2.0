@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar';
 import { useApp } from '@/components/AppContext';
 import { Upload, CheckCircle, Bike, FileText, Camera, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
+import BankVerifyInput from '@/components/ui/BankVerifyInput';
 
 export default function RiderKYCPage() {
   const { user, token } = useApp();
@@ -17,10 +18,8 @@ export default function RiderKYCPage() {
     vehicle_plate: '',
     license_number: '',
     nin: '',
-    bank_name: '',
-    account_number: '',
-    account_name: '',
   });
+  const [bankVerified, setBankVerified] = useState<any>(null);
   const [files, setFiles] = useState<{ [key: string]: File | null }>({
     gov_id: null, selfie: null, vehicle_reg: null, vehicle_photo: null,
   });
@@ -30,10 +29,14 @@ export default function RiderKYCPage() {
   };
 
   const handleSubmit = async () => {
+    if (!bankVerified) { toast.error('Please verify your bank account first'); return; }
     setSubmitting(true);
     try {
       const formData = new FormData();
       Object.entries(form).forEach(([k, v]) => formData.append(k, v));
+      formData.append('bank_name', bankVerified.bank_name);
+      formData.append('account_number', bankVerified.account_number);
+      formData.append('account_name', bankVerified.account_name);
       Object.entries(files).forEach(([k, v]) => { if (v) formData.append(k, v); });
       const res = await fetch('/api/riders/kyc', {
         method: 'POST',
@@ -168,33 +171,15 @@ export default function RiderKYCPage() {
                 <FileText className="w-5 h-5 text-orange-500" /> Bank Account Details
               </h2>
               <p className="text-sm text-gray-500 mb-5">Your earnings will be paid to this account</p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Bank Name</label>
-                  <select value={form.bank_name} onChange={e => setForm(f => ({ ...f, bank_name: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400">
-                    <option value="">Select your bank</option>
-                    {['Access Bank', 'GTBank', 'Zenith Bank', 'First Bank', 'UBA', 'Wema Bank', 'Opay', 'Palmpay', 'Kuda Bank', 'FCMB', 'Polaris Bank', 'Sterling Bank', 'Stanbic IBTC'].map(b => (
-                      <option key={b} value={b}>{b}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Account Number</label>
-                  <input value={form.account_number} onChange={e => setForm(f => ({ ...f, account_number: e.target.value }))}
-                    placeholder="10-digit account number" maxLength={10}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Account Name</label>
-                  <input value={form.account_name} onChange={e => setForm(f => ({ ...f, account_name: e.target.value }))}
-                    placeholder="Account holder name" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
-                </div>
-              </div>
+              <BankVerifyInput
+                token={token}
+                onVerified={data => setBankVerified(data)}
+                required
+              />
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setStep(2)} className="flex-1 border-2 border-gray-200 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-50">← Back</button>
                 <button onClick={handleSubmit}
-                  disabled={submitting || !form.bank_name || !form.account_number}
+                  disabled={submitting || !bankVerified}
                   className="flex-1 bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                   {submitting ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Submitting...</> : '✅ Submit KYC'}
                 </button>
