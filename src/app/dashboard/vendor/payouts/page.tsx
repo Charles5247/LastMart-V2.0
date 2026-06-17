@@ -38,7 +38,7 @@ export default function VendorPayoutsPage() {
         fetch('/api/vendors/payouts', { headers }),
       ]);
       const [p, h] = await Promise.all([payoutRes.json(), historyRes.json()]);
-      if (p.success) { setPayoutData(p.data); setBankForm(b => ({ ...b, ...p.data?.bank_details })); }
+      if (p.success) { setPayoutData(p.data); }
       if (h.success) setPayouts(h.data || []);
     } catch {}
     setLoading(false);
