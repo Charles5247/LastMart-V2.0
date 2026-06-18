@@ -81,7 +81,7 @@ export default function Navbar() {
       {/* ── Main nav bar ── */}
       <div className="nav-bgcolor">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center gap-3 h-[90px]">
+          <div className="flex flex-wrap items-center gap-3 h-[100px]">
 
             {/* Logo */}
             <div className="flex-shrink-0 mr-2">
