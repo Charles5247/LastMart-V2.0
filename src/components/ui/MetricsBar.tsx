@@ -104,6 +104,7 @@ export default function MetricsBar({
     return (
       <div
         ref={ref}
+         style={{ background: 'linear-gradient(90deg, #ea580c, #f97316, #fbbf24)' }}
         
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -126,7 +127,7 @@ export default function MetricsBar({
   return (
     <div
       ref={ref}
-      
+       style={{ background: 'linear-gradient(90deg, #ea580c, #f97316, #fbbf24)' }}
       aria-label="LastMart social proof metrics"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
