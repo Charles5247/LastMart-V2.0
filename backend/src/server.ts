@@ -64,6 +64,7 @@ import customOrderRoutes  from './routes/customOrders';
 import vendorKycRoutes    from './routes/vendorKyc';
 
 const app          = express();
+app.set("trust proxy", 1); // Trust Render's proxy to get real client IPs
 const PORT         = process.env.PORT         || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
