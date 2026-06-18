@@ -23,10 +23,10 @@ export default function BrandLogo({
 
   // Size classes — increased to ensure high visibility
 const sizeClasses = {
-  sm: "h-8 sm:h-10",
-  md: "h-10 sm:h-12",
-  lg: "h-12 sm:h-14",
-  xl: "h-16 sm:h-20",
+    sm: "h-10 sm:h-12",
+   md: "h-14 sm:h-16 md:h-20",   // h-18 doesn't exist → use h-20
+  lg: "h-20 sm:h-24 md:h-28",
+  xl: "h-28 sm:h-32 md:h-36",
 };
 
   return (
