@@ -282,7 +282,7 @@ export default function LamaPage() {
 
                   {/* LAMA trend narratives */}
                   {trends.trendInsights.length > 0 && (
-                    <section className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
+                    <section className="bg-linear-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
                       <h2 className="font-semibold text-lg mb-3 flex items-center gap-2">
                         <TrendingUp size={18} /> LAMA's Market Read
                       </h2>
@@ -341,7 +341,7 @@ export default function LamaPage() {
                               </div>
                               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full"
+                                  className="h-full bg-linear-to-r from-orange-400 to-orange-500 rounded-full"
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>
@@ -409,12 +409,12 @@ export default function LamaPage() {
                       <Search size={16} className="text-orange-500" /> Find Products Within Your Budget
                     </h3>
                     <div className="flex gap-3 flex-wrap">
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-50">
                         <label className="label">Budget (₦)</label>
                         <input type="number" className="input" placeholder="e.g. 15000"
                           value={budget} onChange={e => setBudget(e.target.value)} />
                       </div>
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-50">
                         <label className="label">Category (optional)</label>
                         <input className="input" placeholder="e.g. Electronics"
                           value={category} onChange={e => setCategory(e.target.value)} />
@@ -429,7 +429,7 @@ export default function LamaPage() {
 
                   {/* LAMA insights for results */}
                   {recommend?.insights && recommend.insights.length > 0 && (
-                    <div className="bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl p-5 text-white">
+                    <div className="bg-linear-to-br from-green-500 to-teal-600 rounded-2xl p-5 text-white">
                       <h3 className="font-semibold mb-3 flex items-center gap-2">
                         <Lightbulb size={16} /> LAMA's Recommendations
                       </h3>
@@ -563,7 +563,7 @@ export default function LamaPage() {
                   {budgetResult && (
                     <>
                       {/* LAMA message */}
-                      <div className="bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl p-5 text-white">
+                      <div className="bg-linear-to-br from-orange-500 to-pink-600 rounded-2xl p-5 text-white">
                         <div className="flex items-center gap-2 mb-2">
                           <Bot size={18} />
                           <span className="font-semibold">LAMA Says</span>
@@ -596,10 +596,10 @@ export default function LamaPage() {
                               const itemTotal = item.price * item.quantity;
                               return (
                                 <div key={item.id} className="bg-white rounded-xl shadow-sm flex items-center gap-3 p-3 hover:shadow-md transition-shadow">
-                                  <span className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                  <span className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold shrink-0">
                                     {idx + 1}
                                   </span>
-                                  <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                                  <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                                     {img
                                       ? <img src={img} alt={item.name} className="w-full h-full object-cover" />
                                       : <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">📦</div>}
@@ -609,7 +609,7 @@ export default function LamaPage() {
                                     <p className="text-xs text-gray-500 truncate">{item.store_name} · {item.vendor_city}</p>
                                     <p className="text-xs text-gray-400">{item.category_name}</p>
                                   </div>
-                                  <div className="text-right flex-shrink-0">
+                                  <div className="text-right shrink-0">
                                     <p className="text-sm font-bold text-orange-600">₦{Number(item.price).toLocaleString()}</p>
                                     {item.quantity > 1 && (
                                       <p className="text-xs text-gray-500">×{item.quantity} = ₦{Number(itemTotal).toLocaleString()}</p>
@@ -619,7 +619,7 @@ export default function LamaPage() {
                                       <span className="text-xs text-gray-400">{Number(item.rating || 0).toFixed(1)}</span>
                                     </div>
                                   </div>
-                                  <Link href={`/product/${item.id}`} className="flex-shrink-0 bg-orange-500 text-white text-xs px-3 py-2 rounded-lg hover:bg-orange-600 transition-colors ml-2">
+                                  <Link href={`/product/${item.id}`} className="shrink-0 bg-orange-500 text-white text-xs px-3 py-2 rounded-lg hover:bg-orange-600 transition-colors ml-2">
                                     View
                                   </Link>
                                 </div>

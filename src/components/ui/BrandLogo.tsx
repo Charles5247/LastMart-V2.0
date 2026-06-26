@@ -9,7 +9,7 @@ interface BrandLogoProps {
   showText?: boolean;
 }
 
-export default function BrandLogo({ 
+export default function xBrandLogo({ 
   className = '', 
   variant = 'outline',
   size = 'md',
