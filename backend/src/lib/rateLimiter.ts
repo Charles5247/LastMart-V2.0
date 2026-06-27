@@ -5,83 +5,79 @@
  * For distributed systems, consider Redis store.
  * ────────────────────────────────────────────────────────────────────────────
  */
+import rateLimit from "express-rate-limit";
 
-import rateLimit from 'express-rate-limit';
+const getClientIp = (req: any): string => {
+  const forwarded = req.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return req.ip || "unknown";
+};
 
 /**
- * Login attempt limiter: 5 attempts per 15 minutes per IP
+ * Login attempt limiter: 50 attempts per 15 minutes per IP
  * Helps prevent brute force password guessing attacks.
  */
 export const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 failed login attempts per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 50,
   message: {
     success: false,
-    error: 'Too many login attempts. Please try again in 15 minutes.',
+    error: "Too many login attempts. Please try again in 15 minutes.",
     retryAfter: 15,
   },
-  standardHeaders: true, // return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // disable the `X-RateLimit-*` headers
+  standardHeaders: true,
+  legacyHeaders: false,
   skipSuccessfulRequests: true,
-  keyGenerator: (req) => {
-    // Use X-Forwarded-For if behind a proxy, otherwise use IP
-    return req.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || 'unknown';
-  },
+  keyGenerator: getClientIp,
 });
 
 /**
- * Register attempt limiter: 3 attempts per 60 minutes per IP
+ * Register attempt limiter: 10 attempts per 60 minutes per IP
  * Prevents rapid account creation spam and abuse.
  */
 export const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // limit each IP to 3 registrations per hour
+  windowMs: 60 * 60 * 1000,
+  max: 10,
   message: {
     success: false,
-    error: 'Too many registration attempts. Please try again in 1 hour.',
+    error: "Too many registration attempts. Please try again in 1 hour.",
     retryAfter: 60,
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || 'unknown';
-  },
+  keyGenerator: getClientIp,
 });
 
 /**
- * Password reset limiter: 3 attempts per 60 minutes per IP
+ * Password reset limiter: 10 attempts per 60 minutes per IP
  * Prevents password reset spam and account enumeration abuse.
  */
 export const resetLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // limit each IP to 3 password reset attempts per hour
+  windowMs: 60 * 60 * 1000,
+  max: 10,
   message: {
     success: false,
-    error: 'Too many password reset attempts. Please try again in 1 hour.',
+    error: "Too many password reset attempts. Please try again in 1 hour.",
     retryAfter: 60,
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || 'unknown';
-  },
+  keyGenerator: getClientIp,
 });
 
 /**
- * Verify code limiter: 10 attempts per 10 minutes per IP
+ * Verify code limiter: 20 attempts per 10 minutes per IP
  * Prevents brute force attacks on verification codes.
  */
 export const verifyCodeLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 10, // limit each IP to 10 attempts per 10 minutes
+  windowMs: 10 * 60 * 1000,
+  max: 20,
   message: {
     success: false,
-    error: 'Too many verification attempts. Please try again later.',
+    error: "Too many verification attempts. Please try again later.",
     retryAfter: 10,
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || 'unknown';
-  },
+  keyGenerator: getClientIp,
 });

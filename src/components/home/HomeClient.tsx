@@ -88,8 +88,8 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
   /* Redirect admin/vendor */
   useEffect(() => {
     if (!isLoading && user) {
-      if (user.role === 'admin')  { window.location.replace('/dashboard/admin');  return; }
-      if (user.role === 'vendor') { window.location.replace('/dashboard/vendor'); return; }
+      if (user.role === 'admin')  { window.location.replace('/admin/dashboard');  return; }
+      if (user.role === 'vendor') { window.location.replace('/vendor/dashboard'); return; }
     }
   }, [user, isLoading]);
 
@@ -144,7 +144,7 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2">
         <div className="flex gap-4">
           {/* Category sidebar – desktop only */}
-          <aside className="hidden lg:block w-56 flex-shrink-0">
+          <aside className="hidden lg:block w-56 shrink-0">
             <nav className="panel overflow-hidden">
               <div className="px-4 py-3 bg-gray-800 text-white text-sm font-semibold">All Categories</div>
               {categories.length > 0
@@ -167,8 +167,8 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
           </aside>
 
           {/* Hero banner */}
-          <div className="flex-1 relative rounded-xl overflow-hidden min-h-[280px] md:min-h-[340px]">
-            <div className={`absolute inset-0 bg-gradient-to-r ${cur.bg} transition-all duration-700`} />
+          <div className="flex-1 relative rounded-xl overflow-hidden min-h-70 md:min-h-85">
+            <div className={`absolute inset-0 bg-linear-to-r ${cur.bg} transition-all duration-700`} />
             {cur.image && (
               <img
                 src={cur.image}
@@ -206,8 +206,8 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
           </div>
 
           {/* Side promo banners – desktop */}
-          <div className="hidden xl:flex flex-col gap-3 w-48 flex-shrink-0">
-            <div className="panel flex-1 overflow-hidden relative flex flex-col items-center justify-center text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+          <div className="hidden xl:flex flex-col gap-3 w-48 shrink-0">
+            <div className="panel flex-1 overflow-hidden relative flex flex-col items-center justify-center text-center p-4 bg-linear-to-br from-blue-50 to-indigo-100">
               <Package className="w-8 h-8 text-indigo-500 mb-2" />
               <p className="text-sm font-bold text-gray-800">New Arrivals</p>
               <p className="text-xs text-gray-500 mt-1">Fresh products added daily</p>
@@ -215,7 +215,7 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
                 Shop <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="panel flex-1 overflow-hidden relative flex flex-col items-center justify-center text-center p-4 bg-gradient-to-br from-orange-50 to-amber-100">
+            <div className="panel flex-1 overflow-hidden relative flex flex-col items-center justify-center text-center p-4 bg-linear-to-br from-orange-50 to-amber-100">
               <Flame className="w-8 h-8 text-orange-500 mb-2" />
               <p className="text-sm font-bold text-gray-800">Hot Deals</p>
               <p className="text-xs text-gray-500 mt-1">Limited-time offers today</p>
@@ -233,7 +233,7 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
             {TRUST_BADGES.map(({ icon: Icon, label, sub }) => (
               <div key={label} className="flex items-center gap-3 px-5 py-4">
-                <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5 text-orange-500" />
                 </div>
                 <div>
@@ -388,7 +388,7 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
               { n: '3', icon: Clock,   title: 'Get it in 48hrs',    desc: 'Your local vendor prepares your order and delivers it within 48 hours.' },
             ].map(step => (
               <div key={step.n} className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-600 font-black text-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-600 font-black text-xl flex items-center justify-center shrink-0">
                   {step.n}
                 </div>
                 <div>
@@ -444,13 +444,13 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
 
       {/* ─── Vendor CTA banner ───────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="rounded-xl overflow-hidden bg-gradient-to-r from-gray-900 to-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 px-8 py-8">
+        <div className="rounded-xl overflow-hidden bg-linear-to-r from-gray-900 to-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 px-8 py-8">
           <div>
             <p className="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-1">For Business Owners</p>
             <h2 className="text-2xl font-black text-white mb-2">Start Selling on LastMart</h2>
             <p className="text-gray-400 text-sm max-w-md">Join thousands of local vendors reaching customers in their city. Zero listing fees to get started.</p>
           </div>
-          <div className="flex gap-3 flex-shrink-0">
+          <div className="flex gap-3 shrink-0">
             <Link href="/sell" className="btn-primary text-sm px-6 py-3 whitespace-nowrap">
               Open Your Store <ArrowRight className="w-4 h-4" />
             </Link>

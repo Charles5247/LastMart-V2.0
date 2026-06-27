@@ -9,7 +9,7 @@ interface BrandLogoProps {
   showText?: boolean;
 }
 
-export default function BrandLogo({ 
+export default function xBrandLogo({ 
   className = '', 
   variant = 'outline',
   size = 'md',
@@ -22,12 +22,12 @@ export default function BrandLogo({
     : '/backless-logo.png';
 
   // Size classes — increased to ensure high visibility
-  const sizeClasses = {
-    sm: 'h-10 sm:h-12',
-    md: 'h-14 sm:h-16 md:h-18',
-    lg: 'h-18 sm:h-20 md:h-24',
-    xl: 'h-24 sm:h-28 md:h-32',
-  };
+const sizeClasses = {
+    sm: "h-10 sm:h-12",
+   md: "h-14 sm:h-16 md:h-20",   // h-18 doesn't exist → use h-20
+  lg: "h-20 sm:h-24 md:h-28",
+  xl: "h-28 sm:h-32 md:h-36",
+};
 
   return (
     <Link href="/" className={`inline-flex items-center gap-2 ${className}`}>
