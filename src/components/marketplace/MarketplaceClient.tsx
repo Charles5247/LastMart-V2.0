@@ -97,7 +97,7 @@ function MarketplaceContent() {
           {/* Search bar */}
           <form onSubmit={handleSearch} className="flex gap-2">
             <div className="flex-1 flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 focus-within:border-orange-400 focus-within:bg-white transition-colors">
-              <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <Search className="w-4 h-4 text-gray-400 shrink-0" />
               <input
                 value={filters.search}
                 onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
@@ -138,7 +138,7 @@ function MarketplaceContent() {
         <div className="flex gap-5">
 
           {/* ── LEFT SIDEBAR ── */}
-          <aside className={`hidden lg:block flex-shrink-0 transition-all duration-200 ${sidebarOpen ? 'w-56' : 'w-0 overflow-hidden'}`}>
+          <aside className={`hidden lg:block shrink-0 transition-all duration-200 ${sidebarOpen ? 'w-56' : 'w-0 overflow-hidden'}`}>
             <div className="panel sticky top-28">
               <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <span className="font-semibold text-sm text-gray-800 flex items-center gap-1.5">
@@ -156,7 +156,7 @@ function MarketplaceContent() {
               <div className="p-4 border-b border-gray-100">
                 <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Delivery City</p>
                 <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
-                  <MapPin className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
                   <input
                     value={filters.city}
                     onChange={e => setFilters(f => ({ ...f, city: e.target.value }))}

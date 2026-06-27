@@ -87,7 +87,7 @@ export default function LocationPicker({ compact = true }: Props) {
         aria-label="Change location"
       >
         <MapPin size={15} className="text-orange-500 shrink-0" />
-        <span className="max-w-[120px] truncate">{location.city}</span>
+        <span className="max-w-30 truncate">{location.city}</span>
         <ChevronDown size={13} className={`shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
