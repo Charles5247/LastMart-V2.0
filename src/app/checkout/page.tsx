@@ -284,7 +284,7 @@ export default function CheckoutPage() {
       }
       if (data.success) {
         toast.success('Payment confirmed! 🎉');
-        setTimeout(() => router.push(isGuest ? '/' : '/dashboard/customer/orders'), 2000);
+        setTimeout(() => router.push(isGuest ? '/' : '/customer/orders'), 2000);
       } else {
         toast.error(data.error || 'Payment verification failed');
       }
@@ -824,7 +824,7 @@ export default function CheckoutPage() {
                   )}
 
                   {!isGuest && (
-                    <Link href="/dashboard/customer/orders" className="block text-sm text-orange-600 hover:underline">
+                    <Link href="/customer/orders" className="block text-sm text-orange-600 hover:underline">
                       View my orders →
                     </Link>
                   )}

@@ -46,7 +46,7 @@ export default function RiderKYCPage() {
       const data = await res.json();
       if (data.success) {
         toast.success('KYC submitted! We\'ll review within 24–48 hours.');
-        router.push('/dashboard/rider');
+        router.push('/rider/dashboard');
       } else {
         toast.error(data.message || 'Submission failed');
       }

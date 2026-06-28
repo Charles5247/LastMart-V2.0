@@ -47,7 +47,7 @@ function RegisterContent() {
         await login(form.email, form.password);
 
         // Record terms acceptance
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         if (token) {
           fetch('/api/verification/terms', {
             method: 'POST',
@@ -57,7 +57,7 @@ function RegisterContent() {
         }
 
         toast.success('Account created successfully!');
-        const redirect = role === 'vendor' ? '/dashboard/vendor' : role === 'admin' ? '/dashboard/admin' : '/';
+        const redirect = role === 'vendor' ? '/vendor/dashboard' : role === 'admin' ? '/admin/dashboard' : '/';
         router.push(redirect);
       } else {
         toast.error(data.error || 'Registration failed');

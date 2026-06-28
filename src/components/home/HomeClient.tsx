@@ -22,8 +22,11 @@ import { Category, Product, Vendor } from '@/types';
 import {
   MapPin, ArrowRight, ChevronRight, Zap, Package, Truck,
   Shield, Clock, Star, RotateCcw, Headphones, Tag, Flame,
-  Users, TrendingUp, CheckCircle
+  Users, TrendingUp, CheckCircle, Store, Bike
 } from 'lucide-react';
+
+const VENDOR_URL = process.env.NEXT_PUBLIC_VENDOR_URL ?? 'https://lastmart-vendor.onrender.com';
+const RIDER_URL  = process.env.NEXT_PUBLIC_RIDER_URL  ?? 'https://lastmart-rider.onrender.com';
 
 /* ─── Static data ────────────────────────────────────────────────────────────── */
 const HERO_SLIDES = [
@@ -442,22 +445,62 @@ export default function HomeClient({ initialCategories }: HomeClientProps) {
         </div>
       </div>
 
-      {/* ─── Vendor CTA banner ───────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="rounded-xl overflow-hidden bg-linear-to-r from-gray-900 to-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 px-8 py-8">
-          <div>
-            <p className="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-1">For Business Owners</p>
-            <h2 className="text-2xl font-black text-white mb-2">Start Selling on LastMart</h2>
-            <p className="text-gray-400 text-sm max-w-md">Join thousands of local vendors reaching customers in their city. Zero listing fees to get started.</p>
+      {/* ─── Become a Vendor / Become a Rider dual CTA ──────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+        <div className="grid md:grid-cols-2 gap-5">
+
+          {/* Vendor CTA */}
+          <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-orange-600 to-amber-500 p-8 flex flex-col justify-between min-h-[220px] relative">
+            <div className="absolute top-4 right-4 opacity-10">
+              <Store className="w-28 h-28 text-white" />
+            </div>
+            <div>
+              <span className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+                For Business Owners
+              </span>
+              <h2 className="text-2xl font-black text-white mb-2 leading-tight">Become a Vendor</h2>
+              <p className="text-orange-100 text-sm max-w-xs">
+                Open your online store and reach thousands of customers in your city. Free to start — no listing fees.
+              </p>
+            </div>
+            <div className="flex gap-3 mt-6 flex-wrap">
+              <a href={`${VENDOR_URL}/auth/register`}
+                className="inline-flex items-center gap-2 bg-white text-orange-600 font-black text-sm px-6 py-3 rounded-xl hover:bg-orange-50 transition-colors whitespace-nowrap shadow-md">
+                Open Your Store <ArrowRight className="w-4 h-4" />
+              </a>
+              <a href={`${VENDOR_URL}/auth/login`}
+                className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-colors whitespace-nowrap">
+                Vendor Login
+              </a>
+            </div>
           </div>
-          <div className="flex gap-3 shrink-0">
-            <Link href="/sell" className="btn-primary text-sm px-6 py-3 whitespace-nowrap">
-              Open Your Store <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link href="/marketplace?view=vendors" className="bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap">
-              Browse Vendors
-            </Link>
+
+          {/* Rider CTA */}
+          <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-green-600 to-emerald-500 p-8 flex flex-col justify-between min-h-[220px] relative">
+            <div className="absolute top-4 right-4 opacity-10">
+              <Bike className="w-28 h-28 text-white" />
+            </div>
+            <div>
+              <span className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+                For Delivery Partners
+              </span>
+              <h2 className="text-2xl font-black text-white mb-2 leading-tight">Become a Rider</h2>
+              <p className="text-green-100 text-sm max-w-xs">
+                Earn money on your own schedule by delivering orders in your city. Flexible hours, daily payouts.
+              </p>
+            </div>
+            <div className="flex gap-3 mt-6 flex-wrap">
+              <a href={`${RIDER_URL}/auth/register`}
+                className="inline-flex items-center gap-2 bg-white text-green-600 font-black text-sm px-6 py-3 rounded-xl hover:bg-green-50 transition-colors whitespace-nowrap shadow-md">
+                Start Delivering <ArrowRight className="w-4 h-4" />
+              </a>
+              <a href={`${RIDER_URL}/auth/login`}
+                className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-colors whitespace-nowrap">
+                Rider Login
+              </a>
+            </div>
           </div>
+
         </div>
       </div>
 

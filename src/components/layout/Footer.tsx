@@ -12,8 +12,8 @@ const LINKS = {
   account: [
     ['Sign In', '/auth/login'],
     ['Create Account', '/auth/register'],
-    ['My Orders', '/dashboard/customer/orders'],
-    ['Saved Vendors', '/dashboard/customer/saved'],
+    ['My Orders', '/customer/orders'],
+    ['Saved Vendors', '/customer/saved'],
     ['Sell on LastMart', '/auth/register?role=vendor'],
   ],
   support: [

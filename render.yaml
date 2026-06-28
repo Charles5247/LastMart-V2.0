@@ -1,91 +1,125 @@
-# ─── Render.com deployment ────────────────────────────────────────────────────
-# Deploys frontend + backend as separate Web Services on Render.
-#
-# HOW TO USE:
-#   1. Push this file to GitHub (already done).
-#   2. Go to https://dashboard.render.com → New → Blueprint.
-#   3. Connect your GitHub repo (Charles5247/LastMart-V2.0).
-#   4. Render reads this file and creates both services automatically.
-#   5. After both services deploy, copy the backend URL and set
-#      FRONTEND_URL on the backend + BACKEND_API_URL on the frontend.
-#
-# IMPORTANT: After first deploy update FRONTEND_URL on the backend service
-# to match the actual Render frontend URL (e.g. https://lastmart-frontend.onrender.com).
+## ─── LastMart — Render Deployment Configuration ─────────────────────────────
+## Defines 5 services: 1 backend API + 4 frontend Next.js apps
+## Deploy: connect this repo to Render and it will auto-create all services.
+##
+## Secrets to set in Render Dashboard (per service):
+##   Backend:  JWT_SECRET, PAYSTACK_SECRET_KEY, FLUTTERWAVE_SECRET_KEY,
+##             SENDGRID_API_KEY, SMTP_HOST, SMTP_USER, SMTP_PASS
+##   Frontends: (none — all vars are build-time NEXT_PUBLIC_* passed here)
+## ─────────────────────────────────────────────────────────────────────────────
 
 services:
 
-  # ── Backend: Express API ───────────────────────────────────────────────────
+  # ── 1. Backend API (Express + TypeScript) ──────────────────────────────────
   - type: web
-    name: lastmart-backend
+    name: lastmart-api
     runtime: node
+    plan: starter
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: node dist/server.js
-    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
-      - key: JWT_SECRET
-        generateValue: true
-      # ⚠️  After frontend deploys, update this to the real Render frontend URL
+        value: "5000"
       - key: FRONTEND_URL
-        value: https://lastmart-frontend.onrender.com
+        value: "https://lastmart.onrender.com,https://lastmart-vendor.onrender.com,https://lastmart-rider.onrender.com,https://lastmart-admin.onrender.com"
+      - key: JWT_SECRET
+        sync: false          # Set manually in Render dashboard
       - key: DATABASE_PATH
         value: /var/data/lastmart.db
-      # Payment keys — set manually in Render dashboard
       - key: PAYSTACK_SECRET_KEY
-        sync: false
-      - key: PAYSTACK_PUBLIC_KEY
         sync: false
       - key: FLUTTERWAVE_SECRET_KEY
         sync: false
-      - key: FLUTTERWAVE_PUBLIC_KEY
-        sync: false
-      - key: FLW_WEBHOOK_HASH
-        sync: false
-      # Email — set manually in Render dashboard
       - key: SENDGRID_API_KEY
         sync: false
-      - key: SMTP_HOST
-        sync: false
-      - key: SMTP_PORT
-        value: 587
-      - key: SMTP_SECURE
-        value: false
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASS
-        sync: false
-      - key: EMAIL_FROM_NAME
-        value: LastMart
-      - key: EMAIL_FROM_ADDRESS
-        sync: false
-    # Persistent disk for SQLite database (1 GB free tier)
     disk:
       name: lastmart-db
       mountPath: /var/data
       sizeGB: 1
+    healthCheckPath: /api/health
 
-  # ── Frontend: Next.js ──────────────────────────────────────────────────────
+  # ── 2. Customer Frontend (Next.js — port 3000) ────────────────────────────
   - type: web
-    name: lastmart-frontend
+    name: lastmart-customer
     runtime: node
+    plan: starter
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_API_URL
+        value: https://lastmart-api.onrender.com
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://lastmart.onrender.com
+      - key: NEXT_PUBLIC_VENDOR_URL
+        value: https://lastmart-vendor.onrender.com
+      - key: NEXT_PUBLIC_RIDER_URL
+        value: https://lastmart-rider.onrender.com
+      - key: NEXT_PUBLIC_ADMIN_URL
+        value: https://lastmart-admin.onrender.com
+      - key: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+        sync: false
+
+  # ── 3. Vendor Frontend (Next.js — port 3001) ─────────────────────────────
+  - type: web
+    name: lastmart-vendor
+    runtime: node
+    plan: starter
+    rootDir: apps/vendor
     buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: node .next/standalone/server.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
-      - key: HOSTNAME
-        value: 0.0.0.0
-      # ⚠️  Set this to your actual Render backend URL after it deploys
-      # e.g. https://lastmart-backend.onrender.com
-      - key: BACKEND_API_URL
-        sync: false
-      - key: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
-        sync: false
-      - key: NEXT_TELEMETRY_DISABLED
-        value: 1
+        value: "3001"
+      - key: BACKEND_URL
+        value: https://lastmart-api.onrender.com
+      - key: NEXT_PUBLIC_API_URL
+        value: https://lastmart-api.onrender.com/api
+      - key: NEXT_PUBLIC_CUSTOMER_URL
+        value: https://lastmart.onrender.com
+
+  # ── 4. Rider Frontend (Next.js — port 3002) ──────────────────────────────
+  - type: web
+    name: lastmart-rider
+    runtime: node
+    plan: starter
+    rootDir: apps/rider
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: node .next/standalone/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3002"
+      - key: BACKEND_URL
+        value: https://lastmart-api.onrender.com
+      - key: NEXT_PUBLIC_API_URL
+        value: https://lastmart-api.onrender.com/api
+      - key: NEXT_PUBLIC_CUSTOMER_URL
+        value: https://lastmart.onrender.com
+
+  # ── 5. Admin Frontend (Next.js — port 3003) ──────────────────────────────
+  - type: web
+    name: lastmart-admin
+    runtime: node
+    plan: starter
+    rootDir: apps/admin
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: node .next/standalone/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3003"
+      - key: BACKEND_URL
+        value: https://lastmart-api.onrender.com
+      - key: NEXT_PUBLIC_API_URL
+        value: https://lastmart-api.onrender.com/api
+      - key: NEXT_PUBLIC_CUSTOMER_URL
+        value: https://lastmart.onrender.com

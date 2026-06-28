@@ -1,6 +1,6 @@
 {
   "name": "lastmart",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "private": true,
   "engines": {
     "node": ">=20.0.0",
@@ -10,12 +10,18 @@
     "dev": "next dev -p 3000",
     "dev:frontend": "next dev -p 3000",
     "dev:backend": "cd backend && npm run dev",
-    "dev:all": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:vendor": "cd apps/vendor && npm run dev",
+    "dev:rider": "cd apps/rider && npm run dev",
+    "dev:admin": "cd apps/admin && npm run dev",
+    "dev:all": "concurrently -n \"BACKEND,CUSTOMER,VENDOR,RIDER,ADMIN\" -c \"cyan,magenta,yellow,green,red\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:vendor\" \"npm run dev:rider\" \"npm run dev:admin\"",
     "build": "next build",
     "build:backend": "cd backend && npm run build",
+    "build:vendor": "cd apps/vendor && npm run build",
+    "build:rider": "cd apps/rider && npm run build",
+    "build:admin": "cd apps/admin && npm run build",
     "start": "next start",
     "start:backend": "cd backend && npm start",
-    "install:all": "npm install --legacy-peer-deps && cd backend && npm install",
+    "install:all": "npm install --legacy-peer-deps && cd backend && npm install && cd ../apps/vendor && npm install --legacy-peer-deps && cd ../rider && npm install --legacy-peer-deps && cd ../admin && npm install --legacy-peer-deps",
     "lint": "eslint"
   },
   "dependencies": {

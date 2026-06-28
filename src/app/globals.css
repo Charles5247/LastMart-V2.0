@@ -58,6 +58,15 @@ body {
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--brand); }
 
+/* ─── Missing utility classes ────────────────────────────── */
+/* scrollbar-hide: used in Navbar category bar and MetricsBar */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+/* h-25: navbar main bar height */
+.h-25 { height: 6.25rem; }
+/* max-w-18: username truncation in Navbar user menu */
+.max-w-18 { max-width: 4.5rem; }
+
 /* ─── Typography utilities ──────────────────────────────── */
 .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

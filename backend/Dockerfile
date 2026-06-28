@@ -1,42 +1,26 @@
-# ─── Backend (Express + TypeScript) — Multi-stage build ──────────────────────
-# Produces a lean production image (~150 MB) suitable for:
-#   Docker Compose, Render, Railway, Fly.io, AWS ECS/App Runner, VPS
+## ─── Backend Dockerfile ──────────────────────────────────────────────────────
+FROM node:20-alpine AS base
 
-# ── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM base AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package*.json ./
 RUN npm install
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# ── Stage 2: Minimal runtime image ────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM base AS runner
 WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=5000
-
-# Non-root user
-RUN addgroup --system --gid 1001 nodejs \
- && adduser  --system --uid 1001 apiuser
-
-# Persistent volume for SQLite database
-RUN mkdir -p /data && chown apiuser:nodejs /data
-
-# Copy compiled JS + production dependencies
-COPY --from=builder --chown=apiuser:nodejs /app/dist         ./dist
-COPY --from=builder --chown=apiuser:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=apiuser:nodejs /app/package.json ./
-
-# ── Uploaded files volume mount point ─────────────────────────────────────────
-# Mount a volume at /uploads for persistent file storage.
-# The backend serves these at /uploads/* via express.static.
-RUN mkdir -p /uploads && chown apiuser:nodejs /uploads
-
-USER apiuser
+ENV NODE_ENV production
+ENV PORT 5000
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 express
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package.json ./
+RUN mkdir -p /var/data && chown express:nodejs /var/data
+USER express
 EXPOSE 5000
-
-# DATABASE_PATH should point to the /data volume in production
-ENV DATABASE_PATH=/data/lastmart.db
-
 CMD ["node", "dist/server.js"]

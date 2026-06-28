@@ -118,7 +118,7 @@ app.get('/health', (_req, res) => {
     status:    'ok',
     timestamp: new Date().toISOString(),
     service:   'LastMart API',
-    version:   '4.0.0',
+    version:   '5.3.0',
   });
 });
 
@@ -174,7 +174,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 /* ─── Start Server ───────────────────────────────────────────────────────── */
 app.listen(PORT, () => {
-  console.log(`\n🚀 LastMart API Server v5.0 running at http://localhost:${PORT}`);
+  console.log(`\n🚀 LastMart API Server v5.3.0 running at http://localhost:${PORT}`);
   console.log(`   Health:       http://localhost:${PORT}/health`);
   console.log(`   CORS origin:  ${FRONTEND_URL}`);
   console.log(`\n📋 API Namespaces:`);

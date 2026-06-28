@@ -220,7 +220,7 @@ export default function Navbar() {
                             </Link>
                           </>)}
                           {user.role === 'rider' && (<>
-                            <Link href="/dashboard/rider" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                            <Link href="/rider/dashboard" onClick={() => setUserOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
                               <span className="w-4 h-4 mr-3 text-orange-500">🏍️</span> Rider Dashboard
                             </Link>
                           </>)}

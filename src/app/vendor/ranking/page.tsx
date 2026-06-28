@@ -28,7 +28,7 @@ export default function VendorRankingPage() {
 
   useEffect(() => {
     if (!isLoading && !user) { router.push('/auth/login'); return; }
-    if (!isLoading && user?.role !== 'vendor') { router.push('/dashboard/vendor'); return; }
+    if (!isLoading && user?.role !== 'vendor') { router.push('/vendor/dashboard'); return; }
     if (user?.role === 'vendor') {
       fetchData();
     }

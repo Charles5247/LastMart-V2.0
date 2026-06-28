@@ -55,7 +55,7 @@ function resetFailedLogins(req: Request) {
 }
 
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', registerLimiter, async (req: Request, res: Response) => {
   try {
     if (isLoginBlocked(req)) {
       return res.status(429).json({
@@ -98,7 +98,7 @@ router.post('/login', async (req: Request, res: Response) => {
     const { password: _, ...userWithoutPassword } = user;
 
     res.cookie('auth_token', token, {
-      httpOnly: true, secure: false, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000
+      httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     return res.json({
@@ -113,7 +113,7 @@ router.post('/login', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/register
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', registerLimiter, async (req: Request, res: Response) => {
   try {
     await seedDatabase();
     const db = getDB();
@@ -176,7 +176,7 @@ router.post('/register', async (req: Request, res: Response) => {
     const token = signToken({ userId: user.id, email: user.email, role: user.role, name: user.name });
 
     res.cookie('auth_token', token, {
-      httpOnly: true, secure: false, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000
+      httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     return res.status(201).json({ success: true, data: { user, token }, message: 'Registration successful' });
