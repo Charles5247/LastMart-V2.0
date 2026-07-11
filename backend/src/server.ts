@@ -27,46 +27,46 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import path from 'path';
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import path from "path";
 
 /* ─── Route imports ──────────────────────────────────────────────────────── */
-import authRoutes         from './routes/auth';
-import productRoutes      from './routes/products';
-import vendorRoutes       from './routes/vendors';
-import orderRoutes        from './routes/orders';
-import cartRoutes         from './routes/cart';
-import categoryRoutes     from './routes/categories';
-import reviewRoutes       from './routes/reviews';
-import notificationRoutes from './routes/notifications';
-import userRoutes         from './routes/users';
-import adRoutes           from './routes/ads';
-import adminRoutes        from './routes/admin';
-import paymentRoutes      from './routes/payment';
-import deliveryRoutes     from './routes/delivery';
-import budgetRoutes       from './routes/budget';
-import lamaRoutes, { runLamaAnalysis } from './routes/lama';
-import uploadRoutes       from './routes/upload';
-import verificationRoutes from './routes/verification';
-import rankingRoutes      from './routes/ranking';
-import sseRoutes          from './routes/sse';
-import couponRoutes       from './routes/coupons';
-import qrRoutes           from './routes/qr';
-import riderRoutes        from './routes/riders';
-import disputeRoutes      from './routes/disputes';
-import returnRoutes       from './routes/returns';
-import messageRoutes      from './routes/messages';
-import vendorPayoutRoutes from './routes/vendorPayouts';
-import vendorPromoRoutes  from './routes/vendorPromotions';
-import customOrderRoutes  from './routes/customOrders';
-import vendorKycRoutes    from './routes/vendorKyc';
+import authRoutes from "./routes/auth";
+import productRoutes from "./routes/products";
+import vendorRoutes from "./routes/vendors";
+import orderRoutes from "./routes/orders";
+import cartRoutes from "./routes/cart";
+import categoryRoutes from "./routes/categories";
+import reviewRoutes from "./routes/reviews";
+import notificationRoutes from "./routes/notifications";
+import userRoutes from "./routes/users";
+import adRoutes from "./routes/ads";
+import adminRoutes from "./routes/admin";
+import paymentRoutes from "./routes/payment";
+import deliveryRoutes from "./routes/delivery";
+import budgetRoutes from "./routes/budget";
+import lamaRoutes, { runLamaAnalysis } from "./routes/lama";
+import uploadRoutes from "./routes/upload";
+import verificationRoutes from "./routes/verification";
+import rankingRoutes from "./routes/ranking";
+import sseRoutes from "./routes/sse";
+import couponRoutes from "./routes/coupons";
+import qrRoutes from "./routes/qr";
+import riderRoutes from "./routes/riders";
+import disputeRoutes from "./routes/disputes";
+import returnRoutes from "./routes/returns";
+import messageRoutes from "./routes/messages";
+import vendorPayoutRoutes from "./routes/vendorPayouts";
+import vendorPromoRoutes from "./routes/vendorPromotions";
+import customOrderRoutes from "./routes/customOrders";
+import vendorKycRoutes from "./routes/vendorKyc";
 
-const app          = express();
+const app = express();
 app.set("trust proxy", 1); // Trust Render's proxy to get real client IPs
-const PORT         = process.env.PORT         || 5000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const PORT = process.env.PORT || 5000;
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3006";
 
 /* ─── Middleware ─────────────────────────────────────────────────────────── */
 
@@ -76,26 +76,31 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
  * e.g. "https://lastmart.vercel.app,https://www.lastmart.com"
  */
 const allowedOrigins = [
-  ...FRONTEND_URL.split(',').map((o: string) => o.trim()),
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://127.0.0.1:3000',
+  ...FRONTEND_URL.split(",").map((o: string) => o.trim()),
+  "http://localhost:3006",
+  "http://localhost:3001",
+  "http://127.0.0.1:3006",
 ];
-app.use(cors({
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (curl, Postman, mobile apps, same-origin SSR)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    // In development allow all origins
-    if (process.env.NODE_ENV !== 'production') return callback(null, true);
-    callback(new Error(`CORS: origin ${origin} not allowed`));
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      // Allow requests with no origin (curl, Postman, mobile apps, same-origin SSR)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // In development allow all origins
+      if (process.env.NODE_ENV !== "production") return callback(null, true);
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
+    credentials: true,
+  }),
+);
 
 /** Parse JSON bodies up to 50 MB (for base64 image previews in requests) */
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 /** Parse cookies (used for auth_token in httpOnly cookies) */
 app.use(cookieParser());
@@ -105,55 +110,55 @@ app.use(cookieParser());
  * Files are stored at <project-root>/public/uploads/
  * and served at /uploads/<filename>.
  */
-const UPLOAD_DIR = path.join(__dirname, '../../../public/uploads');
-app.use('/uploads', express.static(UPLOAD_DIR));
+const UPLOAD_DIR = path.join(__dirname, "../../../public/uploads");
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 /* ─── Health Check ───────────────────────────────────────────────────────── */
 /**
  * GET /health
  * Simple liveness probe used by PM2 and load-balancers.
  */
-app.get('/health', (_req, res) => {
+app.get("/health", (_req, res) => {
   res.json({
-    status:    'ok',
+    status: "ok",
     timestamp: new Date().toISOString(),
-    service:   'LastMart API',
-    version:   '5.3.0',
+    service: "LastMart API",
+    version: "5.3.0",
   });
 });
 
 /* ─── API Routes ─────────────────────────────────────────────────────────── */
-app.use('/api/auth',          authRoutes);
-app.use('/api/products',      productRoutes);
-app.use('/api/vendors',       vendorRoutes);
-app.use('/api/orders',        orderRoutes);
-app.use('/api/cart',          cartRoutes);
-app.use('/api/categories',    categoryRoutes);
-app.use('/api/reviews',       reviewRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/users',         userRoutes);
-app.use('/api/ads',           adRoutes);
-app.use('/api/admin',         adminRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/vendors", vendorRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/ads", adRoutes);
+app.use("/api/admin", adminRoutes);
 
 /* ─── New feature routes ─────────────────────────────────────────────────── */
-app.use('/api/payment',       paymentRoutes);   // Paystack/Flutterwave/Crypto/GiftCard
-app.use('/api/delivery',      deliveryRoutes);  // Addresses + delivery modes
-app.use('/api/budget',        budgetRoutes);    // Budget plans + recurring purchases
-app.use('/api/lama',          lamaRoutes);      // LAMA AI agent
-app.use('/api/upload',        uploadRoutes);    // Image uploads (50 MB limit)
-app.use('/api/verification',  verificationRoutes); // KYC, product vetting, T&C
-app.use('/api/ranking',       rankingRoutes);   // Paid ranking, ad-boost, ready-notify
-app.use('/api/sse',           sseRoutes);        // Real-time SSE push notifications
-app.use('/api/coupons',       couponRoutes);     // Coupons, referrals, auto-discounts
-app.use('/api/qr',            qrRoutes);         // Vendor QR codes + share links
-app.use('/api/riders',        riderRoutes);      // Rider registration, KYC, deliveries
-app.use('/api/disputes',      disputeRoutes);    // Order disputes
-app.use('/api/returns',       returnRoutes);     // Return requests
-app.use('/api/messages',      messageRoutes);    // Buyer-vendor messaging
-app.use('/api/vendors',       vendorPayoutRoutes); // Vendor payouts (override for new routes)
-app.use('/api/vendors',       vendorPromoRoutes);  // Vendor promotions
-app.use('/api/custom-orders', customOrderRoutes);  // Specific + custom product requests
-app.use('/api/vendor-kyc',    vendorKycRoutes);    // Vendor KYC photo uploads
+app.use("/api/payment", paymentRoutes); // Paystack/Flutterwave/Crypto/GiftCard
+app.use("/api/delivery", deliveryRoutes); // Addresses + delivery modes
+app.use("/api/budget", budgetRoutes); // Budget plans + recurring purchases
+app.use("/api/lama", lamaRoutes); // LAMA AI agent
+app.use("/api/upload", uploadRoutes); // Image uploads (50 MB limit)
+app.use("/api/verification", verificationRoutes); // KYC, product vetting, T&C
+app.use("/api/ranking", rankingRoutes); // Paid ranking, ad-boost, ready-notify
+app.use("/api/sse", sseRoutes); // Real-time SSE push notifications
+app.use("/api/coupons", couponRoutes); // Coupons, referrals, auto-discounts
+app.use("/api/qr", qrRoutes); // Vendor QR codes + share links
+app.use("/api/riders", riderRoutes); // Rider registration, KYC, deliveries
+app.use("/api/disputes", disputeRoutes); // Order disputes
+app.use("/api/returns", returnRoutes); // Return requests
+app.use("/api/messages", messageRoutes); // Buyer-vendor messaging
+app.use("/api/vendors", vendorPayoutRoutes); // Vendor payouts (override for new routes)
+app.use("/api/vendors", vendorPromoRoutes); // Vendor promotions
+app.use("/api/custom-orders", customOrderRoutes); // Specific + custom product requests
+app.use("/api/vendor-kyc", vendorKycRoutes); // Vendor KYC photo uploads
 
 /* ─── 404 Handler ────────────────────────────────────────────────────────── */
 app.use((req, res) => {
@@ -164,26 +169,51 @@ app.use((req, res) => {
 });
 
 /* ─── Global Error Handler ───────────────────────────────────────────────── */
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('[Server Error]', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: err.message || 'Internal server error',
-  });
-});
+app.use(
+  (
+    err: any,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    console.error("[Server Error]", err);
+    res.status(err.status || 500).json({
+      success: false,
+      error: err.message || "Internal server error",
+    });
+  },
+);
 
 /* ─── Start Server ───────────────────────────────────────────────────────── */
 app.listen(PORT, () => {
-  console.log(`\n🚀 LastMart API Server v5.3.0 running at http://localhost:${PORT}`);
+  console.log(
+    `\n🚀 LastMart API Server v5.3.0 running at http://localhost:${PORT}`,
+  );
   console.log(`   Health:       http://localhost:${PORT}/health`);
   console.log(`   CORS origin:  ${FRONTEND_URL}`);
   console.log(`\n📋 API Namespaces:`);
   [
-    'auth', 'products', 'vendors', 'orders', 'cart', 'categories',
-    'reviews', 'notifications', 'users', 'ads', 'admin',
-    'payment', 'delivery', 'budget', 'lama', 'upload',
-    'verification', 'ranking', 'coupons', 'qr',
-  ].forEach(ns => console.log(`   /api/${ns}`));
+    "auth",
+    "products",
+    "vendors",
+    "orders",
+    "cart",
+    "categories",
+    "reviews",
+    "notifications",
+    "users",
+    "ads",
+    "admin",
+    "payment",
+    "delivery",
+    "budget",
+    "lama",
+    "upload",
+    "verification",
+    "ranking",
+    "coupons",
+    "qr",
+  ].forEach((ns) => console.log(`   /api/${ns}`));
   console.log();
 
   /* ─── Run LAMA initial analysis (deferred 5 s to let DB warm up) ───── */
@@ -192,7 +222,7 @@ app.listen(PORT, () => {
       const result = runLamaAnalysis();
       console.log(`🤖 LAMA: ${result.inserted} insights generated on startup`);
     } catch (e: any) {
-      console.warn('⚠️  LAMA startup analysis skipped:', e.message);
+      console.warn("⚠️  LAMA startup analysis skipped:", e.message);
     }
   }, 5000);
 });

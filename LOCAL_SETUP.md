@@ -88,6 +88,7 @@ lastmart/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - npm 9+
 
@@ -107,7 +108,7 @@ npm run build
 node dist/server.js
 ```
 
-### Terminal 2 – Frontend (Port 3000)
+### Terminal 2 – Frontend (Port 3006)
 
 ```bash
 cd lastmart
@@ -124,7 +125,8 @@ npm start
 ```
 
 ### Access the App
-- **Frontend:** http://localhost:3000
+
+- **Frontend:** http://localhost:3006
 - **Backend API:** http://localhost:5000
 - **API Health:** http://localhost:5000/health
 
@@ -134,11 +136,11 @@ npm start
 
 After seeding (`cat lastmart_seed.sql | sqlite3 lastmart.db`):
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@lastmart.ng | admin123 |
-| Vendor | vendor@test.ng | vendor123 |
-| Customer | customer@test.ng | customer123 |
+| Role     | Email             | Password    |
+| -------- | ----------------- | ----------- |
+| Admin    | admin@lastmart.ng | admin123    |
+| Vendor   | vendor@test.ng    | vendor123   |
+| Customer | customer@test.ng  | customer123 |
 
 ---
 
@@ -147,6 +149,7 @@ After seeding (`cat lastmart_seed.sql | sqlite3 lastmart.db`):
 The SQLite database (`lastmart.db`) is shared between frontend and backend. The schema is auto-created on first backend start via `initializeDB()` in `backend/src/lib/db.ts`.
 
 **Key Tables:**
+
 - `users` – all roles (customer, vendor, admin) with `is_suspended`, `kyc_status`, `terms_accepted`
 - `vendors` – store profiles with `status`, `kyc_status`, `ranking_level`
 - `products` – listings with `verification_status`, `is_ranked`, `is_featured`
@@ -166,67 +169,67 @@ The SQLite database (`lastmart.db`) is shared between frontend and backend. The 
 
 All API endpoints are proxied from Next.js (`/api/*` → `http://localhost:5000/api/*`).
 
-| Namespace | Purpose |
-|-----------|---------|
-| `POST /api/auth/register` | Register with T&C acceptance |
-| `POST /api/auth/login` | Login (blocks suspended accounts) |
-| `GET/POST /api/verification/kyc` | Submit & check KYC status |
-| `PUT /api/verification/kyc/:id` | Admin: approve/reject KYC |
-| `POST /api/verification/product` | Vendor: submit product for vetting |
-| `PUT /api/verification/product/:id` | Admin: approve/reject product vetting |
-| `POST/GET /api/verification/terms` | Accept & check T&C |
-| `GET /api/ranking/packages` | List paid ranking packages |
-| `POST /api/ranking/apply` | Vendor: apply for ranking |
-| `PUT /api/ranking/admin/:id` | Admin: approve/reject ranking |
-| `GET /api/ranking/lama-recommendations` | LAMA: suggest what to rank |
-| `POST /api/ranking/notify-ready` | Vendor: order ready for pickup/delivery |
-| `GET /api/vendors/:id` | Public vendor store (tracks visit, notifies vendor) |
-| `POST /api/cart` | Add to cart (notifies vendor) |
-| `POST /api/orders` | Place order (notifies vendor + customer) |
-| `GET /api/admin/analytics` | Full platform stats |
-| `PUT /api/admin/customers/:id` | Suspend/unsuspend customer |
-| `PUT /api/admin/vendors` | Approve/suspend vendor |
-| `PUT /api/admin/products/:id` | Activate/feature/rank product |
-| `POST /api/admin/notifications` | Broadcast to all/role/specific user |
-| `GET /api/admin/store-visits` | Store visit analytics |
+| Namespace                               | Purpose                                             |
+| --------------------------------------- | --------------------------------------------------- |
+| `POST /api/auth/register`               | Register with T&C acceptance                        |
+| `POST /api/auth/login`                  | Login (blocks suspended accounts)                   |
+| `GET/POST /api/verification/kyc`        | Submit & check KYC status                           |
+| `PUT /api/verification/kyc/:id`         | Admin: approve/reject KYC                           |
+| `POST /api/verification/product`        | Vendor: submit product for vetting                  |
+| `PUT /api/verification/product/:id`     | Admin: approve/reject product vetting               |
+| `POST/GET /api/verification/terms`      | Accept & check T&C                                  |
+| `GET /api/ranking/packages`             | List paid ranking packages                          |
+| `POST /api/ranking/apply`               | Vendor: apply for ranking                           |
+| `PUT /api/ranking/admin/:id`            | Admin: approve/reject ranking                       |
+| `GET /api/ranking/lama-recommendations` | LAMA: suggest what to rank                          |
+| `POST /api/ranking/notify-ready`        | Vendor: order ready for pickup/delivery             |
+| `GET /api/vendors/:id`                  | Public vendor store (tracks visit, notifies vendor) |
+| `POST /api/cart`                        | Add to cart (notifies vendor)                       |
+| `POST /api/orders`                      | Place order (notifies vendor + customer)            |
+| `GET /api/admin/analytics`              | Full platform stats                                 |
+| `PUT /api/admin/customers/:id`          | Suspend/unsuspend customer                          |
+| `PUT /api/admin/vendors`                | Approve/suspend vendor                              |
+| `PUT /api/admin/products/:id`           | Activate/feature/rank product                       |
+| `POST /api/admin/notifications`         | Broadcast to all/role/specific user                 |
+| `GET /api/admin/store-visits`           | Store visit analytics                               |
 
 ---
 
 ## 🔔 Notification Triggers
 
-| Event | Who Gets Notified |
-|-------|-------------------|
-| Customer visits vendor store | Vendor |
-| Customer adds product to cart | Vendor |
-| Customer places order | Vendor + Customer |
-| Vendor ships/updates order | Customer |
-| Vendor marks order ready | Customer + Admin |
-| KYC submitted | Admin |
-| KYC approved/rejected | User |
-| Product submitted for vetting | Admin |
-| Product vetting result | Vendor |
-| Ranking application submitted | Admin |
-| Ranking approved/rejected | Vendor |
-| Admin broadcast | All / Role / Specific user |
-| Account suspended/restored | User |
+| Event                         | Who Gets Notified          |
+| ----------------------------- | -------------------------- |
+| Customer visits vendor store  | Vendor                     |
+| Customer adds product to cart | Vendor                     |
+| Customer places order         | Vendor + Customer          |
+| Vendor ships/updates order    | Customer                   |
+| Vendor marks order ready      | Customer + Admin           |
+| KYC submitted                 | Admin                      |
+| KYC approved/rejected         | User                       |
+| Product submitted for vetting | Admin                      |
+| Product vetting result        | Vendor                     |
+| Ranking application submitted | Admin                      |
+| Ranking approved/rejected     | Vendor                     |
+| Admin broadcast               | All / Role / Specific user |
+| Account suspended/restored    | User                       |
 
 ---
 
 ## 👤 Role-Based Access
 
-| Feature | Customer | Vendor | Admin |
-|---------|----------|--------|-------|
-| Home page / shopping | ✅ | ❌ (redirected) | ❌ (redirected) |
-| Marketplace browsing | ✅ | ✅ | ✅ |
-| Place orders / cart | ✅ | ❌ | ❌ |
-| Vendor dashboard | ❌ | ✅ | ❌ |
-| Admin dashboard | ❌ | ❌ | ✅ |
-| KYC submission | ✅ | ✅ | ❌ |
-| Product vetting submit | ❌ | ✅ | ❌ |
-| Review KYC/vetting | ❌ | ❌ | ✅ |
-| Ranking packages | ❌ | ✅ (apply) | ✅ (manage) |
-| Suspend accounts | ❌ | ❌ | ✅ |
-| Broadcast notifications | ❌ | ❌ | ✅ |
+| Feature                 | Customer | Vendor          | Admin           |
+| ----------------------- | -------- | --------------- | --------------- |
+| Home page / shopping    | ✅       | ❌ (redirected) | ❌ (redirected) |
+| Marketplace browsing    | ✅       | ✅              | ✅              |
+| Place orders / cart     | ✅       | ❌              | ❌              |
+| Vendor dashboard        | ❌       | ✅              | ❌              |
+| Admin dashboard         | ❌       | ❌              | ✅              |
+| KYC submission          | ✅       | ✅              | ❌              |
+| Product vetting submit  | ❌       | ✅              | ❌              |
+| Review KYC/vetting      | ❌       | ❌              | ✅              |
+| Ranking packages        | ❌       | ✅ (apply)      | ✅ (manage)     |
+| Suspend accounts        | ❌       | ❌              | ✅              |
+| Broadcast notifications | ❌       | ❌              | ✅              |
 
 ---
 
@@ -250,14 +253,16 @@ pm2 logs lastmart --nostream
 ## 🗝️ Environment Variables
 
 **Backend** (`backend/.env` or system env):
+
 ```
 PORT=5000
 JWT_SECRET=your-secret-key
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3006
 NODE_ENV=development
 ```
 
 **Frontend** (`.env.local`):
+
 ```
 NEXT_PUBLIC_API_URL=http://localhost:5000
 ```

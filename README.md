@@ -40,7 +40,7 @@ LastMart is a full-stack local commerce platform built for Nigerian cities. It c
 ├──────────────────┬──────────────────┬──────────────────┬────────────┤
 │  Customer App    │  Vendor Portal   │  Rider Portal    │  Admin     │
 │  (Next.js 14)    │  (Next.js 14)    │  (Next.js 14)    │  Portal    │
-│  Port 3000       │  Port 3001       │  Port 3002       │  Port 3003 │
+│  Port 3006       │  Port 3001       │  Port 3002       │  Port 3003 │
 ├──────────────────┴──────────────────┴──────────────────┴────────────┤
 │                    Shared Express.js Backend API                     │
 │                         Port 5000                                    │
@@ -49,6 +49,7 @@ LastMart is a full-stack local commerce platform built for Nigerian cities. It c
 ```
 
 Each frontend is a **standalone Next.js application** with:
+
 - Its own `package.json`, `next.config.js`, `tsconfig.json`
 - Role-isolated localStorage token key (prevents cross-role token reuse)
 - Client-side JWT decode + server-side verification on every API call
@@ -58,14 +59,14 @@ Each frontend is a **standalone Next.js application** with:
 
 ## Live URLs
 
-| Service | URL |
-|---------|-----|
-| Customer Marketplace | https://lastmart.onrender.com |
-| Vendor Portal | https://lastmart-vendor.onrender.com |
-| Rider Portal | https://lastmart-rider.onrender.com |
-| Admin Portal | https://lastmart-admin.onrender.com |
-| Backend API | https://lastmart-api.onrender.com |
-| API Health | https://lastmart-api.onrender.com/api/health |
+| Service              | URL                                          |
+| -------------------- | -------------------------------------------- |
+| Customer Marketplace | https://lastmart.onrender.com                |
+| Vendor Portal        | https://lastmart-vendor.onrender.com         |
+| Rider Portal         | https://lastmart-rider.onrender.com          |
+| Admin Portal         | https://lastmart-admin.onrender.com          |
+| Backend API          | https://lastmart-api.onrender.com            |
+| API Health           | https://lastmart-api.onrender.com/api/health |
 
 ---
 
@@ -222,7 +223,7 @@ npm run install:all
 # Start all 5 services concurrently
 npm run dev:all
 # → Backend:   http://localhost:5000
-# → Customer:  http://localhost:3000
+# → Customer:  http://localhost:3006
 # → Vendor:    http://localhost:3001
 # → Rider:     http://localhost:3002
 # → Admin:     http://localhost:3003
@@ -232,7 +233,7 @@ npm run dev:all
 
 ```bash
 npm run dev:backend    # Express API  (port 5000)
-npm run dev           # Customer app (port 3000)
+npm run dev           # Customer app (port 3006)
 npm run dev:vendor    # Vendor app   (port 3001)
 npm run dev:rider     # Rider app    (port 3002)
 npm run dev:admin     # Admin app    (port 3003)
@@ -246,43 +247,44 @@ Copy `.env.example` to `.env.local` (frontend) and `backend/.env` (backend).
 
 ### Customer Frontend (`/.env.local`)
 
-| Variable | Description |
-|----------|-------------|
-| `BACKEND_API_URL` | Express backend URL for API proxy |
-| `NEXT_PUBLIC_SITE_URL` | Canonical site URL for SEO |
-| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Paystack browser key |
-| `NEXT_PUBLIC_VENDOR_URL` | Vendor portal URL (for CTAs) |
-| `NEXT_PUBLIC_RIDER_URL` | Rider portal URL (for CTAs) |
-| `NEXT_PUBLIC_ADMIN_URL` | Admin portal URL |
-| `GOOGLE_SITE_VERIFICATION` | Google Search Console code |
+| Variable                          | Description                       |
+| --------------------------------- | --------------------------------- |
+| `BACKEND_API_URL`                 | Express backend URL for API proxy |
+| `NEXT_PUBLIC_SITE_URL`            | Canonical site URL for SEO        |
+| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Paystack browser key              |
+| `NEXT_PUBLIC_VENDOR_URL`          | Vendor portal URL (for CTAs)      |
+| `NEXT_PUBLIC_RIDER_URL`           | Rider portal URL (for CTAs)       |
+| `NEXT_PUBLIC_ADMIN_URL`           | Admin portal URL                  |
+| `GOOGLE_SITE_VERIFICATION`        | Google Search Console code        |
 
 ### Sub-Apps (`apps/*/`)
 
 Each sub-app needs a `.env.local` with:
+
 ```env
 BACKEND_URL=http://localhost:5000
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
-NEXT_PUBLIC_CUSTOMER_URL=http://localhost:3000
+NEXT_PUBLIC_CUSTOMER_URL=http://localhost:3006
 ```
 
 ### Backend (`backend/.env`)
 
-| Variable | Description |
-|----------|-------------|
-| `PORT` | Server port (default: 5000) |
-| `JWT_SECRET` | Secret for signing JWTs (long random string) |
-| `FRONTEND_URL` | Comma-separated list of allowed CORS origins |
-| `DATABASE_PATH` | SQLite file path |
-| `PAYSTACK_SECRET_KEY` | Paystack server-side key |
-| `FLUTTERWAVE_SECRET_KEY` | Flutterwave server-side key |
-| `SENDGRID_API_KEY` | SendGrid email API key |
-| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | SMTP fallback credentials |
+| Variable                                | Description                                  |
+| --------------------------------------- | -------------------------------------------- |
+| `PORT`                                  | Server port (default: 5000)                  |
+| `JWT_SECRET`                            | Secret for signing JWTs (long random string) |
+| `FRONTEND_URL`                          | Comma-separated list of allowed CORS origins |
+| `DATABASE_PATH`                         | SQLite file path                             |
+| `PAYSTACK_SECRET_KEY`                   | Paystack server-side key                     |
+| `FLUTTERWAVE_SECRET_KEY`                | Flutterwave server-side key                  |
+| `SENDGRID_API_KEY`                      | SendGrid email API key                       |
+| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | SMTP fallback credentials                    |
 
 ---
 
 ## Frontend Applications
 
-### Customer App (`/` — port 3000)
+### Customer App (`/` — port 3006)
 
 - Homepage with hero slider, featured products/vendors, and **Become a Vendor / Become a Rider** dual CTA section
 - Marketplace with search, filter by city/category, vendor/product views
@@ -320,30 +322,30 @@ NEXT_PUBLIC_CUSTOMER_URL=http://localhost:3000
 
 ### Auth Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/auth/register` | Register (customer/vendor/rider) |
-| POST | `/auth/login` | Login → returns JWT + httpOnly cookie |
-| POST | `/auth/logout` | Clear auth cookie |
-| GET | `/auth/me` | Get current user profile |
-| PUT | `/auth/profile` | Update profile |
-| POST | `/auth/change-password` | Change password |
-| POST | `/auth/forgot-password` | Send reset email |
-| POST | `/auth/reset-password` | Reset with token |
-| POST | `/auth/verify-email` | Verify email code |
+| Method | Path                    | Description                           |
+| ------ | ----------------------- | ------------------------------------- |
+| POST   | `/auth/register`        | Register (customer/vendor/rider)      |
+| POST   | `/auth/login`           | Login → returns JWT + httpOnly cookie |
+| POST   | `/auth/logout`          | Clear auth cookie                     |
+| GET    | `/auth/me`              | Get current user profile              |
+| PUT    | `/auth/profile`         | Update profile                        |
+| POST   | `/auth/change-password` | Change password                       |
+| POST   | `/auth/forgot-password` | Send reset email                      |
+| POST   | `/auth/reset-password`  | Reset with token                      |
+| POST   | `/auth/verify-email`    | Verify email code                     |
 
 ### Key Resource Endpoints
 
-| Prefix | Description |
-|--------|-------------|
-| `/api/products` | Product CRUD, search, categories |
-| `/api/vendors` | Vendor profiles, analytics, payouts |
-| `/api/riders` | Rider stats, deliveries, availability |
-| `/api/orders` | Order placement, status updates |
-| `/api/admin/*` | Platform administration |
-| `/api/payment/*` | Paystack/Flutterwave webhooks |
-| `/api/notifications` | SSE notification stream |
-| `/api/health` | Health check → `{ version, status }` |
+| Prefix               | Description                           |
+| -------------------- | ------------------------------------- |
+| `/api/products`      | Product CRUD, search, categories      |
+| `/api/vendors`       | Vendor profiles, analytics, payouts   |
+| `/api/riders`        | Rider stats, deliveries, availability |
+| `/api/orders`        | Order placement, status updates       |
+| `/api/admin/*`       | Platform administration               |
+| `/api/payment/*`     | Paystack/Flutterwave webhooks         |
+| `/api/notifications` | SSE notification stream               |
+| `/api/health`        | Health check → `{ version, status }`  |
 
 ### Rate Limiting
 
@@ -356,12 +358,12 @@ NEXT_PUBLIC_CUSTOMER_URL=http://localhost:3000
 
 ### Token Storage (Per-Portal Isolation)
 
-| Portal | localStorage Key | Role Guard |
-|--------|-----------------|------------|
-| Customer | `auth_token` | any authenticated user |
-| Vendor | `vendor_auth_token` | `role === 'vendor'` |
-| Rider | `rider_auth_token` | `role === 'rider'` |
-| Admin | `admin_auth_token` | `role === 'admin'` |
+| Portal   | localStorage Key    | Role Guard             |
+| -------- | ------------------- | ---------------------- |
+| Customer | `auth_token`        | any authenticated user |
+| Vendor   | `vendor_auth_token` | `role === 'vendor'`    |
+| Rider    | `rider_auth_token`  | `role === 'rider'`     |
+| Admin    | `admin_auth_token`  | `role === 'admin'`     |
 
 ### Security Model
 
@@ -428,20 +430,20 @@ cd apps/admin && npm install --legacy-peer-deps && npm run build && npm start
 
 Run from the **root** directory:
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start customer frontend (port 3000) |
-| `npm run dev:backend` | Start Express backend (port 5000) |
-| `npm run dev:vendor` | Start vendor portal (port 3001) |
-| `npm run dev:rider` | Start rider portal (port 3002) |
-| `npm run dev:admin` | Start admin portal (port 3003) |
-| `npm run dev:all` | Start all 5 services concurrently |
-| `npm run build` | Build customer frontend |
-| `npm run build:backend` | Compile backend TypeScript |
-| `npm run build:vendor` | Build vendor portal |
-| `npm run build:rider` | Build rider portal |
-| `npm run build:admin` | Build admin portal |
-| `npm run install:all` | Install dependencies for all apps |
+| Script                  | Description                         |
+| ----------------------- | ----------------------------------- |
+| `npm run dev`           | Start customer frontend (port 3006) |
+| `npm run dev:backend`   | Start Express backend (port 5000)   |
+| `npm run dev:vendor`    | Start vendor portal (port 3001)     |
+| `npm run dev:rider`     | Start rider portal (port 3002)      |
+| `npm run dev:admin`     | Start admin portal (port 3003)      |
+| `npm run dev:all`       | Start all 5 services concurrently   |
+| `npm run build`         | Build customer frontend             |
+| `npm run build:backend` | Compile backend TypeScript          |
+| `npm run build:vendor`  | Build vendor portal                 |
+| `npm run build:rider`   | Build rider portal                  |
+| `npm run build:admin`   | Build admin portal                  |
+| `npm run install:all`   | Install dependencies for all apps   |
 
 ---
 
@@ -450,6 +452,7 @@ Run from the **root** directory:
 ### v5.3.0 (2026-06-27)
 
 #### New Features
+
 - **Multi-frontend architecture**: Split monolith into 4 independent Next.js apps under `apps/`
   - `apps/vendor/` — Vendor Portal (port 3001) with 7 pages
   - `apps/rider/` — Rider Portal (port 3002) with 6 pages
@@ -464,6 +467,7 @@ Run from the **root** directory:
 - **Root scripts**: Added `dev:vendor`, `dev:rider`, `dev:admin`, `build:vendor`, `build:rider`, `build:admin`
 
 #### Bug Fixes
+
 - Fixed 10 broken redirect routes (`/dashboard/{role}` → `/{role}/dashboard`)
 - Fixed wrong localStorage key in `RegisterClient.tsx` (`'token'` → `'auth_token'`)
 - Fixed insecure cookie (`secure: false` → `secure: process.env.NODE_ENV === 'production'`)
@@ -472,14 +476,17 @@ Run from the **root** directory:
 - Fixed deprecated `viewport` in Next.js 14 metadata — separated as `export const viewport`
 
 #### Security
+
 - Rate limiting now enforced on auth routes
 - Production cookies properly secured
 - Role isolation prevents cross-portal token reuse
 
 #### DevOps
+
 - Synchronized version to `5.3.0` across `package.json`, backend health endpoint, startup log
 - Added undocumented env vars to `.env.example`
 - Backend TypeScript compilation fixed (installed missing: `nodemailer`, `@sendgrid/mail`, `express-rate-limit`, `axios`)
 
 ### v5.2.0
+
 - Previous release — monolithic single-app architecture

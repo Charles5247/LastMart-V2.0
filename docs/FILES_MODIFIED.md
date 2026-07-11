@@ -3,7 +3,7 @@
 **Project**: LastMart Local Commerce Platform  
 **Version**: 5.3.0  
 **Date**: 2026-06-27  
-**Commit**: `0ad2f52` — feat: v5.3.0 — multi-frontend architecture + bug fixes  
+**Commit**: `0ad2f52` — feat: v5.3.0 — multi-frontend architecture + bug fixes
 
 This document lists every file that was **modified** (pre-existing and changed) during the v5.3.0 restructuring. For files that were newly created, see FILES_CREATED.md.
 
@@ -11,12 +11,12 @@ This document lists every file that was **modified** (pre-existing and changed) 
 
 ## Summary
 
-| Category | Files Modified |
-|----------|---------------|
-| Customer frontend (src/) | 8 |
-| Root configuration | 4 |
-| Backend | 2 |
-| **Total** | **14** |
+| Category                 | Files Modified |
+| ------------------------ | -------------- |
+| Customer frontend (src/) | 8              |
+| Root configuration       | 4              |
+| Backend                  | 2              |
+| **Total**                | **14**         |
 
 ---
 
@@ -26,30 +26,33 @@ This document lists every file that was **modified** (pre-existing and changed) 
 
 **Phase**: Phase 2 (Bug Fix)  
 **Change Type**: API compliance fix  
-**Reason**: Deprecated viewport metadata bundled into `metadata` object  
+**Reason**: Deprecated viewport metadata bundled into `metadata` object
 
 **What changed**:
+
 - Separated `viewport` from `metadata` into independent named export
 - Added `import type { Viewport }` from 'next'
 - Removed `viewport` key from `metadata` object
 
 **Before**:
+
 ```typescript
 export const metadata: Metadata = {
-  viewport: 'width=device-width, initial-scale=1',
-  title: 'LastMart',
+  viewport: "width=device-width, initial-scale=1",
+  title: "LastMart",
 };
 ```
 
 **After**:
+
 ```typescript
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
 };
 
 export const metadata: Metadata = {
-  title: 'LastMart',
+  title: "LastMart",
 };
 ```
 
@@ -59,9 +62,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 2 (Bug Fix)  
 **Change Type**: Missing CSS utility definitions  
-**Reason**: Three utility classes referenced in JSX but not defined  
+**Reason**: Three utility classes referenced in JSX but not defined
 
 **What changed**: Added `@layer utilities` block with:
+
 - `.scrollbar-hide` — hides scrollbar on overflow containers
 - `.h-25` — custom height (`6.25rem`)
 - `.max-w-18` — custom max-width (`4.5rem`)
@@ -72,9 +76,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 2 (Bug Fix)  
 **Change Type**: Authentication bug fix  
-**Reason**: Wrong localStorage key used after registration  
+**Reason**: Wrong localStorage key used after registration
 
 **What changed**:
+
 - Fixed `localStorage.setItem('token', ...)` → `localStorage.setItem('auth_token', ...)`
 - Fixed post-registration redirect from `/dashboard/customer` → `/customer/dashboard`
 
@@ -84,9 +89,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 2 (Bug Fix)  
 **Change Type**: Routing fix  
-**Reason**: Broken navigation link to rider dashboard  
+**Reason**: Broken navigation link to rider dashboard
 
 **What changed**:
+
 - Fixed href `/dashboard/rider` → `/rider/dashboard` in rider navigation link
 
 ---
@@ -95,9 +101,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 2 (Bug Fix)  
 **Change Type**: Routing fix  
-**Reason**: Two broken links to customer order history  
+**Reason**: Two broken links to customer order history
 
 **What changed**:
+
 - Fixed 2× `/dashboard/customer/orders` → `/customer/orders`
 
 ---
@@ -106,9 +113,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 2 (Bug Fix)  
 **Change Type**: Routing fix  
-**Reason**: Post-checkout redirect leads to 404  
+**Reason**: Post-checkout redirect leads to 404
 
 **What changed**:
+
 - Fixed 2× `router.push('/dashboard/customer/orders')` → `router.push('/customer/orders')`
 
 ---
@@ -117,9 +125,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 2 (Bug Fix)  
 **Change Type**: Routing fix  
-**Reason**: KYC completion redirect leads to 404  
+**Reason**: KYC completion redirect leads to 404
 
 **What changed**:
+
 - Fixed `router.push('/dashboard/rider')` → `router.push('/rider/dashboard')`
 
 ---
@@ -128,9 +137,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 5 (Customer CTAs)  
 **Change Type**: Feature addition  
-**Reason**: Add prominent Vendor and Rider CTAs to customer homepage  
+**Reason**: Add prominent Vendor and Rider CTAs to customer homepage
 
 **What changed**:
+
 - Added `Store, Bike` to lucide-react import
 - Added `VENDOR_URL` constant: `process.env.NEXT_PUBLIC_VENDOR_URL ?? 'https://lastmart-vendor.onrender.com'`
 - Added `RIDER_URL` constant: `process.env.NEXT_PUBLIC_RIDER_URL ?? 'https://lastmart-rider.onrender.com'`
@@ -146,9 +156,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 8 (Root Scripts)  
 **Change Type**: Script additions, version update  
-**Reason**: Add development and build scripts for new sub-apps  
+**Reason**: Add development and build scripts for new sub-apps
 
 **What changed**:
+
 - `"version"`: `"5.0.0"` → `"5.3.0"`
 - Added `"dev:vendor"`: `"cd apps/vendor && npm run dev"`
 - Added `"dev:rider"`: `"cd apps/rider && npm run dev"`
@@ -163,9 +174,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 4 (Backend CORS) + Phase 9 (Env Vars)  
 **Change Type**: Documentation update  
-**Reason**: Multi-origin CORS undocumented; new sub-app env vars missing  
+**Reason**: Multi-origin CORS undocumented; new sub-app env vars missing
 
 **What changed**:
+
 - `FRONTEND_URL` updated to comma-separated 4-origin format with dev and prod examples
 - Added `NEXT_PUBLIC_VENDOR_URL` for customer app CTA links
 - Added `NEXT_PUBLIC_RIDER_URL` for customer app CTA links
@@ -180,9 +192,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 7 (README Rewrite)  
 **Change Type**: Full rewrite (18,307 characters)  
-**Reason**: Documentation was incomplete and didn't reflect new architecture  
+**Reason**: Documentation was incomplete and didn't reflect new architecture
 
 **What changed** (full rewrite — old content replaced entirely):
+
 - Architecture overview with ASCII service diagram
 - Live URLs table (all 5 services)
 - Full project structure tree with all sub-apps
@@ -203,10 +216,11 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 6 (Deployment Configs)  
 **Change Type**: Expanded from 1-service to 5-service configuration  
-**Reason**: Original render.yaml covered only the backend  
+**Reason**: Original render.yaml covered only the backend
 
 **What changed**:
-- Added `lastmart-customer` web service (Next.js, port 3000)
+
+- Added `lastmart-customer` web service (Next.js, port 3006)
 - Added `lastmart-vendor` web service (rootDir: apps/vendor, port 3001)
 - Added `lastmart-rider` web service (rootDir: apps/rider, port 3002)
 - Added `lastmart-admin` web service (rootDir: apps/admin, port 3003)
@@ -222,9 +236,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 2 (Bug Fix) — version string only  
 **Change Type**: Minor update  
-**Reason**: Version mismatch (was `5.2.0`)  
+**Reason**: Version mismatch (was `5.2.0`)
 
 **What changed**:
+
 - Version string in health check response: `"5.2.0"` → `"5.3.0"`
 - Note: CORS configuration was already correct (`FRONTEND_URL.split(',')`) — no change needed
 
@@ -234,9 +249,10 @@ export const metadata: Metadata = {
 
 **Phase**: Phase 2 (Bug Fixes — 2 separate issues)  
 **Change Type**: Security fixes  
-**Reason**: Insecure cookie + unapplied rate limiter  
+**Reason**: Insecure cookie + unapplied rate limiter
 
 **What changed**:
+
 - Cookie security fix: `secure: false` → `secure: process.env.NODE_ENV === 'production'`
 - Rate limiter applied: added `registerLimiter` middleware to both `/login` and `/register` routes
 
@@ -246,28 +262,28 @@ export const metadata: Metadata = {
 
 The following files were modified in a prior session during the initial audit and bug-fix phase. They are included for completeness.
 
-| File | Phase | Change |
-|------|-------|--------|
-| `src/app/vendor/ranking/page.tsx` | Phase 2 | Fixed redirect `/dashboard/vendor` → `/vendor/dashboard` |
-| `src/app/vendor/verification/page.tsx` | Phase 2 | Fixed redirect `/dashboard/vendor` → `/vendor/dashboard` |
-| `backend/package.json` | Phase 2 | Added missing deps: nodemailer, @sendgrid/mail, express-rate-limit, axios |
-| `backend/package.json` | Phase 2 | Version `5.1.0` → `5.3.0` |
+| File                                   | Phase   | Change                                                                    |
+| -------------------------------------- | ------- | ------------------------------------------------------------------------- |
+| `src/app/vendor/ranking/page.tsx`      | Phase 2 | Fixed redirect `/dashboard/vendor` → `/vendor/dashboard`                  |
+| `src/app/vendor/verification/page.tsx` | Phase 2 | Fixed redirect `/dashboard/vendor` → `/vendor/dashboard`                  |
+| `backend/package.json`                 | Phase 2 | Added missing deps: nodemailer, @sendgrid/mail, express-rate-limit, axios |
+| `backend/package.json`                 | Phase 2 | Version `5.1.0` → `5.3.0`                                                 |
 
 ---
 
 ## Change Statistics
 
-| Metric | Count |
-|--------|-------|
-| Total files modified | 14 |
-| Security fixes | 3 (cookie, rate limiter, CORS docs) |
-| Routing fixes | 7 individual route corrections |
-| Feature additions | 2 (HomeClient CTAs, render.yaml expansion) |
-| Documentation updates | 2 (README, .env.example) |
-| Script additions | 1 (package.json scripts) |
-| Version bumps | 3 files synced to 5.3.0 |
+| Metric                | Count                                      |
+| --------------------- | ------------------------------------------ |
+| Total files modified  | 14                                         |
+| Security fixes        | 3 (cookie, rate limiter, CORS docs)        |
+| Routing fixes         | 7 individual route corrections             |
+| Feature additions     | 2 (HomeClient CTAs, render.yaml expansion) |
+| Documentation updates | 2 (README, .env.example)                   |
+| Script additions      | 1 (package.json scripts)                   |
+| Version bumps         | 3 files synced to 5.3.0                    |
 
 ---
 
-*For newly created files, see FILES_CREATED.md.*  
-*For a detailed description of each bug and its fix, see ERROR_REPORT.md.*
+_For newly created files, see FILES_CREATED.md._  
+_For a detailed description of each bug and its fix, see ERROR_REPORT.md._

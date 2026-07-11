@@ -14,7 +14,7 @@ kill_timeout   = 30
 
 [env]
   NODE_ENV                 = "production"
-  PORT                     = "3000"
+  PORT                     = "3006"
   HOSTNAME                 = "0.0.0.0"
   NEXT_TELEMETRY_DISABLED  = "1"
 
@@ -22,7 +22,7 @@ kill_timeout   = 30
 # fly secrets set NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_...
 
 [http_service]
-  internal_port       = 3000
+  internal_port       = 3006
   force_https         = true
   auto_stop_machines  = true
   auto_start_machines = true
