@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { Shield, Users, Store, Bike, ShoppingBag, Activity, Bell, LogOut, Search, ChevronLeft, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 import { getStoredToken, clearStoredToken, isAdminAuthenticated } from '@/lib/auth';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 const NAV = [
   { href: '/dashboard', icon: Activity,    label: 'Dashboard' },
   { href: '/users',     icon: Users,       label: 'Users' },
@@ -41,7 +42,7 @@ export default function AdminOrdersPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }), ...(statusFilter !== 'all' && { status: statusFilter }) });
-      const res  = await fetch(`${API}/admin/orders?${params}`, { headers: hdrs() });
+      const res  = await fetch(`${API_URL}/admin/orders?${params}`, { headers: hdrs() });
       const data = await res.json();
       if (data.success) { setItems(data.data ?? []); setTotalPages(data.pagination?.totalPages ?? 1); }
     } catch { toast.error('Failed to load orders'); }
@@ -51,7 +52,11 @@ export default function AdminOrdersPage() {
   const action = async (id: string, act: string) => {
     setActing(id);
     try {
-      const res  = await fetch(`${API}/admin/orders/${id}/${act}`, { method: 'PUT', headers: hdrs() });
+      const res  = await fetch(`${API_URL}/admin/orders/${id}`, { 
+        method: 'PUT', 
+        headers: hdrs(),
+        body: JSON.stringify({ status: act })
+      });
       const data = await res.json();
       if (data.success) { toast.success(`${act} successful`); fetchItems(); }
       else toast.error(data.message ?? 'Action failed');

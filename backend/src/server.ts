@@ -150,7 +150,7 @@ app.use('/api/riders',        riderRoutes);      // Rider registration, KYC, del
 app.use('/api/disputes',      disputeRoutes);    // Order disputes
 app.use('/api/returns',       returnRoutes);     // Return requests
 app.use('/api/messages',      messageRoutes);    // Buyer-vendor messaging
-app.use('/api/vendors',       vendorPayoutRoutes); // Vendor payouts (override for new routes)
+app.use('/api/vendors/revenue',       vendorPayoutRoutes); // Vendor payouts (override for new routes)
 app.use('/api/vendors',       vendorPromoRoutes);  // Vendor promotions
 app.use('/api/custom-orders', customOrderRoutes);  // Specific + custom product requests
 app.use('/api/vendor-kyc',    vendorKycRoutes);    // Vendor KYC photo uploads

@@ -184,6 +184,48 @@ router.put('/vendors', (req: Request, res: Response) => {
   }
 });
 
+/* ─── PUT /api/admin/vendors/:id ─────────────────────────────────────────── */
+router.put('/vendors/:id', (req: Request, res: Response) => {
+  const auth = requireAuth(req, ['admin']);
+  if ('error' in auth) return res.status(auth.status).json({ success: false, error: auth.error });
+
+  try {
+    const id = req.params.id as string;
+    const { action, suspension_reason } = req.body;
+    const db = getDB();
+
+    const vendor = db.prepare('SELECT * FROM vendors WHERE id=?').get(id) as any;
+    if (!vendor) return res.status(404).json({ success: false, error: 'Vendor not found' });
+
+    if (action === 'suspend') {
+      db.prepare(`UPDATE users SET is_suspended=1, suspension_reason=?, updated_at=datetime('now') WHERE id=?`).run(
+        suspension_reason || 'Account suspended for policy violations', vendor.user_id
+      );
+      db.prepare(`UPDATE vendors SET status='suspended', updated_at=datetime('now') WHERE id=?`).run(id);
+      createNotification(db, vendor.user_id, 'account_suspended',
+        '⛔ Account Suspended',
+        `Your LastMart account has been suspended. Reason: ${suspension_reason || 'Policy violation'}. Contact support to appeal.`,
+        { suspension_reason }
+      );
+    } else if (action === 'unsuspend') {
+      db.prepare(`UPDATE users SET is_suspended=0, suspension_reason=NULL, updated_at=datetime('now') WHERE id=?`).run(vendor.user_id);
+      db.prepare(`UPDATE vendors SET status='approved', updated_at=datetime('now') WHERE id=?`).run(id);
+      createNotification(db, vendor.user_id, 'account_restored',
+        '✅ Account Reinstated',
+        'Your LastMart account has been reinstated. You can now shop normally. Please review our marketplace rules.',
+        {}
+      );
+    } else if (action === 'delete') {
+      db.prepare(`DELETE FROM users WHERE id=?`).run(vendor.user_id);
+      return res.json({ success: true, message: 'Vendor deleted' });
+    }
+
+    return res.json({ success: true, message: `Vendor ${action}ed successfully` });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 /* ─── GET /api/admin/customers ─────────────────────────────────────────────── */
 router.get('/customers', (req: Request, res: Response) => {
   const auth = requireAuth(req, ['admin']);
@@ -240,7 +282,7 @@ router.put('/customers/:id', (req: Request, res: Response) => {
         `Your LastMart account has been suspended. Reason: ${suspension_reason || 'Policy violation'}. Contact support to appeal.`,
         { suspension_reason }
       );
-    } else if (action === 'unsuspend') {
+    } else if (action === 'activate') {
       db.prepare(`UPDATE users SET is_suspended=0, suspension_reason=NULL, updated_at=datetime('now') WHERE id=?`).run(id);
       createNotification(db, id, 'account_restored',
         '✅ Account Reinstated',

@@ -11,8 +11,9 @@ import {
 import { getStoredToken, clearStoredToken, isVendorAuthenticated } from '@/lib/auth';
 import { formatPrice, formatDate, getStatusColor } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 const NAV = [
   { href: '/dashboard',  icon: BarChart2,   label: 'Dashboard' },
@@ -78,7 +79,7 @@ export default function VendorOrdersPage() {
         ...(search   && { search }),
         ...(statusTab !== 'all' && { status: statusTab }),
       });
-      const res  = await fetch(`${API}/orders?${params}`, { headers: hdrs() });
+      const res  = await fetch(`${API_URL}/orders?${params}`, { headers: hdrs() });
       const data = await res.json();
       if (data.success) {
         setOrders(data.data ?? []);
@@ -91,7 +92,7 @@ export default function VendorOrdersPage() {
   const updateStatus = async (orderId: string, newStatus: string) => {
     setUpdating(orderId);
     try {
-      const res  = await fetch(`${API}/orders/${orderId}/status`, {
+      const res  = await fetch(`${API_URL}/orders/${orderId}/status`, {
         method: 'PUT', headers: hdrs(), body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();

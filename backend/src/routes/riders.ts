@@ -230,4 +230,6 @@ router.post('/kyc', upload.fields([
   }
 });
 
+
+// ── GET /api/riders/earnings/history ─────────────────────────────────────────
 export default router;

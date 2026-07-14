@@ -32,3 +32,28 @@ export function getStatusColor(status: string): string {
   };
   return colors[status] || 'bg-gray-100 text-gray-800';
 }
+
+
+export function formatImageUrl(url: string): string[] {
+  if (!url) return []
+  if (url.startsWith('http')) return [url];
+  try {
+    const parsed = JSON.parse(url);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return [parsed[0]];
+    }else {
+      return [url];
+    }
+  } catch {
+    // Ignore JSON parse errors
+  }
+  return [];
+}
+
+export function formatStatus(status: number): string {
+  const statusMap: Record<number, string> = {
+    1: 'active',
+    0: 'inactive'
+  };
+  return statusMap[status] || 'unknown';
+}

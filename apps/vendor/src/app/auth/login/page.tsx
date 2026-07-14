@@ -56,11 +56,11 @@ export default function VendorLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-orange-950 to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-orange-950 to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-br from-orange-500 to-pink-600 rounded-2xl mb-4">
             <Store className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-black text-white">LastMart Vendor</h1>

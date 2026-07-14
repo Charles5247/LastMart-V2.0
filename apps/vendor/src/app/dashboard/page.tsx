@@ -11,6 +11,7 @@ import {
 import { getStoredToken, getStoredUser, clearStoredToken, isVendorAuthenticated } from '@/lib/auth';
 import { formatPrice, formatDate, getStatusColor } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
 export default function VendorDashboard() {
   const router = useRouter();
@@ -39,14 +40,17 @@ export default function VendorDashboard() {
     setLoading(true);
     try {
       const [profileRes, analyticsRes, ordersRes] = await Promise.all([
-        fetch('/api/users/me',          { headers: headers() }),
-        fetch('/api/vendors/analytics', { headers: headers() }),
-        fetch('/api/orders?limit=5',    { headers: headers() }),
+        fetch(`${API_URL}/users/me`,          { headers: headers() }),
+        fetch(`${API_URL}/vendors/me/analytics`, { headers: headers() }),
+        fetch(`${API_URL}/orders?limit=5`,    { headers: headers() }),
       ]);
       const [profile, analyticsData, ordersData] = await Promise.all([
         profileRes.json(), analyticsRes.json(), ordersRes.json(),
       ]);
-      if (profile.success)    { setUser(profile.data.user); setVendor(profile.data.vendor); }
+      if (profile.success)    { 
+        setUser(profile.data.user); 
+        setVendor(profile.data.vendor); 
+      }
       if (analyticsData.success) setAnalytics(analyticsData.data);
       if (ordersData.success)    setOrders(ordersData.data?.orders ?? []);
     } catch { toast.error('Failed to load dashboard data'); }
@@ -68,9 +72,9 @@ export default function VendorDashboard() {
   const stats = analytics?.stats;
 
   const STAT_CARDS = [
-    { label: 'Total Revenue',  value: formatPrice(stats?.total_revenue || 0),  icon: DollarSign,  color: 'bg-green-500' },
-    { label: 'Total Orders',   value: stats?.total_orders || 0,                icon: ShoppingBag, color: 'bg-blue-500' },
-    { label: 'Total Products', value: stats?.total_products || 0,              icon: Package,     color: 'bg-purple-500' },
+    { label: 'Total Revenue',  value: formatPrice(stats?.totalRevenue || 0),  icon: DollarSign,  color: 'bg-green-500' },
+    { label: 'Total Orders',   value: stats?.totalOrders || 0,                icon: ShoppingBag, color: 'bg-blue-500' },
+    { label: 'Total Products', value: stats?.totalProducts || 0,              icon: Package,     color: 'bg-purple-500' },
     { label: 'Store Rating',   value: `${(vendor?.rating || 0).toFixed(1)} ⭐`, icon: Star,       color: 'bg-yellow-500' },
   ];
 
@@ -86,11 +90,11 @@ export default function VendorDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-200 ${navOpen ? 'translate-x-0' : '-translate-x-full'} lg:relative lg:translate-x-0 lg:flex-shrink-0`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-200 ${navOpen ? 'translate-x-0' : '-translate-x-full'} lg:relative lg:translate-x-0 lg:shrink-0`}>
         <div className="flex flex-col h-full">
           {/* Brand */}
           <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-700">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-pink-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-linear-to-br from-orange-500 to-pink-600 rounded-xl flex items-center justify-center">
               <Store className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -156,7 +160,7 @@ export default function VendorDashboard() {
         {/* Content */}
         <main className="flex-1 p-4 sm:p-6 space-y-6">
           {/* Welcome */}
-          <div className="bg-gradient-to-r from-orange-500 to-pink-600 rounded-2xl p-6 text-white">
+          <div className="bg-linear-to-r from-orange-500 to-pink-600 rounded-2xl p-6 text-white">
             <h2 className="text-xl font-black mb-1">Welcome back, {user?.name?.split(' ')[0]}! 👋</h2>
             <p className="text-orange-100 text-sm">{vendor?.store_name || 'Your Store'} · {vendor?.city}</p>
           </div>

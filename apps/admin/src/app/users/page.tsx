@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { Shield, Users, Store, Bike, ShoppingBag, Activity, Bell, LogOut, Search, ChevronLeft, ChevronRight, UserX, UserCheck } from 'lucide-react';
 import { getStoredToken, clearStoredToken, isAdminAuthenticated } from '@/lib/auth';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 const NAV = [
   { href: '/dashboard', icon: Activity,    label: 'Dashboard' },
   { href: '/users',     icon: Users,       label: 'Users',   active: true },
@@ -40,7 +41,7 @@ export default function AdminUsersPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }) });
-      const res  = await fetch(`${API}/admin/users?${params}`, { headers: hdrs() });
+      const res  = await fetch(`${API_URL}/admin/customers?${params}`, { headers: hdrs() });
       const data = await res.json();
       if (data.success) { setItems(data.data ?? []); setTotalPages(data.pagination?.totalPages ?? 1); }
     } catch { toast.error('Failed to load users'); }
@@ -50,7 +51,11 @@ export default function AdminUsersPage() {
   const action = async (id: string, act: string) => {
     setActing(id);
     try {
-      const res  = await fetch(`${API}/admin/users/${id}/${act}`, { method: 'PUT', headers: hdrs() });
+      const res  = await fetch(`${API_URL}/admin/customers/${id}`, { 
+        method: 'PUT', 
+        headers: hdrs(), 
+        body: JSON.stringify({ action: act })
+      });
       const data = await res.json();
       if (data.success) { toast.success(`User ${act}d`); fetchItems(); }
       else toast.error(data.message ?? 'Action failed');
@@ -90,7 +95,7 @@ export default function AdminUsersPage() {
       </aside>
       {navOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setNavOpen(false)} />}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col max-w-screen">
         <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => setNavOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-gray-100"><Shield className="w-5 h-5" /></button>
@@ -135,14 +140,14 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold
-                            ${u.is_active !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                            {u.is_active !== false ? 'Active' : 'Suspended'}
+                            ${u.is_suspended != false ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                            {u.is_suspended != false ? 'Suspended' : 'Active'}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(u.created_at)}</td>
                         <td className="px-4 py-3">
                           {u.role !== 'admin' && (
-                            u.is_active !== false
+                            u.is_suspended == false
                               ? <button onClick={() => action(u.id, 'suspend')} disabled={acting === u.id}
                                   className="flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold px-3 py-1.5 rounded-lg disabled:opacity-60">
                                   <UserX className="w-3.5 h-3.5" />Suspend

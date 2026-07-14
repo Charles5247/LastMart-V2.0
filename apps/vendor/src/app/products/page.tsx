@@ -11,11 +11,12 @@ import {
 } from 'lucide-react';
 import { useRef } from 'react';
 import { getStoredToken, clearStoredToken, isVendorAuthenticated } from '@/lib/auth';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, formatImageUrl, formatStatus } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
-const VENDOR_URL = process.env.NEXT_PUBLIC_VENDOR_URL ?? 'http://localhost:3001';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const VENDOR_URL = process.env.NEXT_PUBLIC_VENDOR_URL ?? 'http://localhost:3001';
 
 const NAV = [
   { href: '/dashboard',  icon: BarChart2,   label: 'Dashboard' },
@@ -32,7 +33,7 @@ interface Product {
   price: number;
   stock: number;
   category: string;
-  status: 'active' | 'inactive' | 'pending';
+  status: 'active' | 'inactive';
   images?: string[];
   description?: string;
   rating?: number;
@@ -81,10 +82,22 @@ export default function VendorProductsPage() {
         ...(search       && { search }),
         ...(filterStatus !== 'all' && { status: filterStatus }),
       });
-      const res  = await fetch(`${API}/vendors/products?${params}`, { headers: hdrs() });
+      const res  = await fetch(`${API_URL}/vendors/me/products?${params}`, { headers: hdrs() });
       const data = await res.json();
       if (data.success) {
-        setProducts(data.data ?? []);
+        const productsData = data.data.products.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          stock: p.stock,
+          category: p.category,
+          status: formatStatus(p.is_active),
+          images: formatImageUrl(p.images) ?? [],
+          description: p.description,
+          rating: p.rating,
+          total_orders: p.total_orders,
+        }));
+        setProducts(productsData);
         setTotalPages(data.pagination?.totalPages ?? 1);
       }
     } catch { toast.error('Failed to load products'); }
@@ -127,7 +140,7 @@ export default function VendorProductsPage() {
     e.preventDefault();
     setFormLoading(true);
     try {
-      const url    = editProduct ? `${API}/products/${editProduct.id}` : `${API}/products`;
+      const url    = editProduct ? `${API_URL}/products/${editProduct.id}` : `${API_URL}/products`;
       const method = editProduct ? 'PUT' : 'POST';
 
       let res: Response;
@@ -164,8 +177,8 @@ export default function VendorProductsPage() {
 
   const toggleStatus = async (p: Product) => {
     try {
-      const newStatus = p.status === 'active' ? 'inactive' : 'active';
-      const res  = await fetch(`${API}/products/${p.id}`, {
+      const newStatus = p.status === 'active'  ? 'inactive' : 'active';
+      const res  = await fetch(`${API_URL}/products/${p.id}/status`, {
         method: 'PUT', headers: hdrs(), body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();
@@ -180,7 +193,7 @@ export default function VendorProductsPage() {
     if (!confirm('Delete this product? This cannot be undone.')) return;
     setDeleting(id);
     try {
-      const res  = await fetch(`${API}/products/${id}`, { method: 'DELETE', headers: hdrs() });
+      const res  = await fetch(`${API_URL}/products/${id}`, { method: 'DELETE', headers: hdrs() });
       const data = await res.json();
       if (data.success) {
         toast.success('Product deleted');
@@ -294,7 +307,8 @@ export default function VendorProductsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {products.map(p => (
+              {
+                products.map(p => (
                 <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                   <div className="h-40 bg-gray-100 flex items-center justify-center relative">
                     {p.images?.[0]
@@ -323,9 +337,9 @@ export default function VendorProductsPage() {
                         <Edit2 className="w-3.5 h-3.5" />Edit
                       </button>
                       <button onClick={() => toggleStatus(p)}
-                        className={`p-2 rounded-lg transition-colors ${p.status === 'active' ? 'bg-orange-50 hover:bg-orange-100 text-orange-600' : 'bg-green-50 hover:bg-green-100 text-green-600'}`}
-                        title={p.status === 'active' ? 'Deactivate' : 'Activate'}>
-                        {p.status === 'active' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        className={`p-2 rounded-lg transition-colors ${p.status === 'inactive' ? 'bg-orange-50 hover:bg-orange-100 text-orange-600' : 'bg-green-50 hover:bg-green-100 text-green-600'}`}
+                        title={p.status === 'inactive' ? 'Deactivate' : 'Activate'}>
+                        {p.status === 'inactive' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                       <button onClick={() => deleteProduct(p.id)} disabled={deleting === p.id}
                         className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors">
@@ -357,8 +371,8 @@ export default function VendorProductsPage() {
 
       {/* Create/Edit Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50 ">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-screen overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-black text-gray-900">
                 {editProduct ? 'Edit Product' : 'Add New Product'}

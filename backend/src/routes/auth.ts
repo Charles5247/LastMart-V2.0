@@ -94,6 +94,11 @@ router.post('/login', registerLimiter, async (req: Request, res: Response) => {
       vendorInfo = db.prepare('SELECT * FROM vendors WHERE user_id = ?').get(user.id);
     }
 
+    let riderInfo = null;
+    if (user.role === 'rider') {
+      riderInfo = db.prepare('SELECT * FROM riders WHERE user_id = ?').get(user.id);
+    }
+
     const token = signToken({ userId: user.id, email: user.email, role: user.role, name: user.name });
     const { password: _, ...userWithoutPassword } = user;
 
@@ -103,7 +108,7 @@ router.post('/login', registerLimiter, async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      data: { user: userWithoutPassword, vendor: vendorInfo, token },
+      data: { user: userWithoutPassword, vendor: vendorInfo, rider: riderInfo, token },
       message: 'Login successful'
     });
   } catch (error: any) {
@@ -117,7 +122,11 @@ router.post('/register', registerLimiter, async (req: Request, res: Response) =>
   try {
     await seedDatabase();
     const db = getDB();
-    const { name, email, password, role, city, phone, address, latitude, longitude, store_name, store_description, category, referral_code } = req.body;
+    const {
+      name, email, password, role, city, phone, address, latitude, longitude,
+      store_name, store_description, category, referral_code,
+      vehicle_type, license_plate, has_vehicle,
+    } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, error: 'Name, email and password are required' });
@@ -142,12 +151,26 @@ router.post('/register', registerLimiter, async (req: Request, res: Response) =>
       );
     }
 
+    if (userRole === 'rider') {
+      const riderId = uuidv4();
+      db.prepare(`
+        INSERT INTO riders (id, user_id, vehicle_type, license_plate, has_vehicle, city, status)
+        VALUES (?, ?, ?, ?, ?, ?, 'pending')
+      `).run(
+        riderId,
+        userId,
+        vehicle_type || null,
+        license_plate || null,
+        has_vehicle === 'yes' || has_vehicle === true ? 1 : 0,
+        city || null
+      );
+    }
+
     // ── Handle referral code if provided ──────────────────────────────────
     if (referral_code) {
       try {
         const referrer = db.prepare(`SELECT id FROM users WHERE referral_code = ?`).get(referral_code) as any;
         if (referrer && referrer.id !== userId) {
-          // Generate 0.5% coupon for new user
           const couponCode = `REF-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
           const couponId   = uuidv4();
           const refId      = uuidv4();
@@ -156,12 +179,10 @@ router.post('/register', registerLimiter, async (req: Request, res: Response) =>
           db.prepare(`UPDATE users SET referred_by = ? WHERE id = ?`).run(referrer.id, userId);
           db.prepare(`INSERT INTO referrals (id, referrer_id, referred_id, coupon_id, status) VALUES (?, ?, ?, ?, 'pending')`
             ).run(refId, referrer.id, userId, couponId);
-          // Notify new user
           db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)`
             ).run(uuidv4(), userId, 'coupon', '🎉 Welcome Referral Discount!',
               `Use code "${couponCode}" for 0.5% off your next order!`,
               JSON.stringify({ coupon_code: couponCode, coupon_id: couponId }));
-          // Notify referrer
           db.prepare(`INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)`
             ).run(uuidv4(), referrer.id, 'referral', '👥 New Referral!',
               `Someone joined LastMart using your referral link!`,
@@ -185,7 +206,6 @@ router.post('/register', registerLimiter, async (req: Request, res: Response) =>
     return res.status(500).json({ success: false, error: error.message });
   }
 });
-
 // POST /api/auth/forgot
 router.post('/forgot', resetLimiter, async (req: Request, res: Response) => {
   try {
@@ -274,5 +294,7 @@ router.post('/admin-reset', async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// POST /api/auth/change-password
 
 export default router;

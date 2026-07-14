@@ -5,14 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   TrendingUp, Store, LogOut, Package, ShoppingBag, DollarSign,
-  Settings, Bell, BarChart2, Users, Star, ArrowUpRight, ArrowDownRight,
-  Calendar
+  Settings, Bell, BarChart2, Users, Star, AlertTriangle,
 } from 'lucide-react';
 import { getStoredToken, clearStoredToken, isVendorAuthenticated } from '@/lib/auth';
 import { formatPrice } from '@/lib/utils';
 import toast from 'react-hot-toast';
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
 const NAV = [
   { href: '/dashboard',  icon: BarChart2,   label: 'Dashboard' },
@@ -29,19 +27,24 @@ const PERIODS = [
   { label: '90 Days', value: '90' },
 ];
 
+interface VendorInfo {
+  rating: number;
+  total_reviews: number;
+}
+
 interface AnalyticsData {
+  vendor: VendorInfo;
   stats: {
-    total_revenue: number;
-    total_orders: number;
-    avg_order_value: number;
-    total_customers: number;
-    avg_rating: number;
-    revenue_change: number;
-    orders_change: number;
+    totalOrders: number;
+    totalRevenue: number;
+    totalProducts: number;
+    pendingOrders: number;
+    lowStockProducts: number;
   };
-  revenue_chart: Array<{ date: string; revenue: number; orders: number }>;
-  top_products: Array<{ name: string; orders: number; revenue: number }>;
-  order_status_distribution: Array<{ status: string; count: number }>;
+  monthlyRevenue: Array<{ month: string; revenue: number; orders: number }>;
+  topProducts: Array<{ name: string; total_sales: number; stock: number; price: number; rating: number }>;
+  recentOrders: Array<{ id: string; customer_name: string; status: string; total_amount: number; created_at: string }>;
+  ordersByStatus: Array<{ status: string; count: number }>;
 }
 
 export default function VendorAnalyticsPage() {
@@ -62,16 +65,20 @@ export default function VendorAnalyticsPage() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`${API}/vendors/analytics?period=${period}`, { headers: hdrs() });
+      const res  = await fetch(`${API_URL}/vendors/me/analytics?period=${period}`, { headers: hdrs() });
       const json = await res.json();
-      if (json.success) setData(json.data);
+      if (json.success) {
+        setData(json.data);
+      } else {
+        toast.error(json.error ?? 'Failed to load analytics');
+      }
     } catch { toast.error('Failed to load analytics'); }
     finally { setLoading(false); }
   };
 
   const logout = () => { clearStoredToken(); router.replace('/auth/login'); };
 
-  const StatCard = ({ label, value, change, icon: Icon, color }: any) => (
+  const StatCard = ({ label, value, icon: Icon, color }: any) => (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-medium text-gray-500">{label}</p>
@@ -80,17 +87,13 @@ export default function VendorAnalyticsPage() {
         </div>
       </div>
       <p className="text-2xl font-black text-gray-900">{value}</p>
-      {change !== undefined && (
-        <div className={`flex items-center gap-1 mt-1 text-xs font-semibold ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {change >= 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
-          {Math.abs(change).toFixed(1)}% vs last period
-        </div>
-      )}
     </div>
   );
 
-  // Simple bar chart using CSS
-  const maxRevenue = Math.max(...(data?.revenue_chart?.map(d => d.revenue) ?? [1]));
+  const maxRevenue = Math.max(...(data?.monthlyRevenue?.map(d => d.revenue) ?? [1]), 1);
+  const avgOrderValue = data && data.stats.totalOrders > 0
+    ? data.stats.totalRevenue / data.stats.totalOrders
+    : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -163,24 +166,31 @@ export default function VendorAnalyticsPage() {
             <>
               {/* KPI Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard label="Total Revenue"   value={formatPrice(data.stats.total_revenue)}   change={data.stats.revenue_change} icon={DollarSign}  color="bg-orange-500" />
-                <StatCard label="Total Orders"    value={data.stats.total_orders}                  change={data.stats.orders_change}  icon={ShoppingBag} color="bg-blue-500"   />
-                <StatCard label="Avg Order Value" value={formatPrice(data.stats.avg_order_value)}  icon={TrendingUp}  color="bg-green-500"  />
-                <StatCard label="Avg Rating"      value={`${(data.stats.avg_rating ?? 0).toFixed(1)} ★`} icon={Star} color="bg-yellow-500" />
+                <StatCard label="Total Revenue"    value={formatPrice(data.stats.totalRevenue)} icon={DollarSign}   color="bg-orange-500" />
+                <StatCard label="Total Orders"     value={data.stats.totalOrders}                icon={ShoppingBag}  color="bg-blue-500"   />
+                <StatCard label="Avg Order Value"  value={formatPrice(avgOrderValue)}            icon={TrendingUp}   color="bg-green-500"  />
+                <StatCard label="Rating"           value={`${(data.vendor?.rating ?? 0).toFixed(1)} ★`} icon={Star}  color="bg-yellow-500" />
               </div>
+
+              {/* Secondary stats row */}
+              {/* <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                <StatCard label="Total Products"      value={data.stats.totalProducts}    icon={Package}        color="bg-purple-500" />
+                <StatCard label="Pending Orders"       value={data.stats.pendingOrders}    icon={ShoppingBag}     color="bg-amber-500"  />
+                <StatCard label="Low Stock Products"   value={data.stats.lowStockProducts} icon={AlertTriangle}   color="bg-red-500"    />
+              </div> */}
 
               {/* Revenue Chart */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h2 className="font-black text-gray-900 mb-4">Revenue Over Time</h2>
-                {data.revenue_chart?.length > 0 ? (
+                {data.monthlyRevenue?.length > 0 ? (
                   <div className="flex items-end gap-1 h-40 overflow-x-auto pb-2">
-                    {data.revenue_chart.map((d, i) => (
-                      <div key={i} className="flex flex-col items-center gap-1 min-w-[32px]">
+                    {data.monthlyRevenue.map((d, i) => (
+                      <div key={i} className="flex flex-col items-center gap-1 min-w-8">
                         <div className="w-6 bg-orange-200 rounded-t transition-all hover:bg-orange-400 cursor-pointer"
                           style={{ height: `${Math.max(4, (d.revenue / maxRevenue) * 120)}px` }}
-                          title={`${d.date}: ${formatPrice(d.revenue)}`} />
+                          title={`${d.month}: ${formatPrice(d.revenue)}`} />
                         <span className="text-[10px] text-gray-400 rotate-45 origin-left w-8 whitespace-nowrap">
-                          {d.date.slice(5)}
+                          {d.month.slice(5)}
                         </span>
                       </div>
                     ))}
@@ -196,20 +206,20 @@ export default function VendorAnalyticsPage() {
                 {/* Top Products */}
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
                   <h2 className="font-black text-gray-900 mb-4">Top Products</h2>
-                  {data.top_products?.length > 0 ? (
+                  {data.topProducts?.length > 0 ? (
                     <div className="space-y-3">
-                      {data.top_products.slice(0,5).map((p, i) => (
+                      {data.topProducts.slice(0,5).map((p, i) => (
                         <div key={i} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <span className="w-7 h-7 bg-orange-100 text-orange-600 rounded-lg text-xs font-black flex items-center justify-center">
                               {i+1}
                             </span>
                             <div>
-                              <p className="text-sm font-semibold text-gray-900 truncate max-w-[140px]">{p.name}</p>
-                              <p className="text-xs text-gray-500">{p.orders} orders</p>
+                              <p className="text-sm font-semibold text-gray-900 truncate max-w-35">{p.name}</p>
+                              <p className="text-xs text-gray-500">{p.stock} in stock · {(p.rating ?? 0).toFixed(1)} ★</p>
                             </div>
                           </div>
-                          <p className="font-black text-orange-600 text-sm">{formatPrice(p.revenue)}</p>
+                          <p className="font-black text-orange-600 text-sm">{formatPrice(p.price)}</p>
                         </div>
                       ))}
                     </div>
@@ -219,10 +229,10 @@ export default function VendorAnalyticsPage() {
                 {/* Order Distribution */}
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
                   <h2 className="font-black text-gray-900 mb-4">Order Status</h2>
-                  {data.order_status_distribution?.length > 0 ? (
+                  {data.ordersByStatus?.length > 0 ? (
                     <div className="space-y-3">
-                      {data.order_status_distribution.map((s, i) => {
-                        const total = data.order_status_distribution.reduce((a,b) => a + b.count, 0);
+                      {data.ordersByStatus.map((s, i) => {
+                        const total = data.ordersByStatus.reduce((a,b) => a + b.count, 0);
                         const pct   = total ? Math.round((s.count / total) * 100) : 0;
                         return (
                           <div key={i}>

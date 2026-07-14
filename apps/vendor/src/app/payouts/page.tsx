@@ -11,8 +11,9 @@ import {
 import { getStoredToken, clearStoredToken, isVendorAuthenticated } from '@/lib/auth';
 import { formatPrice, formatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 const NAV = [
   { href: '/dashboard',  icon: BarChart2,   label: 'Dashboard' },
@@ -68,8 +69,8 @@ export default function VendorPayoutsPage() {
     setLoading(true);
     try {
       const [sumRes, payRes] = await Promise.all([
-        fetch(`${API}/vendors/payout-summary`, { headers: hdrs() }),
-        fetch(`${API}/vendors/payouts?page=${page}&limit=10`, { headers: hdrs() }),
+        fetch(`${API_URL}/vendors/revenue/payout-balance`, { headers: hdrs() }),
+        fetch(`${API_URL}/vendors/revenue/payouts?page=${page}&limit=10`, { headers: hdrs() }),
       ]);
       const [sumData, payData] = await Promise.all([sumRes.json(), payRes.json()]);
       if (sumData.success) setSummary(sumData.data);
@@ -87,7 +88,7 @@ export default function VendorPayoutsPage() {
     if (summary && amount > summary.available_balance) { toast.error('Insufficient balance'); return; }
     setRequesting(true);
     try {
-      const res  = await fetch(`${API}/vendors/request-payout`, {
+      const res  = await fetch(`${API_URL}/vendors/request-payout`, {
         method: 'POST', headers: hdrs(), body: JSON.stringify({ amount }),
       });
       const data = await res.json();

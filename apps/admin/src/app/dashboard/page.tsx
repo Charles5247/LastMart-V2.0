@@ -10,8 +10,10 @@ import {
 } from 'lucide-react';
 import { getStoredToken, getStoredUser, clearStoredToken, isAdminAuthenticated } from '@/lib/auth';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
+import { DashboardStats } from '@/types';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 const NAV = [
   { href: '/dashboard', icon: Activity,    label: 'Dashboard', active: true },
@@ -28,7 +30,7 @@ function formatPrice(n: number) {
 export default function AdminDashboard() {
   const router = useRouter();
   const [user,    setUser]    = useState<any>(null);
-  const [stats,   setStats]   = useState<any>(null);
+  const [stats,   setStats]   = useState<DashboardStats | null>(null);
   const [pending, setPending] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [navOpen, setNavOpen] = useState(false);
@@ -46,12 +48,21 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [statsRes, pendingVendors, pendingRiders] = await Promise.all([
-        fetch(`${API}/admin/stats`,           { headers: hdrs() }),
-        fetch(`${API}/admin/vendors?status=pending&limit=5`, { headers: hdrs() }),
-        fetch(`${API}/admin/riders?status=pending&limit=5`,  { headers: hdrs() }),
+        fetch(`${API_URL}/admin/analytics`,           { headers: hdrs() }),
+        fetch(`${API_URL}/admin/vendors?status=pending&limit=5`, { headers: hdrs() }),
+        fetch(`${API_URL}/admin/riders?status=pending&limit=5`,  { headers: hdrs() }),
       ]);
       const [s, v, r] = await Promise.all([statsRes.json(), pendingVendors.json(), pendingRiders.json()]);
-      if (s.success) setStats(s.data);
+      if (s.success) {
+        setStats({
+          total_users: s.data.stats.totalUsers ?? 0,
+          active_vendors: s.data.stats.activeVendors ?? 0,
+          active_riders: s.data.stats.activeRiders ?? 0,
+          total_orders: s.data.stats.totalOrders ?? 0,
+          total_revenue: s.data.stats.totalRevenue ?? 0,
+          pending_approvals: s.data.stats.pendingApprovals ?? 0
+        });
+      }
       const pv = v.success ? (v.data ?? []).map((x: any) => ({ ...x, type: 'vendor' })) : [];
       const pr = r.success ? (r.data ?? []).map((x: any) => ({ ...x, type: 'rider'  })) : [];
       setPending([...pv, ...pr].slice(0, 8));
@@ -62,7 +73,7 @@ export default function AdminDashboard() {
   const approve = async (id: string, type: string) => {
     try {
       const endpoint = type === 'vendor' ? `/admin/vendors/${id}/approve` : `/admin/riders/${id}/approve`;
-      const res  = await fetch(`${API}${endpoint}`, { method: 'PUT', headers: hdrs() });
+      const res  = await fetch(`${API_URL}${endpoint}`, { method: 'PUT', headers: hdrs() });
       const data = await res.json();
       if (data.success) { toast.success(`${type} approved`); fetchDashboard(); }
       else toast.error(data.message ?? 'Failed');
@@ -72,7 +83,7 @@ export default function AdminDashboard() {
   const reject = async (id: string, type: string) => {
     try {
       const endpoint = type === 'vendor' ? `/admin/vendors/${id}/reject` : `/admin/riders/${id}/reject`;
-      const res  = await fetch(`${API}${endpoint}`, { method: 'PUT', headers: hdrs() });
+      const res  = await fetch(`${API_URL}${endpoint}`, { method: 'PUT', headers: hdrs() });
       const data = await res.json();
       if (data.success) { toast.success(`${type} rejected`); fetchDashboard(); }
     } catch { toast.error('Failed'); }
@@ -88,6 +99,8 @@ export default function AdminDashboard() {
     { label: 'Revenue',        value: formatPrice(stats?.total_revenue ?? 0), icon: DollarSign, color: 'bg-emerald-500' },
     { label: 'Pending',        value: stats?.pending_approvals ?? 0, icon: Clock,    color: 'bg-yellow-500' },
   ];
+
+  // console.log('stats', stats);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
