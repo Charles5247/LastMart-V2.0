@@ -11,6 +11,22 @@ function createNotification(db: any, userId: string, type: string, title: string
     .run(uuidv4(), userId, type, title, message, JSON.stringify(data));
 }
 
+// GET /api/vendors/me (get vendor profile)
+router.get('/me', (req: Request, res: Response) => {
+  const auth = requireAuth(req, ['vendor']);
+  if ('error' in auth) return res.status(auth.status).json({ success: false, error: auth.error });
+
+  try {
+    const db = getDB();
+    const vendor = db.prepare('SELECT * FROM vendors WHERE user_id = ?').get(auth.user.userId) as any;
+    if (!vendor) return res.status(404).json({ success: false, error: 'Vendor not found' });
+
+    return res.json({ success: true, data: vendor });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // GET /api/vendors
 router.get('/', (req: Request, res: Response) => {
   try {
@@ -229,5 +245,50 @@ router.get('/me/analytics', (req: Request, res: Response) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// GET /api/vendors/products (vendor products)
+router.get('/me/products', (req: Request, res: Response) => {
+  const auth = requireAuth(req, ['vendor']);
+  if ('error' in auth) return res.status(auth.status).json({ success: false, error: auth.error });
+
+  try {
+    const db = getDB();
+    const vendor = db.prepare('SELECT * FROM vendors WHERE user_id = ?').get(auth.user.userId) as any;
+    if (!vendor) return res.status(404).json({ success: false, error: 'Vendor not found' });
+
+    const { status, page = '1', limit = '20' } = req.query as Record<string, string | undefined>;
+    const pageNum = Math.max(1, parseInt(page || '1', 10));
+    const limitNum = Math.max(1, parseInt(limit || '20', 10));
+    const offset = (pageNum - 1) * limitNum;
+
+    let query = `SELECT * FROM products WHERE vendor_id = ?`;
+    const params: any[] = [vendor.id];
+
+    if (status) {
+      query += ` AND is_active = ?`;
+      params.push(status === 'active' ? 1 : 0);
+    }
+
+    query += ` ORDER BY is_featured DESC, created_at DESC LIMIT ? OFFSET ?`;
+    params.push(limitNum, offset);
+
+    const products = db.prepare(query).all(...params) as any[];
+
+    return res.json({
+      success: true,
+      data: {
+        vendor,
+        products,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+        },
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 
 export default router;

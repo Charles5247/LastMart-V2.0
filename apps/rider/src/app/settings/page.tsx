@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { Settings, Bike, Package, DollarSign, Bell, LogOut, Save, Eye, EyeOff, Lock } from 'lucide-react';
 import { getStoredToken, clearStoredToken, isRiderAuthenticated } from '@/lib/auth';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 const NAV = [
   { href: '/dashboard',  icon: Bike,       label: 'Dashboard' },
   { href: '/deliveries', icon: Package,    label: 'Deliveries' },
@@ -35,10 +36,10 @@ export default function RiderSettingsPage() {
     if (!isRiderAuthenticated()) { router.replace('/auth/login'); return; }
     (async () => {
       try {
-        const res  = await fetch(`${API}/auth/me`, { headers: hdrs() });
+        const res  = await fetch(`${API_URL}/users/me`, { headers: hdrs() });
         const data = await res.json();
         if (data.success && data.data) {
-          const u = data.data;
+          const u = data.data.user;
           setAccount({ name: u.name ?? '', email: u.email ?? '', phone: u.phone ?? '', city: u.city ?? '' });
           setVehicle({ vehicle_type: u.vehicle_type ?? 'motorcycle', license_plate: u.license_plate ?? '' });
           setBank({ bank_name: u.bank_name ?? '', account_number: u.account_number ?? '', account_name: u.account_name ?? '' });
@@ -51,7 +52,7 @@ export default function RiderSettingsPage() {
   const save = async (endpoint: string, body: object) => {
     setSaving(true);
     try {
-      const res  = await fetch(`${API}${endpoint}`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(body) });
+      const res  = await fetch(`${API_URL}${endpoint}`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(body) });
       const data = await res.json();
       if (data.success) toast.success('Saved!');
       else toast.error(data.message ?? 'Save failed');
@@ -64,7 +65,7 @@ export default function RiderSettingsPage() {
     if (pw.newPw.length < 8) { toast.error('Min 8 characters'); return; }
     setSaving(true);
     try {
-      const res  = await fetch(`${API}/auth/change-password`, { method: 'POST', headers: hdrs(), body: JSON.stringify({ current_password: pw.current, new_password: pw.newPw }) });
+      const res  = await fetch(`${API_URL}/auth/change-password`, { method: 'POST', headers: hdrs(), body: JSON.stringify({ current_password: pw.current, new_password: pw.newPw }) });
       const data = await res.json();
       if (data.success) { toast.success('Password changed!'); setPw({ current:'', newPw:'', confirm:'' }); }
       else toast.error(data.message ?? 'Failed');
@@ -120,7 +121,7 @@ export default function RiderSettingsPage() {
                 <div><label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>{inp(account.email, v => setAccount(a=>({...a,email:v})), 'email')}</div>
                 <div><label className="block text-sm font-semibold text-gray-700 mb-1">Phone</label>{inp(account.phone, v => setAccount(a=>({...a,phone:v})))}</div>
                 <div><label className="block text-sm font-semibold text-gray-700 mb-1">City</label>{inp(account.city, v => setAccount(a=>({...a,city:v})), 'text', 'e.g. Lagos')}</div>
-                <button onClick={() => save('/auth/profile', account)} disabled={saving} className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm disabled:opacity-60"><Save className="w-4 h-4" />{saving ? 'Saving…' : 'Save Changes'}</button>
+                <button onClick={() => save('/users/me', account)} disabled={saving} className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm disabled:opacity-60"><Save className="w-4 h-4" />{saving ? 'Saving…' : 'Save Changes'}</button>
               </>}
               {tab === 'Vehicle' && <>
                 <h2 className="font-black text-gray-900">Vehicle Details</h2>

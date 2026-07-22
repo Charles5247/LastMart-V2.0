@@ -28,7 +28,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3006
+ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 # Non-root user for security
@@ -43,7 +43,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static   ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public          ./public
 
 USER nextjs
-EXPOSE 3006
+EXPOSE 3000
 
 # standalone/server.js is the self-contained Next.js server
 CMD ["node", "server.js"]

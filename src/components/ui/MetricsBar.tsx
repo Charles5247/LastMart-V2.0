@@ -1,4 +1,4 @@
-"use client";
+'use client';
 /**
  * ─── MetricsBar ───────────────────────────────────────────────────────────────
  * Social proof metrics strip with unified orange gradient background.
@@ -6,62 +6,54 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { useEffect, useRef, useState } from "react";
-import {
-  Users,
-  Store,
-  Package,
-  MapPin,
-  TrendingUp,
-  Star,
-  ShieldCheck,
-} from "lucide-react";
+import { useEffect, useRef, useState } from 'react';
+import { Users, Store, Package, MapPin, TrendingUp, Star, ShieldCheck } from 'lucide-react';
 
 interface Metric {
-  icon: React.ElementType;
-  value: string;
-  rawNum: number;
-  label: string;
+  icon:    React.ElementType;
+  value:   string;
+  rawNum:  number;
+  label:   string;
   suffix?: string;
 }
 
 const DEFAULT_METRICS: Metric[] = [
   {
-    icon: Users,
-    value: "50",
-    rawNum: 50,
-    label: "Happy Customers",
+    icon:     Users,
+    value:    '5000+',
+    rawNum:   5000,
+    label:    'Happy Customers',
   },
   {
-    icon: ShieldCheck,
-    value: "20+",
-    rawNum: 20,
-    label: "Verified Vendors",
+    icon:     ShieldCheck,
+    value:    '1,200+',
+    rawNum:   1200,
+    label:    'Verified Vendors',
   },
   {
-    icon: Package,
-    value: "20+",
-    rawNum: 20,
-    label: "Products Listed",
+    icon:     Package,
+    value:    '85,000+',
+    rawNum:   85000,
+    label:    'Products Listed',
   },
   {
-    icon: MapPin,
-    value: "10+",
-    rawNum: 0,
-    label: "Cities Covered",
+    icon:     MapPin,
+    value:    '10+',
+    rawNum:   0,
+    label:    'Cities Covered',
   },
   {
-    icon: Star,
-    value: "4.8/5",
-    rawNum: 48,
-    label: "Avg Vendor Rating",
-    suffix: "/5",
+    icon:     Star,
+    value:    '4.8/5',
+    rawNum:   48,
+    label:    'Avg Vendor Rating',
+    suffix:   '/5',
   },
   {
-    icon: TrendingUp,
-    value: "₦2B+",
-    rawNum: 2000000000,
-    label: "GMV Processed",
+    icon:     TrendingUp,
+    value:    '₦2B+',
+    rawNum:   2000000000,
+    label:    'GMV Processed',
   },
 ];
 
@@ -91,8 +83,8 @@ interface MetricsBarProps {
 
 export default function MetricsBar({
   metrics = DEFAULT_METRICS,
-  className = "",
-  compact = false,
+  className = '',
+  compact   = false,
 }: MetricsBarProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [started, setStarted] = useState(false);
@@ -101,10 +93,8 @@ export default function MetricsBar({
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setStarted(true);
-      },
-      { threshold: 0.3 },
+      ([entry]) => { if (entry.isIntersecting) setStarted(true); },
+      { threshold: 0.3 }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -114,22 +104,16 @@ export default function MetricsBar({
     return (
       <div
         ref={ref}
-        style={{
-          background: "linear-gradient(90deg, #ea580c, #f97316, #fbbf24)",
-        }}
+         style={{ background: 'linear-gradient(90deg, #ea580c, #f97316, #fbbf24)' }}
+        
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center sm:justify-between gap-6 overflow-x-auto scrollbar-hide py-4">
-            {metrics.slice(0, 4).map((m) => (
-              <div
-                key={m.label}
-                className="flex items-center gap-2 flex-shrink-0"
-              >
+            {metrics.slice(0, 4).map(m => (
+              <div key={m.label} className="flex items-center gap-2 flex-shrink-0">
                 <m.icon className="w-5 h-5 text-white" />
                 <div>
-                  <span className="text-sm font-black text-white block">
-                    {m.value}
-                  </span>
+                  <span className="text-sm font-black text-white block">{m.value}</span>
                   <span className="text-xs text-white/70">{m.label}</span>
                 </div>
               </div>
@@ -143,14 +127,12 @@ export default function MetricsBar({
   return (
     <div
       ref={ref}
-      style={{
-        background: "linear-gradient(90deg, #ea580c, #f97316, #fbbf24)",
-      }}
+       style={{ background: 'linear-gradient(90deg, #ea580c, #f97316, #fbbf24)' }}
       aria-label="LastMart social proof metrics"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-0">
-          {metrics.map((metric) => (
+          {metrics.map(metric => (
             <MetricItem key={metric.label} metric={metric} />
           ))}
         </div>

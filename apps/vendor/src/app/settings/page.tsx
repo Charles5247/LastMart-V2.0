@@ -1,6 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import { useState, useEffect, useCallback } from 'react';
+import type { ChangeEventHandler, HTMLInputTypeAttribute, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -10,8 +11,9 @@ import {
 } from 'lucide-react';
 import { getStoredToken, getStoredUser, clearStoredToken, isVendorAuthenticated } from '@/lib/auth';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 const NAV = [
   { href: '/dashboard',  icon: BarChart2,   label: 'Dashboard' },
@@ -23,6 +25,25 @@ const NAV = [
 ];
 
 const TABS = ['Store', 'Account', 'Bank', 'Notifications'];
+
+const Field = ({ label, children }: { label: string; children: ReactNode }) => (
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
+    {children}
+  </div>
+);
+
+type InputProps = {
+  value: string;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  type?: HTMLInputTypeAttribute;
+  placeholder?: string;
+};
+
+const Input = ({ value, onChange, placeholder, type = 'text' }: InputProps) => (
+  <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+);
 
 export default function VendorSettingsPage() {
   const router = useRouter();
@@ -67,8 +88,8 @@ export default function VendorSettingsPage() {
     setLoading(true);
     try {
       const [vendorRes, userRes] = await Promise.all([
-        fetch(`${API}/vendors/me`, { headers: hdrs() }),
-        fetch(`${API}/auth/me`,    { headers: hdrs() }),
+        fetch(`${API_URL}/vendors/me`, { headers: hdrs() }),
+        fetch(`${API_URL}/users/me`,    { headers: hdrs() }),
       ]);
       const [vendorData, userData] = await Promise.all([vendorRes.json(), userRes.json()]);
       if (vendorData.success && vendorData.data) {
@@ -84,8 +105,9 @@ export default function VendorSettingsPage() {
       }
       if (userData.success && userData.data) {
         const u = userData.data;
-        setAccount({ name: u.name ?? '', email: u.email ?? '', phone: u.phone ?? '' });
+        setAccount({ name: u.user.name ?? '', email: u.user.email ?? '', phone: u.user.phone ?? '' });
       }
+      console.log('fetched settings', { vendorData, userData });
     } catch { toast.error('Failed to load settings'); }
     finally { setLoading(false); }
   };
@@ -93,7 +115,7 @@ export default function VendorSettingsPage() {
   const saveStore = async () => {
     setSaving(true);
     try {
-      const res  = await fetch(`${API}/vendors/me`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(store) });
+      const res  = await fetch(`${API_URL}/vendors/me`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(store) });
       const data = await res.json();
       if (data.success) toast.success('Store settings saved!');
       else toast.error(data.message ?? 'Save failed');
@@ -104,7 +126,7 @@ export default function VendorSettingsPage() {
   const saveAccount = async () => {
     setSaving(true);
     try {
-      const res  = await fetch(`${API}/auth/profile`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(account) });
+      const res  = await fetch(`${API_URL}/auth/profile`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(account) });
       const data = await res.json();
       if (data.success) toast.success('Account updated!');
       else toast.error(data.message ?? 'Update failed');
@@ -117,7 +139,7 @@ export default function VendorSettingsPage() {
     if (pw.newPw.length < 8) { toast.error('Password must be at least 8 characters'); return; }
     setSaving(true);
     try {
-      const res  = await fetch(`${API}/auth/change-password`, {
+      const res  = await fetch(`${API_URL}/auth/change-password`, {
         method: 'POST', headers: hdrs(),
         body: JSON.stringify({ current_password: pw.current, new_password: pw.newPw }),
       });
@@ -131,7 +153,7 @@ export default function VendorSettingsPage() {
   const saveBank = async () => {
     setSaving(true);
     try {
-      const res  = await fetch(`${API}/vendors/bank-details`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(bank) });
+      const res  = await fetch(`${API_URL}/vendors/bank-details`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(bank) });
       const data = await res.json();
       if (data.success) toast.success('Bank details saved!');
       else toast.error(data.message ?? 'Save failed');
@@ -140,18 +162,6 @@ export default function VendorSettingsPage() {
   };
 
   const logout = () => { clearStoredToken(); router.replace('/auth/login'); };
-
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
-      {children}
-    </div>
-  );
-
-  const Input = ({ value, onChange, placeholder, type='text' }: any) => (
-    <input type={type} value={value} onChange={onChange} placeholder={placeholder}
-      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -325,7 +335,7 @@ export default function VendorSettingsPage() {
                         <p className="text-xs text-gray-500">{n.desc}</p>
                       </div>
                       <button onClick={() => setNotifs(prev => ({...prev, [n.key]: !prev[n.key as keyof typeof prev]}))}
-                        className={`relative inline-flex w-11 h-6 rounded-full transition-colors ${notifs[n.key as keyof typeof notifs] ? 'bg-orange-500' : 'bg-gray-300'}`}>
+                        className={`relative inline-flex w-11 h-6 rounded-full transition-colors shrink-0 ${notifs[n.key as keyof typeof notifs] ? 'bg-orange-500' : 'bg-gray-300'}`}>
                         <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${notifs[n.key as keyof typeof notifs] ? 'translate-x-6' : 'translate-x-1'}`} />
                       </button>
                     </div>

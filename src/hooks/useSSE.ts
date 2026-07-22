@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * ─── useSSE Hook ─────────────────────────────────────────────────────────────
@@ -17,41 +17,41 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 export interface SSEEvent {
-  type: string;
-  data?: any;
-  message?: string;
+  type:      string;
+  data?:     any;
+  message?:  string;
   timestamp: string;
 }
 
 interface UseSSEOptions {
-  onEvent?: (event: SSEEvent) => void;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
-  reconnectDelay?: number; // ms, default 3006
-  maxRetries?: number; // default 5
+  onEvent?:        (event: SSEEvent) => void;
+  onConnect?:      () => void;
+  onDisconnect?:   () => void;
+  reconnectDelay?: number; // ms, default 3000
+  maxRetries?:     number; // default 5
 }
 
 export function useSSE(token: string | null, options: UseSSEOptions = {}) {
-  const [connected, setConnected] = useState(false);
-  const [lastEvent, setLastEvent] = useState<SSEEvent | null>(null);
+  const [connected,  setConnected]  = useState(false);
+  const [lastEvent,  setLastEvent]  = useState<SSEEvent | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  const esRef = useRef<EventSource | null>(null);
-  const retryTimer = useRef<NodeJS.Timeout | null>(null);
+  const esRef       = useRef<EventSource | null>(null);
+  const retryTimer  = useRef<NodeJS.Timeout | null>(null);
 
   const {
     onEvent,
     onConnect,
     onDisconnect,
-    reconnectDelay = 3006,
-    maxRetries = 5,
+    reconnectDelay = 3000,
+    maxRetries     = 5,
   } = options;
 
   const connect = useCallback(() => {
-    if (!token || typeof window === "undefined") return;
+    if (!token || typeof window === 'undefined') return;
 
     /* Close any existing connection */
     if (esRef.current) {
@@ -59,8 +59,8 @@ export function useSSE(token: string | null, options: UseSSEOptions = {}) {
       esRef.current = null;
     }
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    const url = `${apiBase}/api/sse?token=${encodeURIComponent(token)}`;
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const url     = `${apiBase}/api/sse?token=${encodeURIComponent(token)}`;
 
     try {
       const es = new EventSource(url);
@@ -76,7 +76,7 @@ export function useSSE(token: string | null, options: UseSSEOptions = {}) {
         try {
           const parsed: SSEEvent = JSON.parse(e.data);
           /* Ignore ping/keepalive events */
-          if (parsed.type === "ping") return;
+          if (parsed.type === 'ping') return;
           setLastEvent(parsed);
           onEvent?.(parsed);
         } catch {
@@ -91,7 +91,7 @@ export function useSSE(token: string | null, options: UseSSEOptions = {}) {
         onDisconnect?.();
 
         /* Auto-reconnect with backoff */
-        setRetryCount((prev) => {
+        setRetryCount(prev => {
           if (prev < maxRetries) {
             const delay = reconnectDelay * Math.pow(1.5, prev);
             retryTimer.current = setTimeout(connect, delay);
@@ -101,7 +101,7 @@ export function useSSE(token: string | null, options: UseSSEOptions = {}) {
         });
       };
     } catch (err) {
-      console.warn("[SSE] Could not connect:", err);
+      console.warn('[SSE] Could not connect:', err);
     }
   }, [token, onEvent, onConnect, onDisconnect, reconnectDelay, maxRetries]);
 
@@ -118,7 +118,7 @@ export function useSSE(token: string | null, options: UseSSEOptions = {}) {
     }
 
     return () => {
-      if (retryTimer.current) clearTimeout(retryTimer.current);
+      if (retryTimer.current)  clearTimeout(retryTimer.current);
       if (esRef.current) {
         esRef.current.close();
         esRef.current = null;

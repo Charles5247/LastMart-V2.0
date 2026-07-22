@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, type ChangeEventHandler, type FormEvent, type HTMLInputTypeAttribute, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Bike, Eye, EyeOff, AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
@@ -7,6 +7,28 @@ import toast from 'react-hot-toast';
 import { setStoredToken, setStoredUser, decodeToken } from '@/lib/auth';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+
+const Field = ({ label, children }: { label: string; children: ReactNode }) => (
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>
+    {children}
+  </div>
+);
+
+const Input = ({
+  value,
+  onChange,
+  type = 'text',
+  placeholder,
+}: {
+  value: string;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  type?: HTMLInputTypeAttribute;
+  placeholder?: string;
+}) => (
+  <input type={type} value={value} onChange={onChange} placeholder={placeholder} required
+    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow" />
+);
 
 export default function RiderRegisterPage() {
   const router = useRouter();
@@ -22,7 +44,7 @@ export default function RiderRegisterPage() {
 
   const update = (field: string, value: string) => setForm(f => ({ ...f, [field]: value }));
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     if (form.password !== form.confirm_password) { setError('Passwords do not match'); return; }
@@ -52,20 +74,8 @@ export default function RiderRegisterPage() {
     }
   };
 
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>
-      {children}
-    </div>
-  );
-
-  const Input = ({ value, onChange, type='text', placeholder }: any) => (
-    <input type={type} value={value} onChange={onChange} placeholder={placeholder} required
-      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow" />
-  );
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-2xl mb-4 shadow-lg">

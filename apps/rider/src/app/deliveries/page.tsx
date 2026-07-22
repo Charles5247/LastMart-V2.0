@@ -11,8 +11,9 @@ import {
 import { getStoredToken, clearStoredToken, isRiderAuthenticated } from '@/lib/auth';
 import { formatPrice, formatDate, getStatusColor } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 const NAV = [
   { href: '/dashboard',   icon: Bike,       label: 'Dashboard' },
@@ -54,7 +55,7 @@ export default function RiderDeliveriesPage() {
         ...(statusTab !== 'all' && { status: statusTab }),
         ...(search && { search }),
       });
-      const res  = await fetch(`${API}/riders/my-deliveries?${params}`, { headers: hdrs() });
+      const res  = await fetch(`${API_URL}/riders/deliveries?${params}`, { headers: hdrs() });
       const data = await res.json();
       if (data.success) {
         setDeliveries(data.data ?? []);
@@ -67,7 +68,7 @@ export default function RiderDeliveriesPage() {
   const updateStatus = async (id: string, status: string) => {
     setUpdating(id);
     try {
-      const res  = await fetch(`${API}/riders/delivery/${id}/status`, {
+      const res  = await fetch(`${API_URL}/riders/deliveries/${id}/status`, {
         method: 'PUT', headers: hdrs(), body: JSON.stringify({ status }),
       });
       const data = await res.json();

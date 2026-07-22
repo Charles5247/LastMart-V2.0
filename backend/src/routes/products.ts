@@ -174,6 +174,29 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
+// PUT /api/products/:id/status
+router.put('/:id/status', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const userPayload = getUserFromRequest(req);
+    if (!userPayload) return res.status(401).json({ success: false, error: 'Unauthorized' });
+
+    const db = getDB();
+    const product = db.prepare('SELECT p.*, v.user_id FROM products p JOIN vendors v ON p.vendor_id = v.id WHERE p.id = ?').get(id) as any;
+    if (!product) return res.status(404).json({ success: false, error: 'Product not found' });
+
+    if (product.user_id !== userPayload.userId && userPayload.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    db.prepare('UPDATE products SET is_active = ? WHERE id = ?').run(status === 'active' ? 1 : 0, id);
+    return res.json({ success: true, message: 'Product status updated' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // DELETE /api/products/:id
 router.delete('/:id', (req: Request, res: Response) => {
   try {

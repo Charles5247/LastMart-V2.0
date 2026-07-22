@@ -10,8 +10,9 @@ import {
 import { getStoredToken, clearStoredToken, isRiderAuthenticated } from '@/lib/auth';
 import { formatPrice, formatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 const NAV = [
   { href: '/dashboard',  icon: Bike,       label: 'Dashboard' },
@@ -44,8 +45,8 @@ export default function RiderEarningsPage() {
     setLoading(true);
     try {
       const [sumRes, histRes] = await Promise.all([
-        fetch(`${API}/riders/earnings?period=${period}`,     { headers: hdrs() }),
-        fetch(`${API}/riders/earnings/history?page=${page}`, { headers: hdrs() }),
+        fetch(`${API_URL}/riders/earnings?period=${period}`,     { headers: hdrs() }),
+        fetch(`${API_URL}/riders/earnings/history?page=${page}`, { headers: hdrs() }),
       ]);
       const [sumData, histData] = await Promise.all([sumRes.json(), histRes.json()]);
       if (sumData.success)  setSummary(sumData.data);
@@ -92,7 +93,7 @@ export default function RiderEarningsPage() {
         <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => setNavOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-gray-100">
-              <Bike className="w-5 h-5" />
+              <Bike className="size-4 md:size-5" />
             </button>
             <div>
               <h1 className="text-xl font-black text-gray-900">Earnings</h1>
@@ -103,13 +104,13 @@ export default function RiderEarningsPage() {
             <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
               {PERIODS.map(p => (
                 <button key={p.value} onClick={() => setPeriod(p.value)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors
+                  className={`px-1.5 py-1.5 md:px-3 rounded-md text-xs font-semibold transition-colors
                     ${period === p.value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                   {p.label}
                 </button>
               ))}
             </div>
-            <Bell className="w-5 h-5 text-gray-400" />
+            <Bell className="size-4 md:size-5 text-gray-400" />
           </div>
         </header>
 
@@ -145,7 +146,7 @@ export default function RiderEarningsPage() {
                   <h2 className="font-black text-gray-900 mb-4">Daily Earnings</h2>
                   <div className="flex items-end gap-1 h-32 overflow-x-auto pb-2">
                     {summary.chart.map((d: any, i: number) => (
-                      <div key={i} className="flex flex-col items-center gap-1 min-w-[28px]">
+                      <div key={i} className="flex flex-col items-center gap-1 min-w-7">
                         <div className="w-5 bg-green-200 hover:bg-green-400 rounded-t transition-all cursor-pointer"
                           style={{ height: `${Math.max(4, (d.amount / maxBar) * 100)}px` }}
                           title={`${d.date}: ${formatPrice(d.amount)}`} />

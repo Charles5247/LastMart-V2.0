@@ -3,7 +3,7 @@
 **Project**: LastMart Local Commerce Platform  
 **Version**: 5.3.0  
 **Date**: 2026-06-27  
-**Author**: AI Developer
+**Author**: AI Developer  
 
 ---
 
@@ -53,7 +53,7 @@ LastMart is a **local commerce platform** connecting customers, vendors, and del
   │  Customer    │ │  Vendor  │ │  Rider  │ │  Admin   │
   │  Portal      │ │  Portal  │ │  Portal │ │  Portal  │
   │  Next.js 14  │ │ Next.js  │ │ Next.js │ │ Next.js  │
-  │  Port: 3006  │ │  14      │ │  14     │ │  14      │
+  │  Port: 3000  │ │  14      │ │  14     │ │  14      │
   │              │ │ Port:3001│ │ Port:   │ │ Port:    │
   │  lastmart    │ │ vendor.  │ │ 3002    │ │ 3003     │
   │  .onrender   │ │ onrender │ │ rider.  │ │ admin.   │
@@ -90,13 +90,13 @@ LastMart is a **local commerce platform** connecting customers, vendors, and del
 
 ## 3. Service Inventory
 
-| Service             | Technology              | Port (dev) | URL (prod)                     | Role                     |
-| ------------------- | ----------------------- | ---------- | ------------------------------ | ------------------------ |
-| `lastmart-api`      | Express.js + TypeScript | 5000       | `lastmart-api.onrender.com`    | REST API + Auth          |
-| `lastmart-customer` | Next.js 14              | 3006       | `lastmart.onrender.com`        | Customer shopping portal |
-| `lastmart-vendor`   | Next.js 14              | 3001       | `lastmart-vendor.onrender.com` | Vendor management portal |
-| `lastmart-rider`    | Next.js 14              | 3002       | `lastmart-rider.onrender.com`  | Rider delivery portal    |
-| `lastmart-admin`    | Next.js 14              | 3003       | `lastmart-admin.onrender.com`  | Admin control panel      |
+| Service | Technology | Port (dev) | URL (prod) | Role |
+|---------|-----------|------------|------------|------|
+| `lastmart-api` | Express.js + TypeScript | 5000 | `lastmart-api.onrender.com` | REST API + Auth |
+| `lastmart-customer` | Next.js 14 | 3000 | `lastmart.onrender.com` | Customer shopping portal |
+| `lastmart-vendor` | Next.js 14 | 3001 | `lastmart-vendor.onrender.com` | Vendor management portal |
+| `lastmart-rider` | Next.js 14 | 3002 | `lastmart-rider.onrender.com` | Rider delivery portal |
+| `lastmart-admin` | Next.js 14 | 3003 | `lastmart-admin.onrender.com` | Admin control panel |
 
 ---
 
@@ -194,20 +194,19 @@ LastMart is a **local commerce platform** connecting customers, vendors, and del
 All four frontends use identical structural patterns:
 
 **Page Protection Pattern**:
-
 ```typescript
 // Every protected page
-"use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { isVendorAuthenticated, getStoredToken } from "@/lib/auth";
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { isVendorAuthenticated, getStoredToken } from '@/lib/auth';
 
 export default function ProtectedPage() {
   const router = useRouter();
-
+  
   useEffect(() => {
     if (!isVendorAuthenticated()) {
-      router.replace("/auth/login");
+      router.replace('/auth/login');
       return;
     }
     // fetch data...
@@ -216,31 +215,27 @@ export default function ProtectedPage() {
 ```
 
 **API Call Pattern**:
-
 ```typescript
 const token = getStoredToken();
-const response = await fetch("/api/endpoint", {
+const response = await fetch('/api/endpoint', {
   headers: {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  },
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  }
 });
 ```
 
 **Next.js Config (all sub-apps)**:
-
 ```javascript
 // apps/*/next.config.js
 const nextConfig = {
-  output: "standalone", // Self-contained deployment
+  output: 'standalone',  // Self-contained deployment
   async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${process.env.BACKEND_URL || "http://localhost:5000"}/api/:path*`,
-      },
-    ];
-  },
+    return [{
+      source: '/api/:path*',
+      destination: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/:path*`
+    }];
+  }
 };
 ```
 
@@ -259,12 +254,12 @@ All apps use Tailwind CSS v4 with the new import syntax:
 
 ### 4.4 Portal Visual Identity
 
-| Portal   | Primary Color      | Theme                  | Audience        |
-| -------- | ------------------ | ---------------------- | --------------- |
-| Customer | Blue (`#3b82f6`)   | Vibrant, consumer      | Public users    |
-| Vendor   | Orange (`#f97316`) | Professional, business | Store owners    |
-| Rider    | Green (`#10b981`)  | Active, energetic      | Delivery riders |
-| Admin    | Red (`#ef4444`)    | Authoritative, control | Platform admins |
+| Portal | Primary Color | Theme | Audience |
+|--------|--------------|-------|----------|
+| Customer | Blue (`#3b82f6`) | Vibrant, consumer | Public users |
+| Vendor | Orange (`#f97316`) | Professional, business | Store owners |
+| Rider | Green (`#10b981`) | Active, energetic | Delivery riders |
+| Admin | Red (`#ef4444`) | Authoritative, control | Platform admins |
 
 ---
 
@@ -272,17 +267,17 @@ All apps use Tailwind CSS v4 with the new import syntax:
 
 ### 5.1 Stack
 
-| Component     | Technology            | Version |
-| ------------- | --------------------- | ------- |
-| Runtime       | Node.js               | ≥18     |
-| Framework     | Express.js            | 4.x     |
-| Language      | TypeScript            | 5.x     |
-| ORM/DB        | better-sqlite3        | latest  |
-| Auth          | jsonwebtoken          | 9.x     |
-| Payments      | Paystack (via axios)  | API v1  |
-| Email         | Nodemailer / SendGrid | latest  |
-| Rate Limiting | express-rate-limit    | 7.x     |
-| File Upload   | Multer                | 1.x     |
+| Component | Technology | Version |
+|-----------|-----------|---------|
+| Runtime | Node.js | ≥18 |
+| Framework | Express.js | 4.x |
+| Language | TypeScript | 5.x |
+| ORM/DB | better-sqlite3 | latest |
+| Auth | jsonwebtoken | 9.x |
+| Payments | Paystack (via axios) | API v1 |
+| Email | Nodemailer / SendGrid | latest |
+| Rate Limiting | express-rate-limit | 7.x |
+| File Upload | Multer | 1.x |
 
 ### 5.2 Route Structure
 
@@ -362,16 +357,16 @@ Route Handler
 ```typescript
 // verifyToken — checks Bearer header, then cookie
 export function verifyToken(req, res, next) {
-  let token = req.headers.authorization?.split(" ")[1]; // Bearer token
-  if (!token) token = req.cookies?.token; // fallback to cookie
-
-  if (!token) return res.status(401).json({ error: "No token" });
-
+  let token = req.headers.authorization?.split(' ')[1];  // Bearer token
+  if (!token) token = req.cookies?.token;                 // fallback to cookie
+  
+  if (!token) return res.status(401).json({ error: 'No token' });
+  
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch {
-    return res.status(401).json({ error: "Invalid token" });
+    return res.status(401).json({ error: 'Invalid token' });
   }
 }
 
@@ -379,7 +374,7 @@ export function verifyToken(req, res, next) {
 export function requireRole(...roles) {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ error: "Insufficient permissions" });
+      return res.status(403).json({ error: 'Insufficient permissions' });
     }
     next();
   };
@@ -392,10 +387,10 @@ export function requireRole(...roles) {
 
 ### 6.1 Technology
 
-| Environment | Database                 | Mode                        |
-| ----------- | ------------------------ | --------------------------- |
-| Development | SQLite (better-sqlite3)  | WAL mode — concurrent reads |
-| Production  | PostgreSQL (recommended) | Connection pool             |
+| Environment | Database | Mode |
+|-------------|----------|------|
+| Development | SQLite (better-sqlite3) | WAL mode — concurrent reads |
+| Production | PostgreSQL (recommended) | Connection pool |
 
 ### 6.2 Core Entity Relationships
 
@@ -420,7 +415,7 @@ Users (id, email, password_hash, role, status, created_at)
 
 ```
 pending → confirmed → preparing → ready → picked_up → delivered
-    │
+    │                                                        
     └─────────────────────→ cancelled (from any state)
 ```
 
@@ -486,10 +481,10 @@ Frontend: decodeToken() → check role → store in correct key
 ```typescript
 // Each portal's auth.ts has unique key
 // apps/vendor/src/lib/auth.ts
-const TOKEN_KEY = "vendor_auth_token";
+const TOKEN_KEY = 'vendor_auth_token';
 
 export function getStoredToken(): string | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   return localStorage.getItem(TOKEN_KEY);
 }
 
@@ -497,7 +492,7 @@ export function isVendorAuthenticated(): boolean {
   const token = getStoredToken();
   if (!token) return false;
   const user = decodeToken(token);
-  return user?.role === "vendor"; // strict role check
+  return user?.role === 'vendor';  // strict role check
 }
 ```
 
@@ -525,7 +520,6 @@ Express.js backend (port 5000)
 ```
 
 This means:
-
 - No CORS issues for same-origin API calls from browser perspective
 - Backend URL is server-side only (not exposed to browser)
 - Works identically in dev and production
@@ -533,27 +527,29 @@ This means:
 ### 8.2 CORS Configuration
 
 ```typescript
-const allowedOrigins = process.env.FRONTEND_URL.split(",").map((o) => o.trim());
+const allowedOrigins = process.env.FRONTEND_URL
+  .split(',')
+  .map(o => o.trim());
 // = ['https://lastmart.onrender.com', 'https://lastmart-vendor.onrender.com', ...]
 
 cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) callback(null, true);
-    else callback(new Error("Not allowed by CORS"));
+    else callback(new Error('Not allowed by CORS'));
   },
-  credentials: true, // required for cookie auth
-});
+  credentials: true  // required for cookie auth
+})
 ```
 
 ### 8.3 Port Allocation
 
-| Service      | Port | Notes                                 |
-| ------------ | ---- | ------------------------------------- |
-| Backend API  | 5000 | Internal — not exposed directly       |
-| Customer app | 3006 | Public-facing                         |
-| Vendor app   | 3001 | Public-facing                         |
-| Rider app    | 3002 | Public-facing                         |
-| Admin app    | 3003 | Should be IP-restricted in production |
+| Service | Port | Notes |
+|---------|------|-------|
+| Backend API | 5000 | Internal — not exposed directly |
+| Customer app | 3000 | Public-facing |
+| Vendor app | 3001 | Public-facing |
+| Rider app | 3002 | Public-facing |
+| Admin app | 3003 | Should be IP-restricted in production |
 
 ---
 
@@ -565,7 +561,7 @@ All 5 services deploy to Render.com via `render.yaml`:
 
 ```yaml
 services:
-  - name: lastmart-api # Express backend
+  - name: lastmart-api        # Express backend
     type: web
     buildCommand: cd backend && npm install && npm run build
     startCommand: cd backend && node dist/server.js
@@ -573,18 +569,18 @@ services:
       name: sqlite-data
       mountPath: /var/data
       sizeGB: 1
-
-  - name: lastmart-customer # Customer Next.js app
+      
+  - name: lastmart-customer   # Customer Next.js app
     type: web
     buildCommand: npm install && npx next build
     startCommand: node .next/standalone/server.js
-
-  - name: lastmart-vendor # Vendor Next.js app
+    
+  - name: lastmart-vendor     # Vendor Next.js app
     type: web
     rootDir: apps/vendor
     buildCommand: npm install && npx next build
     startCommand: node .next/standalone/server.js
-
+    
   # ... rider, admin follow same pattern
 ```
 
@@ -623,7 +619,7 @@ CMD ["node", "server.js"]
 npm run dev:all
 # Runs concurrently with labels:
 # [BACKEND]  → cd backend && npm run dev (port 5000)
-# [CUSTOMER] → npx next dev (port 3006)
+# [CUSTOMER] → npx next dev (port 3000)
 # [VENDOR]   → cd apps/vendor && npm run dev (port 3001)
 # [RIDER]    → cd apps/rider && npm run dev (port 3002)
 # [ADMIN]    → cd apps/admin && npm run dev (port 3003)
@@ -704,7 +700,6 @@ Vendor can now list products and receive orders
 **Decision**: Create separate Next.js apps for each user role instead of using a single app with role-based route protection.
 
 **Rationale**:
-
 - Better security isolation (separate deployments, separate localStorage origins)
 - Independent scaling per portal
 - Smaller bundle sizes (no vendor/rider/admin code shipped to customers)
@@ -735,4 +730,4 @@ Vendor can now list products and receive orders
 
 ---
 
-_See also: BACKEND_INTEGRATION_PLAN.md for API integration details, MIGRATION_PLAN.md for upgrade path._
+*See also: BACKEND_INTEGRATION_PLAN.md for API integration details, MIGRATION_PLAN.md for upgrade path.*

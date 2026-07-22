@@ -11,8 +11,9 @@ import {
 import { getStoredToken, getStoredUser, clearStoredToken, isRiderAuthenticated } from '@/lib/auth';
 import { formatPrice, formatDate, getStatusColor } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../../../../packages/api/apiFetch';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 const NAV = [
   { href: '/dashboard',   icon: Bike,        label: 'Dashboard',   active: true },
@@ -49,26 +50,34 @@ export default function RiderDashboard() {
     setLoading(true);
     try {
       const [statsRes, pendingRes, activeRes] = await Promise.all([
-        fetch(`${API}/riders/stats`,            { headers: hdrs() }),
-        fetch(`${API}/riders/available-orders`, { headers: hdrs() }),
-        fetch(`${API}/riders/my-deliveries?status=in_transit`, { headers: hdrs() }),
+        fetch(`${API_URL}/riders/stats`,            { headers: hdrs() }),
+        fetch(`${API_URL}/riders/available-orders`, { headers: hdrs() }),
+        fetch(`${API_URL}/riders/deliveries?status=in_transit`, { headers: hdrs() }),
       ]);
       const [statsData, pendingData, activeData] = await Promise.all([
         statsRes.json(), pendingRes.json(), activeRes.json(),
       ]);
-      if (statsData.success)   setStats(statsData.data);
+      console.log('Dashboard Data:', { statsData, pendingData, activeData });
+      if (statsData.success)   {
+        setStats(statsData.data);
+        console.log(stats);
+        console.log("stats");
+      }
       if (pendingData.success) setPending(pendingData.data ?? []);
       if (activeData.success)  setActive(activeData.data ?? []);
     } catch { toast.error('Failed to load dashboard'); }
-    finally  { setLoading(false); }
+    finally  { 
+      setLoading(false);
+      console.log(stats)
+     }
   };
 
   const toggleAvailability = async () => {
     setToggling(true);
     try {
-      const res  = await fetch(`${API}/riders/availability`, {
+      const res  = await fetch(`${API_URL}/riders/availability`, {
         method: 'PUT', headers: hdrs(),
-        body: JSON.stringify({ available: !available }),
+        body: JSON.stringify({ is_available: !available }),
       });
       const data = await res.json();
       if (data.success) {
@@ -81,7 +90,7 @@ export default function RiderDashboard() {
 
   const acceptDelivery = async (orderId: string) => {
     try {
-      const res  = await fetch(`${API}/riders/accept-delivery`, {
+      const res  = await fetch(`${API_URL}/riders/accept-delivery`, {
         method: 'POST', headers: hdrs(), body: JSON.stringify({ order_id: orderId }),
       });
       const data = await res.json();
@@ -231,7 +240,7 @@ export default function RiderDashboard() {
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
                   <h2 className="font-black text-gray-900">Available Orders</h2>
                   <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">
-                    {pending.length} nearby
+                    {stats.pending_assignments.length} nearby
                   </span>
                 </div>
                 {pending.length === 0 ? (

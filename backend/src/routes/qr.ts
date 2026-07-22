@@ -11,14 +11,14 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { Router, Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
-import getDB from "../lib/db";
-import { getUserFromRequest } from "../lib/auth";
+import { Router, Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
+import getDB from '../lib/db';
+import { getUserFromRequest } from '../lib/auth';
 
 const router = Router();
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3006";
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 /* ── Simple QR matrix generator (no dependencies) ───────────────────────── */
 /**
@@ -29,9 +29,9 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3006";
 function generateQRSvg(url: string): string {
   // Encode URL to get a deterministic bit-pattern
   const hash = simpleHash(url);
-  const SIZE = 25; // 25×25 modules
-  const PIXEL = 8; // px per module
-  const quiet = 4; // quiet zone modules
+  const SIZE  = 25; // 25×25 modules
+  const PIXEL = 8;  // px per module
+  const quiet = 4;  // quiet zone modules
   const total = (SIZE + quiet * 2) * PIXEL;
 
   // Build a pseudo-random but deterministic grid based on hash
@@ -46,13 +46,13 @@ function generateQRSvg(url: string): string {
         // Data modules derived from hash
         const idx = r * SIZE + c;
         const byteIdx = idx % hash.length;
-        const bitIdx = idx % 8;
+        const bitIdx  = idx % 8;
         grid[r][c] = ((hash.charCodeAt(byteIdx) >> bitIdx) & 1) === 1;
       }
     }
   }
 
-  let rects = "";
+  let rects = '';
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       if (grid[r][c]) {
@@ -75,59 +75,49 @@ function simpleHash(str: string): string {
     h = ((h << 5) - h + str.charCodeAt(i)) | 0;
   }
   // Return a 32-char hex-like string
-  const hex = Math.abs(h).toString(16).padStart(8, "0");
+  const hex = Math.abs(h).toString(16).padStart(8, '0');
   return (hex + hex + hex + hex).slice(0, 32);
 }
 
 function isFinderPattern(r: number, c: number, size: number): boolean {
-  return (
-    (r < 7 && c < 7) || (r < 7 && c >= size - 7) || (r >= size - 7 && c < 7)
-  );
+  return (r < 7 && c < 7) ||
+         (r < 7 && c >= size - 7) ||
+         (r >= size - 7 && c < 7);
 }
 
 function isFinderDark(r: number, c: number, size: number): boolean {
   // Top-left finder
-  if (r < 7 && c < 7) return finderModule(r, c);
+  if (r < 7 && c < 7)               return finderModule(r, c);
   // Top-right finder
-  if (r < 7 && c >= size - 7) return finderModule(r, c - (size - 7));
+  if (r < 7 && c >= size - 7)       return finderModule(r, c - (size - 7));
   // Bottom-left finder
-  if (r >= size - 7 && c < 7) return finderModule(r - (size - 7), c);
+  if (r >= size - 7 && c < 7)       return finderModule(r - (size - 7), c);
   return false;
 }
 
 function finderModule(r: number, c: number): boolean {
   // 7×7 finder: outer border + inner 3×3 square
   if (r === 0 || r === 6 || c === 0 || c === 6) return true; // outer border
-  if (r >= 2 && r <= 4 && c >= 2 && c <= 4) return true; // inner square
+  if (r >= 2 && r <= 4 && c >= 2 && c <= 4)     return true; // inner square
   return false;
 }
 
 /* ── Ensure vendor has a share token ─────────────────────────────────────── */
-function ensureShareToken(
-  db: any,
-  vendorId: string,
-): { token: string; url: string; svgQr: string } {
-  let row = db
-    .prepare(`SELECT * FROM vendor_share_links WHERE vendor_id = ?`)
-    .get(vendorId) as any;
+function ensureShareToken(db: any, vendorId: string): { token: string; url: string; svgQr: string } {
+  let row = db.prepare(`SELECT * FROM vendor_share_links WHERE vendor_id = ?`).get(vendorId) as any;
 
   if (!row) {
-    const token = uuidv4().replace(/-/g, "").slice(0, 16);
+    const token = uuidv4().replace(/-/g, '').slice(0, 16);
     const shareUrl = `${FRONTEND_URL}/vendor/${vendorId}?ref=${token}`;
-    const svgQr = generateQRSvg(shareUrl);
+    const svgQr   = generateQRSvg(shareUrl);
 
-    db.prepare(
-      `
+    db.prepare(`
       INSERT INTO vendor_share_links (id, vendor_id, share_token, qr_data)
       VALUES (?, ?, ?, ?)
-    `,
-    ).run(uuidv4(), vendorId, token, svgQr);
+    `).run(uuidv4(), vendorId, token, svgQr);
 
     // Also persist token on vendors table for quick lookup
-    db.prepare(`UPDATE vendors SET share_token = ? WHERE id = ?`).run(
-      token,
-      vendorId,
-    );
+    db.prepare(`UPDATE vendors SET share_token = ? WHERE id = ?`).run(token, vendorId);
 
     row = { share_token: token, qr_data: svgQr };
   }
@@ -137,78 +127,62 @@ function ensureShareToken(
 }
 
 /* ── GET /api/qr/vendor/:id ──────────────────────────────────────────────── */
-router.get("/vendor/:id", (req: Request, res: Response) => {
-  const db = getDB();
+router.get('/vendor/:id', (req: Request, res: Response) => {
+  const db       = getDB();
   const vendorId = req.params.id as string;
 
-  const vendor = db
-    .prepare(`SELECT id, store_name, user_id FROM vendors WHERE id = ?`)
-    .get(vendorId) as any;
-  if (!vendor)
-    return res.status(404).json({ success: false, error: "Vendor not found" });
+  const vendor = db.prepare(`SELECT id, store_name, user_id FROM vendors WHERE id = ?`).get(vendorId) as any;
+  if (!vendor) return res.status(404).json({ success: false, error: 'Vendor not found' });
 
   const { token, url, svgQr } = ensureShareToken(db, vendorId);
 
   // Increment scan count if called from scan link
-  if (req.query.scan === "1") {
-    db.prepare(
-      `UPDATE vendor_share_links SET scans = scans + 1 WHERE vendor_id = ?`,
-    ).run(vendorId);
+  if (req.query.scan === '1') {
+    db.prepare(`UPDATE vendor_share_links SET scans = scans + 1 WHERE vendor_id = ?`).run(vendorId);
   }
 
-  const stats = db
-    .prepare(`SELECT scans FROM vendor_share_links WHERE vendor_id = ?`)
-    .get(vendorId) as any;
+  const stats = db.prepare(`SELECT scans FROM vendor_share_links WHERE vendor_id = ?`).get(vendorId) as any;
 
   return res.json({
     success: true,
     data: {
-      vendor_id: vendor.id,
-      store_name: vendor.store_name,
+      vendor_id:   vendor.id,
+      store_name:  vendor.store_name,
       share_token: token,
-      share_url: url,
-      qr_svg: svgQr,
-      scans: stats?.scans || 0,
+      share_url:   url,
+      qr_svg:      svgQr,
+      scans:       stats?.scans || 0,
     },
   });
 });
 
 /* ── POST /api/qr/vendor/:id/refresh ─────────────────────────────────────── */
-router.post("/vendor/:id/refresh", (req: Request, res: Response) => {
+router.post('/vendor/:id/refresh', (req: Request, res: Response) => {
   const user = getUserFromRequest(req);
-  if (!user)
-    return res.status(401).json({ success: false, error: "Unauthorized" });
+  if (!user) return res.status(401).json({ success: false, error: 'Unauthorized' });
 
-  const db = getDB();
+  const db       = getDB();
   const vendorId = req.params.id;
 
   // Only the vendor owner or admin can refresh
-  const vendor = db
-    .prepare(`SELECT id, user_id FROM vendors WHERE id = ?`)
-    .get(vendorId) as any;
-  if (!vendor)
-    return res.status(404).json({ success: false, error: "Vendor not found" });
-  if (vendor.user_id !== user.userId && user.role !== "admin") {
-    return res.status(403).json({ success: false, error: "Forbidden" });
+  const vendor = db.prepare(`SELECT id, user_id FROM vendors WHERE id = ?`).get(vendorId) as any;
+  if (!vendor) return res.status(404).json({ success: false, error: 'Vendor not found' });
+  if (vendor.user_id !== user.userId && user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
   }
 
   // Generate new token
-  const newToken = uuidv4().replace(/-/g, "").slice(0, 16);
+  const newToken = uuidv4().replace(/-/g, '').slice(0, 16);
   const shareUrl = `${FRONTEND_URL}/vendor/${vendorId}?ref=${newToken}`;
-  const svgQr = generateQRSvg(shareUrl);
+  const svgQr    = generateQRSvg(shareUrl);
 
-  db.prepare(
-    `
+  db.prepare(`
     UPDATE vendor_share_links
     SET share_token = ?, qr_data = ?, scans = 0, updated_at = datetime('now')
     WHERE vendor_id = ?
-  `,
-  ).run(newToken, svgQr, vendorId);
+  `).run(newToken, svgQr, vendorId);
 
-  db.prepare(`UPDATE vendors SET share_token = ? WHERE id = ?`).run(
-    newToken,
-    vendorId,
-  );
+  db.prepare(`UPDATE vendors SET share_token = ? WHERE id = ?`).run(newToken, vendorId);
 
   return res.json({
     success: true,
@@ -221,31 +195,21 @@ router.post("/vendor/:id/refresh", (req: Request, res: Response) => {
  * Resolves a share token to a vendor ID and redirects.
  * Also triggers vendor-referral coupon logic for logged-in users.
  */
-router.get("/scan/:token", (req: Request, res: Response) => {
-  const db = getDB();
+router.get('/scan/:token', (req: Request, res: Response) => {
+  const db    = getDB();
   const { token } = req.params;
 
-  const row = db
-    .prepare(`SELECT * FROM vendor_share_links WHERE share_token = ?`)
-    .get(token) as any;
-  if (!row)
-    return res
-      .status(404)
-      .json({ success: false, error: "Invalid share link" });
+  const row = db.prepare(`SELECT * FROM vendor_share_links WHERE share_token = ?`).get(token) as any;
+  if (!row) return res.status(404).json({ success: false, error: 'Invalid share link' });
 
   // Increment scan
-  db.prepare(
-    `UPDATE vendor_share_links SET scans = scans + 1 WHERE share_token = ?`,
-  ).run(token);
+  db.prepare(`UPDATE vendor_share_links SET scans = scans + 1 WHERE share_token = ?`).run(token);
 
   const redirectUrl = `${FRONTEND_URL}/vendor/${row.vendor_id}?ref=${token}`;
 
   // Return JSON if requested (mobile apps / API consumers)
-  if (req.headers.accept?.includes("application/json")) {
-    return res.json({
-      success: true,
-      data: { vendor_id: row.vendor_id, redirect_url: redirectUrl },
-    });
+  if (req.headers.accept?.includes('application/json')) {
+    return res.json({ success: true, data: { vendor_id: row.vendor_id, redirect_url: redirectUrl } });
   }
 
   return res.redirect(302, redirectUrl);

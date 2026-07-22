@@ -9,6 +9,7 @@
 ## ─────────────────────────────────────────────────────────────────────────────
 
 services:
+
   # ── 1. Backend API (Express + TypeScript) ──────────────────────────────────
   - type: web
     name: lastmart-api
@@ -25,7 +26,7 @@ services:
       - key: FRONTEND_URL
         value: "https://lastmart.onrender.com,https://lastmart-vendor.onrender.com,https://lastmart-rider.onrender.com,https://lastmart-admin.onrender.com"
       - key: JWT_SECRET
-        sync: false # Set manually in Render dashboard
+        sync: false          # Set manually in Render dashboard
       - key: DATABASE_PATH
         value: /var/data/lastmart.db
       - key: PAYSTACK_SECRET_KEY
@@ -40,7 +41,7 @@ services:
       sizeGB: 1
     healthCheckPath: /api/health
 
-  # ── 2. Customer Frontend (Next.js — port 3006) ────────────────────────────
+  # ── 2. Customer Frontend (Next.js — port 3000) ────────────────────────────
   - type: web
     name: lastmart-customer
     runtime: node
